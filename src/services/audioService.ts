@@ -6,12 +6,13 @@ import {
 } from '../utils/graphUtils'
 import { generateTriads } from '../utils/chordUtils'
 
-export type InstrumentType = 'piano' | 'synth'
+export type InstrumentType = 'piano' | 'synth' | 'guitar'
 
 export class AudioService {
   private instruments: Record<InstrumentType, Tone.Sampler | Tone.PolySynth | null> = {
     piano: null,
     synth: null,
+    guitar: null,
   }
   private currentInstrument: InstrumentType = 'synth'
   private isInitialized = false
@@ -34,7 +35,7 @@ export class AudioService {
     // Initialize Tone.js
     await Tone.start()
     
-    // Create instruments
+    // Create piano sampler
     this.instruments.piano = new Tone.Sampler({
       urls: {
         A0: "A0.mp3",
@@ -68,17 +69,49 @@ export class AudioService {
         A7: "A7.mp3",
         C8: "C8.mp3"
       },
+      release: 1,
       baseUrl: "https://tonejs.github.io/audio/salamander/",
-      onload: () => {
-        console.log('Piano samples loaded')
+    }).toDestination()
+
+    // Create basic synth
+    this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: {
+        type: "triangle"
+      },
+      envelope: {
+        attack: 0.005,
+        decay: 0.1,
+        sustain: 0.3,
+        release: 1
       }
     }).toDestination()
 
-    // Fallback synth in case samples don't load
-    this.instruments.synth = new Tone.PolySynth(Tone.Synth).toDestination()
+    // Create guitar sampler with nylon guitar samples
+    this.instruments.guitar = new Tone.Sampler({
+      urls: {
+        'E2': 'E2.mp3',
+        'F#2': 'Fs2.mp3',
+        'G#2': 'Gs2.mp3',
+        'A2': 'A2.mp3',
+        'B2': 'B2.mp3',
+        'D3': 'D3.mp3',
+        'E3': 'E3.mp3',
+        'F#3': 'Fs3.mp3',
+        'G3': 'G3.mp3',
+        'A3': 'A3.mp3',
+        'B3': 'B3.mp3',
+        'C#4': 'Cs4.mp3',
+        'D#4': 'Ds4.mp3',
+        'E4': 'E4.mp3',
+        'F#4': 'Fs4.mp3',
+        'G#4': 'Gs4.mp3',
+      },
+      release: 1.2,
+      volume: -3,
+      baseUrl: "https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/",
+    }).toDestination()
 
     this.isInitialized = true
-    await this.waitForLoad()
   }
 
   private async waitForLoad(): Promise<void> {

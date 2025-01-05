@@ -1,4 +1,4 @@
-import { Piano, KeyboardMusic } from 'lucide-react'
+import { Piano, KeyboardMusic, Guitar } from 'lucide-react'
 import { InstrumentType, audioService } from '../services/audioService'
 import { useState } from 'react'
 
@@ -31,6 +31,16 @@ export const InstrumentSelector = () => {
           }`}
       >
         <Piano className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => handleSelect('guitar')}
+        className={`min-w-8 h-8 flex items-center justify-center rounded-md
+          transition-colors ${selectedInstrument === 'guitar'
+            ? 'bg-purple-100 text-purple-700'
+            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+          }`}
+      >
+        <Guitar className="w-4 h-4" />
       </button>
     </div>
   )
