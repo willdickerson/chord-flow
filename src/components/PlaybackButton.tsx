@@ -15,6 +15,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const displayedNotesRef = useRef<number[]>([]);
+  const initialChordNames = audioService.getInitialChordNames();
 
   const generateSequence = async () => {
     try {
@@ -123,13 +124,13 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
 
   return (
     <div className="space-y-4">
-      {sequence && (
-        <ChordChart 
-          sequence={sequence} 
-          currentPosition={currentPosition}
-          onPositionSelect={handlePositionSelect}
-        />
-      )}
+      <ChordChart 
+        sequence={sequence} 
+        currentPosition={currentPosition}
+        onPositionSelect={handlePositionSelect}
+        isEnabled={!!sequence}
+        initialChordNames={initialChordNames}
+      />
       
       <div className="flex gap-3">
         <button

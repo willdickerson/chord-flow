@@ -233,14 +233,18 @@ export class AudioService {
     return this._shouldStop ? this.stoppedMidiNotes : this.currentMidiNotes;
   }
 
-  generateGiantStepsSequence(): Triad[] {
-    this.isFirstPlay = true; // Reset first play flag when generating new sequence
-    const GIANT_STEPS = [
+  getInitialChordNames(): string[] {
+    return [
       "B", "D", "G", "Bb", "Eb", "Eb", "Am", "D",
       "G", "Bb", "Eb", "F#", "B", "B", "Fm", "Bb",
       "Eb", "Eb", "Am", "D", "G", "G", "C#m", "F#", 
       "B", "B", "Fm", "Bb", "Eb", "Eb", "C#m", "F#"
-  ]
+    ];
+  }
+
+  generateGiantStepsSequence(): Triad[] {
+    this.isFirstPlay = true; // Reset first play flag when generating new sequence
+    const GIANT_STEPS = this.getInitialChordNames()
     const MIDI_RANGE: [number, number] = [40, 90]
 
     const triads = Object.fromEntries(
