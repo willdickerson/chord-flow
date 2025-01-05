@@ -13,7 +13,7 @@ export class AudioService {
     piano: null,
     synth: null,
   }
-  private currentInstrument: InstrumentType = 'piano'
+  private currentInstrument: InstrumentType = 'synth'
   private isInitialized = false
   private _shouldStop = false
   private currentPlayingNotes: string[] = []

@@ -8,7 +8,7 @@ const instruments: { value: InstrumentType; label: string }[] = [
 ]
 
 export const InstrumentSelector = () => {
-  const [selectedInstrument, setSelectedInstrument] = useState<InstrumentType>('piano')
+  const [selectedInstrument, setSelectedInstrument] = useState<InstrumentType>('synth')
 
   const handleSelect = (instrument: InstrumentType) => {
     setSelectedInstrument(instrument)
@@ -18,16 +18,6 @@ export const InstrumentSelector = () => {
   return (
     <div className="flex items-center gap-3">
       <button
-        onClick={() => handleSelect('piano')}
-        className={`min-w-8 h-8 flex items-center justify-center rounded-md
-          transition-colors ${selectedInstrument === 'piano'
-            ? 'bg-purple-100 text-purple-700'
-            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-          }`}
-      >
-        <Piano className="w-4 h-4" />
-      </button>
-      <button
         onClick={() => handleSelect('synth')}
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
           transition-colors ${selectedInstrument === 'synth'
@@ -36,6 +26,16 @@ export const InstrumentSelector = () => {
           }`}
       >
         <KeyboardMusic className="w-4 h-4" />
+      </button>
+      <button
+        onClick={() => handleSelect('piano')}
+        className={`min-w-8 h-8 flex items-center justify-center rounded-md
+          transition-colors ${selectedInstrument === 'piano'
+            ? 'bg-purple-100 text-purple-700'
+            : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+          }`}
+      >
+        <Piano className="w-4 h-4" />
       </button>
     </div>
   )
