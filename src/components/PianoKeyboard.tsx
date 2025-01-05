@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Triad } from '../types';
 import { audioService } from '../services/audioService';
 
@@ -24,6 +24,7 @@ const OCTAVE_MAP = {
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => {
   const [playedNotes, setPlayedNotes] = useState<Set<number>>(new Set());
+  const [isMouseDown, setIsMouseDown] = useState(false);
   const totalOctaves = Math.floor((MIDI_END - MIDI_START) / 12);
   
   // Convert MIDI note to octave and note within octave
@@ -33,9 +34,20 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
   // Initialize audio on mount
   useEffect(() => {
     audioService.initialize();
+
+    // Add global mouse up handler
+    const handleGlobalMouseUp = () => {
+      setIsMouseDown(false);
+    };
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
   }, []);
   
-  const handleMouseDown = async (midiNote: number) => {
+  const playNote = useCallback(async (midiNote: number) => {
+    if (playedNotes.has(midiNote)) return; // Don't play if already playing
+    
     try {
       await audioService.initialize();
       audioService.playNote(midiNote);
@@ -43,24 +55,35 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
     } catch (err) {
       console.error('Error playing note:', err);
     }
+  }, [playedNotes]);
+
+  const stopNote = useCallback((midiNote: number) => {
+    audioService.stopNote(midiNote);
+    setPlayedNotes(prev => {
+      const next = new Set(prev);
+      next.delete(midiNote);
+      return next;
+    });
+  }, []);
+
+  const handleMouseDown = async (midiNote: number) => {
+    setIsMouseDown(true);
+    await playNote(midiNote);
   };
 
   const handleMouseUp = (midiNote: number) => {
-    audioService.stopNote(midiNote);
-    setPlayedNotes(prev => {
-      const next = new Set(prev);
-      next.delete(midiNote);
-      return next;
-    });
+    setIsMouseDown(false);
+    stopNote(midiNote);
+  };
+
+  const handleMouseEnter = async (midiNote: number) => {
+    if (isMouseDown) {
+      await playNote(midiNote);
+    }
   };
 
   const handleMouseLeave = (midiNote: number) => {
-    audioService.stopNote(midiNote);
-    setPlayedNotes(prev => {
-      const next = new Set(prev);
-      next.delete(midiNote);
-      return next;
-    });
+    stopNote(midiNote);
   };
   
   // Calculate total width needed
@@ -97,6 +120,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
                     className="transition-colors duration-100 cursor-pointer"
                     onMouseDown={() => handleMouseDown(midiNote)}
                     onMouseUp={() => handleMouseUp(midiNote)}
+                    onMouseEnter={() => handleMouseEnter(midiNote)}
                     onMouseLeave={() => handleMouseLeave(midiNote)}
                   />
                 );
@@ -118,6 +142,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
             className="transition-colors duration-100 cursor-pointer"
             onMouseDown={() => handleMouseDown(MIDI_END)}
             onMouseUp={() => handleMouseUp(MIDI_END)}
+            onMouseEnter={() => handleMouseEnter(MIDI_END)}
             onMouseLeave={() => handleMouseLeave(MIDI_END)}
           />
 
@@ -151,6 +176,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
                     className="transition-colors duration-100 cursor-pointer"
                     onMouseDown={() => handleMouseDown(midiNote)}
                     onMouseUp={() => handleMouseUp(midiNote)}
+                    onMouseEnter={() => handleMouseEnter(midiNote)}
                     onMouseLeave={() => handleMouseLeave(midiNote)}
                   />
                 );
