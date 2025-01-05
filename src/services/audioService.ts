@@ -146,10 +146,10 @@ export class AudioService {
 
   async playTriadSequence(triads: Triad[], onNotesChange?: (notes: number[]) => void, startPosition: number = 0): Promise<void> {
     console.log('Starting sequence from position:', startPosition);
-    this._shouldStop = false
-    // When resuming, start from the next position unless it would be the end
-    const nextPosition = this.savedPosition + 1;
-    this.currentPosition = startPosition || (nextPosition < triads.length ? nextPosition : this.savedPosition);
+    this._shouldStop = false;
+    
+    // If we have a saved position and startPosition is 0 (default), resume from saved position
+    this.currentPosition = (startPosition === 0 && this.savedPosition > 0) ? this.savedPosition : startPosition;
     
     try {
       for (let i = this.currentPosition; i < triads.length; i++) {
