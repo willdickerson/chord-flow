@@ -74,9 +74,11 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       
       setIsPlaying(false);
       if (!audioService.shouldStop) {
+        // Sequence completed naturally - reset everything to start
         displayedNotesRef.current = [];
         onNotesChange([]);
         setCurrentPosition(0);
+        audioService.setPosition(0);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
