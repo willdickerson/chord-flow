@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Triad } from '../types';
+import { audioService } from '../services/audioService';
 
 interface PianoKeyboardProps {
   activeNotes: number[];
@@ -26,6 +27,28 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
   
   // Convert MIDI note to octave and note within octave
   const isNoteActive = (midiNote: number) => activeNotes.includes(midiNote);
+
+  // Initialize audio on mount
+  useEffect(() => {
+    audioService.initialize();
+  }, []);
+  
+  const handleMouseDown = async (midiNote: number) => {
+    try {
+      await audioService.initialize();
+      audioService.playNote(midiNote);
+    } catch (err) {
+      console.error('Error playing note:', err);
+    }
+  };
+
+  const handleMouseUp = (midiNote: number) => {
+    audioService.stopNote(midiNote);
+  };
+
+  const handleMouseLeave = (midiNote: number) => {
+    audioService.stopNote(midiNote);
+  };
   
   // Calculate total width needed
   const totalWhiteKeys = totalOctaves * 7 + 1; // 7 white keys per octave plus final C
@@ -58,7 +81,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
                     stroke="#d1d5db"
                     strokeWidth="1"
                     rx="2"
-                    className="transition-colors duration-100"
+                    className="transition-colors duration-100 cursor-pointer"
+                    onMouseDown={() => handleMouseDown(midiNote)}
+                    onMouseUp={() => handleMouseUp(midiNote)}
+                    onMouseLeave={() => handleMouseLeave(midiNote)}
                   />
                 );
               })}
@@ -76,7 +102,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
             stroke="#d1d5db"
             strokeWidth="1"
             rx="2"
-            className="transition-colors duration-100"
+            className="transition-colors duration-100 cursor-pointer"
+            onMouseDown={() => handleMouseDown(MIDI_END)}
+            onMouseUp={() => handleMouseUp(MIDI_END)}
+            onMouseLeave={() => handleMouseLeave(MIDI_END)}
           />
 
           {/* Generate black keys */}
@@ -105,8 +134,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
                     fill={isNoteActive(midiNote) ? '#9333ea' : '#1f2937'}
                     stroke="#1f2937"
                     strokeWidth="1"
-                    rx="1.5"
-                    className="transition-colors duration-100"
+                    rx="1"
+                    className="transition-colors duration-100 cursor-pointer"
+                    onMouseDown={() => handleMouseDown(midiNote)}
+                    onMouseUp={() => handleMouseUp(midiNote)}
+                    onMouseLeave={() => handleMouseLeave(midiNote)}
                   />
                 );
               })}

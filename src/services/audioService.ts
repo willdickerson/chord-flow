@@ -249,6 +249,22 @@ export class AudioService {
 
     return findOptimalVoiceLeading(graph, startNodes, endNodes)
   }
+
+  playNote(midiNote: number): void {
+    const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
+    if (!instrument) throw new Error('No instrument loaded')
+
+    const note = this.midiToNote(midiNote)
+    instrument.triggerAttack(note)
+  }
+
+  stopNote(midiNote: number): void {
+    const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
+    if (!instrument) throw new Error('No instrument loaded')
+
+    const note = this.midiToNote(midiNote)
+    instrument.triggerRelease(note)
+  }
 }
 
 export const audioService = new AudioService()
