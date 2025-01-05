@@ -14,9 +14,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const [error, setError] = useState<string | null>(null)
   const displayedNotesRef = useRef<number[]>([]);
 
-  const handleGenerate = async () => {
-    if (isGenerating) return
-    
+  const generateSequence = async () => {
     try {
       setIsGenerating(true)
       setError(null)
@@ -27,15 +25,17 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       const newSequence = audioService.generateGiantStepsSequence()
       setSequence(newSequence)
       displayedNotesRef.current = [];
+      return newSequence
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
+      return null
     } finally {
       setIsGenerating(false)
     }
   }
 
   const handlePlayback = async () => {
-    if (!sequence || isGenerating) return
+    if (isGenerating) return
     
     try {
       setError(null)
@@ -46,19 +46,26 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
         setIsPlaying(false);
         // Keep displaying whatever notes were last shown
         onNotesChange(displayedNotesRef.current);
-      } else {
-        console.log('Starting/resuming playback');
-        setIsPlaying(true);
-        await audioService.playTriadSequence(sequence, (notes) => {
-          console.log('Note change during playback:', notes);
-          displayedNotesRef.current = notes;
-          onNotesChange(notes);
-        });
-        setIsPlaying(false);
-        if (!audioService.shouldStop) {
-          displayedNotesRef.current = [];
-          onNotesChange([]);
-        }
+        return
+      }
+
+      let currentSequence = sequence
+      if (!currentSequence) {
+        currentSequence = await generateSequence()
+        if (!currentSequence) return
+      }
+      
+      console.log('Starting/resuming playback');
+      setIsPlaying(true);
+      await audioService.playTriadSequence(currentSequence, (notes) => {
+        console.log('Note change during playback:', notes);
+        displayedNotesRef.current = notes;
+        onNotesChange(notes);
+      });
+      setIsPlaying(false);
+      if (!audioService.shouldStop) {
+        displayedNotesRef.current = [];
+        onNotesChange([]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -71,15 +78,13 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     <div className="space-y-4">
       <div className="flex gap-3">
         <button
-          onClick={handleGenerate}
+          onClick={handlePlayback}
           disabled={isGenerating}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md
             font-medium text-sm transition-colors
             ${isGenerating 
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : sequence
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
             }`}
         >
           {isGenerating ? (
@@ -94,41 +99,16 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
               </div>
               <span>Generating</span>
             </>
-          ) : sequence ? (
-            'Regenerate Path'
-          ) : (
-            'Generate Path'
-          )}
-        </button>
-
-        <button
-          onClick={handlePlayback}
-          disabled={!sequence || isGenerating}
-          className={`w-24 flex items-center justify-center gap-2 px-4 py-2 rounded-md
-            font-medium text-sm transition-colors
-            ${!sequence || isGenerating
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-purple-600 text-white hover:bg-purple-700'
-            }`}
-        >
-          {isPlaying ? (
-            <>
-              <Pause className="w-4 h-4" />
-              <span>Pause</span>
-            </>
           ) : (
             <>
-              <Play className="w-4 h-4" />
-              <span>Play</span>
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+              <span>{isPlaying ? 'Pause' : sequence ? 'Play' : 'Generate & Play'}</span>
             </>
           )}
         </button>
       </div>
-      
       {error && (
-        <div className="p-3 rounded-md bg-red-50 border border-red-100">
-          <p className="text-sm text-red-600">{error}</p>
-        </div>
+        <div className="text-red-500 text-sm">{error}</div>
       )}
     </div>
   )
