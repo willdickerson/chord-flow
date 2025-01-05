@@ -21,6 +21,7 @@ export class AudioService {
   private savedPosition = 0
   private currentMidiNotes: number[] = []
   private stoppedMidiNotes: number[] = []
+  private isFirstPlay = true
 
   get shouldStop(): boolean {
     return this._shouldStop;
@@ -148,8 +149,14 @@ export class AudioService {
     console.log('Starting sequence from position:', startPosition);
     this._shouldStop = false;
     
-    // If we have a saved position and startPosition is 0 (default), resume from saved position
-    this.currentPosition = (startPosition === 0 && this.savedPosition > 0) ? this.savedPosition : startPosition;
+    if (this.isFirstPlay) {
+      this.currentPosition = startPosition;
+      this.isFirstPlay = false;
+    } else {
+      // On resume, advance to next chord unless we're at the end
+      const nextPosition = this.savedPosition + 1;
+      this.currentPosition = nextPosition < triads.length ? nextPosition : this.savedPosition;
+    }
     
     try {
       for (let i = this.currentPosition; i < triads.length; i++) {
@@ -209,6 +216,7 @@ export class AudioService {
   }
 
   generateGiantStepsSequence(): Triad[] {
+    this.isFirstPlay = true; // Reset first play flag when generating new sequence
     const GIANT_STEPS = [
       "B", "D", "G", "Bb", "Eb", "Eb", "Am", "D",
       "G", "Bb", "Eb", "F#", "B", "B", "Fm", "Bb",
