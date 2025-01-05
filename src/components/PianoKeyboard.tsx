@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Triad } from '../types';
 import { audioService } from '../services/audioService';
 
@@ -23,10 +23,12 @@ const OCTAVE_MAP = {
 };
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => {
+  const [playedNotes, setPlayedNotes] = useState<Set<number>>(new Set());
   const totalOctaves = Math.floor((MIDI_END - MIDI_START) / 12);
   
   // Convert MIDI note to octave and note within octave
-  const isNoteActive = (midiNote: number) => activeNotes.includes(midiNote);
+  const isNoteActive = (midiNote: number) => 
+    activeNotes.includes(midiNote) || playedNotes.has(midiNote);
 
   // Initialize audio on mount
   useEffect(() => {
@@ -37,6 +39,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
     try {
       await audioService.initialize();
       audioService.playNote(midiNote);
+      setPlayedNotes(prev => new Set([...prev, midiNote]));
     } catch (err) {
       console.error('Error playing note:', err);
     }
@@ -44,10 +47,20 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({ activeNotes }) => 
 
   const handleMouseUp = (midiNote: number) => {
     audioService.stopNote(midiNote);
+    setPlayedNotes(prev => {
+      const next = new Set(prev);
+      next.delete(midiNote);
+      return next;
+    });
   };
 
   const handleMouseLeave = (midiNote: number) => {
     audioService.stopNote(midiNote);
+    setPlayedNotes(prev => {
+      const next = new Set(prev);
+      next.delete(midiNote);
+      return next;
+    });
   };
   
   // Calculate total width needed
