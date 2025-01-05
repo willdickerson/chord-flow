@@ -101,7 +101,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   }
 
   const handlePositionSelect = (position: number) => {
-    if (isGenerating) return
+    if (isGenerating || !sequence) return
 
     // If playing, just stop
     if (isPlaying) {
@@ -113,9 +113,12 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     setCurrentPosition(position)
     audioService.setPosition(position)
 
-    // Clear any displayed notes
-    displayedNotesRef.current = []
-    onNotesChange([])
+    // Show the notes for this chord
+    const selectedChord = sequence[position]
+    if (selectedChord) {
+      displayedNotesRef.current = selectedChord.midiNotes
+      onNotesChange(selectedChord.midiNotes)
+    }
   }
 
   return (
