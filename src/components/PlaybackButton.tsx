@@ -94,13 +94,8 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     audioService.restart()
     setIsPlaying(false)
     setCurrentPosition(0)
-    
-    // Play the first chord
-    const firstChord = sequence[0]
-    if (firstChord) {
-      displayedNotesRef.current = firstChord.midiNotes
-      onNotesChange(firstChord.midiNotes)
-    }
+    displayedNotesRef.current = []
+    onNotesChange([])
   }, [isGenerating, sequence, onNotesChange]);
 
   const handlePositionSelect = (position: number) => {
