@@ -31,7 +31,7 @@ function App() {
                 Giant Steps Voice Leading
               </h1>
               <p className="text-sm text-gray-600">
-                Experience the first four chords of Coltrane's Giant Steps with optimal voice leading between chord transitions.
+                Optimal voice leading triads for Coltrane's Giant Steps.
               </p>
             </div>
             
