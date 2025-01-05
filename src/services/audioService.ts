@@ -22,6 +22,7 @@ export class AudioService {
   private currentMidiNotes: number[] = []
   private stoppedMidiNotes: number[] = []
   private isFirstPlay = true
+  private wasPositionSelected = false
 
   get shouldStop(): boolean {
     return this._shouldStop;
@@ -157,8 +158,12 @@ export class AudioService {
     if (this.isFirstPlay) {
       this.currentPosition = startPosition;
       this.isFirstPlay = false;
+    } else if (this.wasPositionSelected) {
+      // Start from the selected position
+      this.currentPosition = this.savedPosition;
+      this.wasPositionSelected = false;
     } else {
-      // On resume, advance to next chord unless we're at the end
+      // On normal resume, advance to next chord unless we're at the end
       const nextPosition = this.savedPosition + 1;
       this.currentPosition = nextPosition < triads.length ? nextPosition : this.savedPosition;
     }
@@ -270,6 +275,13 @@ export class AudioService {
 
     const note = this.midiToNote(midiNote)
     instrument.triggerRelease(note)
+  }
+
+  setPosition(position: number): void {
+    this.currentPosition = position;
+    this.savedPosition = position;
+    this.wasPositionSelected = true;
+    this.isFirstPlay = false;
   }
 }
 

@@ -70,7 +70,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
         console.log('Note change during playback:', notes);
         displayedNotesRef.current = notes;
         onNotesChange(notes);
-      }, audioService.getCurrentPosition(), onPositionChange);
+      }, currentPosition, onPositionChange);
       
       setIsPlaying(false);
       if (!audioService.shouldStop) {
@@ -98,10 +98,32 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     onNotesChange([])
   }
 
+  const handlePositionSelect = (position: number) => {
+    if (isGenerating) return
+
+    // If playing, just stop
+    if (isPlaying) {
+      audioService.stopPlayback()
+      setIsPlaying(false)
+    }
+
+    // Update both component and service position
+    setCurrentPosition(position)
+    audioService.setPosition(position)
+
+    // Clear any displayed notes
+    displayedNotesRef.current = []
+    onNotesChange([])
+  }
+
   return (
     <div className="space-y-4">
       {sequence && (
-        <ChordChart sequence={sequence} currentPosition={currentPosition} />
+        <ChordChart 
+          sequence={sequence} 
+          currentPosition={currentPosition}
+          onPositionSelect={handlePositionSelect}
+        />
       )}
       
       <div className="flex gap-3">
