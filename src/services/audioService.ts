@@ -216,11 +216,18 @@ export class AudioService {
   }
 
   restart(): void {
-    this.stopPlayback()
+    this._shouldStop = true
+    const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
+    if (instrument && this.currentPlayingNotes.length > 0) {
+      instrument.triggerRelease(this.currentPlayingNotes)
+      this.currentPlayingNotes = []
+    }
     this.currentPosition = 0
     this.savedPosition = 0
+    this.wasPositionSelected = false
     this.isFirstPlay = true
-    this._shouldStop = false
+    this.currentMidiNotes = []
+    this.stoppedMidiNotes = []
   }
 
   getCurrentPosition(): number {

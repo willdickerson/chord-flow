@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { audioService } from '../services/audioService'
 import { Triad } from '../types'
@@ -45,7 +45,6 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       setError(null)
       
       if (isPlaying) {
-        console.log('Stopping playback');
         audioService.stopPlayback();
         setIsPlaying(false);
         // Keep displaying whatever notes were last shown
@@ -59,19 +58,19 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
         if (!currentSequence) return
       }
       
-      console.log('Starting/resuming playback');
       setIsPlaying(true);
       
-      // Create a position update callback
-      const onPositionChange = (position: number) => {
-        setCurrentPosition(position);
-      };
-
-      await audioService.playTriadSequence(currentSequence, (notes) => {
-        console.log('Note change during playback:', notes);
-        displayedNotesRef.current = notes;
-        onNotesChange(notes);
-      }, currentPosition, onPositionChange);
+      await audioService.playTriadSequence(
+        currentSequence,
+        (notes) => {
+          displayedNotesRef.current = notes;
+          onNotesChange(notes);
+        },
+        currentPosition,
+        (position) => {
+          setCurrentPosition(position);
+        }
+      );
       
       setIsPlaying(false);
       if (!audioService.shouldStop) {
@@ -88,18 +87,21 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     }
   }
 
-  const handleRestart = () => {
-    if (isGenerating) return
+  const handleRestart = useCallback(() => {
+    if (isGenerating || !sequence) return
 
-    // Stop current playback and reset position
+    // Stop any current playback and reset everything
     audioService.restart()
     setIsPlaying(false)
     setCurrentPosition(0)
     
-    // Reset displayed notes
-    displayedNotesRef.current = []
-    onNotesChange([])
-  }
+    // Play the first chord
+    const firstChord = sequence[0]
+    if (firstChord) {
+      displayedNotesRef.current = firstChord.midiNotes
+      onNotesChange(firstChord.midiNotes)
+    }
+  }, [isGenerating, sequence, onNotesChange]);
 
   const handlePositionSelect = (position: number) => {
     if (isGenerating || !sequence) return
@@ -110,7 +112,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       setIsPlaying(false)
     }
 
-    // Update both component and service position
+    // Update position
     setCurrentPosition(position)
     audioService.setPosition(position)
 
