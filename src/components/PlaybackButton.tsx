@@ -3,7 +3,11 @@ import { Play, Pause } from 'lucide-react'
 import { audioService } from '../services/audioService'
 import { Triad } from '../types'
 
-export const PlaybackControls = () => {
+interface PlaybackControlsProps {
+  onNotesChange: (notes: number[]) => void;
+}
+
+export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const [sequence, setSequence] = useState<Triad[] | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -35,16 +39,21 @@ export const PlaybackControls = () => {
       setError(null)
       
       if (isPlaying) {
-        // TODO: Implement pause functionality
-        setIsPlaying(false)
+        console.log('Stopping playback');
+        audioService.stopPlayback();
+        setIsPlaying(false);
+        onNotesChange([]);
       } else {
-        setIsPlaying(true)
-        await audioService.playTriadSequence(sequence)
-        setIsPlaying(false)
+        console.log('Starting/resuming playback');
+        setIsPlaying(true);
+        await audioService.playTriadSequence(sequence, onNotesChange);
+        setIsPlaying(false);
+        onNotesChange([]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       setIsPlaying(false)
+      onNotesChange([])
     }
   }
 

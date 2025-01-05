@@ -15,6 +15,10 @@ export class AudioService {
   }
   private currentInstrument: InstrumentType = 'piano'
   private isInitialized = false
+  private shouldStop = false
+  private currentPlayingNotes: string[] = []
+  private currentPosition = 0
+  private savedPosition = 0
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return
@@ -97,23 +101,86 @@ export class AudioService {
     return `${noteNames[noteIndex]}${octave}`
   }
 
-  async playTriad(midiNotes: number[], duration: number): Promise<void> {
+  async playTriad(midiNotes: number[], duration: number, onNotesChange?: (notes: number[]) => void): Promise<void> {
     const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
-    const notes = midiNotes.map(midi => this.midiToNote(midi))
+    if (!instrument) throw new Error('No instrument loaded')
+
+    const notes = midiNotes.map(this.midiToNote)
+    this.currentPlayingNotes = notes
+    instrument.triggerAttack(notes)
+    onNotesChange?.(midiNotes)
     
-    instrument?.triggerAttackRelease(notes, duration)
-    await Tone.Time(duration).toSeconds()
+    try {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(resolve, duration)
+        const checkInterval = setInterval(() => {
+          if (this.shouldStop) {
+            clearTimeout(timeout)
+            clearInterval(checkInterval)
+            reject(new Error('Playback stopped'))
+          }
+        }, 100)
+      })
+      
+      instrument.triggerRelease(notes)
+      onNotesChange?.([])
+    } catch (err) {
+      if (err instanceof Error && err.message === 'Playback stopped') {
+        instrument.triggerRelease(notes)
+        onNotesChange?.([])
+      } else {
+        throw err
+      }
+    }
   }
 
-  async playTriadSequence(triads: Triad[]): Promise<void> {
-    const duration = 0.8  // Duration in seconds for each chord
-    const gap = 200      // 200ms gap between chords
+  async playTriadSequence(triads: Triad[], onNotesChange?: (notes: number[]) => void, startPosition: number = 0): Promise<void> {
+    console.log('Starting sequence from position:', startPosition);
+    this.shouldStop = false
+    // When resuming, start from the next position unless it would be the end
+    const nextPosition = this.savedPosition + 1;
+    this.currentPosition = startPosition || (nextPosition < triads.length ? nextPosition : this.savedPosition);
     
-    for (const triad of triads) {
-      await this.playTriad(triad.midiNotes, duration)
-      // Wait for the chord to finish playing plus the gap
-      await new Promise(resolve => setTimeout(resolve, duration * 1000 + gap))
+    try {
+      for (let i = this.currentPosition; i < triads.length; i++) {
+        if (this.shouldStop) break
+        const triad = triads[i]
+        this.currentPosition = i
+        console.log('Playing position:', i);
+        await this.playTriad(triad.midiNotes, 1000, onNotesChange)
+        if (this.shouldStop) break
+        await new Promise((resolve, reject) => {
+          const timeout = setTimeout(resolve, 200)
+          const checkInterval = setInterval(() => {
+            if (this.shouldStop) {
+              clearTimeout(timeout)
+              clearInterval(checkInterval)
+              reject(new Error('Playback stopped'))
+            }
+          }, 50)
+        })
+      }
+    } catch (err) {
+      if (!(err instanceof Error && err.message === 'Playback stopped')) {
+        throw err
+      }
     }
+  }
+
+  stopPlayback(): void {
+    console.log('Stopping playback at position:', this.currentPosition);
+    this.shouldStop = true
+    this.savedPosition = this.currentPosition
+    const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
+    if (instrument && this.currentPlayingNotes.length > 0) {
+      instrument.triggerRelease(this.currentPlayingNotes)
+      this.currentPlayingNotes = []
+    }
+  }
+
+  getCurrentPosition(): number {
+    console.log('Getting current position:', this.savedPosition);
+    return this.savedPosition;
   }
 
   generateGiantStepsSequence(): Triad[] {
