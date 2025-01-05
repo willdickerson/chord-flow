@@ -145,7 +145,12 @@ export class AudioService {
     }
   }
 
-  async playTriadSequence(triads: Triad[], onNotesChange?: (notes: number[]) => void, startPosition: number = 0): Promise<void> {
+  async playTriadSequence(
+    triads: Triad[],
+    onNotesChange?: (notes: number[]) => void,
+    startPosition: number = 0,
+    onPositionChange?: (position: number) => void
+  ): Promise<void> {
     console.log('Starting sequence from position:', startPosition);
     this._shouldStop = false;
     
@@ -164,6 +169,7 @@ export class AudioService {
         const triad = triads[i]
         this.currentPosition = i
         console.log('Playing position:', i);
+        onPositionChange?.(i)
         await this.playTriad(triad.midiNotes, 1000, onNotesChange)
         if (this._shouldStop) break
         

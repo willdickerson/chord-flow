@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { audioService } from '../services/audioService'
 import { Triad } from '../types'
+import { ChordChart } from './ChordChart'
 
 interface PlaybackControlsProps {
   onNotesChange: (notes: number[]) => void;
@@ -9,6 +10,7 @@ interface PlaybackControlsProps {
 
 export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const [sequence, setSequence] = useState<Triad[] | null>(null)
+  const [currentPosition, setCurrentPosition] = useState<number>(0)
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -24,6 +26,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       await new Promise(resolve => setTimeout(resolve, 0))
       const newSequence = audioService.generateGiantStepsSequence()
       setSequence(newSequence)
+      setCurrentPosition(0)
       displayedNotesRef.current = [];
       return newSequence
     } catch (err) {
@@ -57,15 +60,23 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       
       console.log('Starting/resuming playback');
       setIsPlaying(true);
+      
+      // Create a position update callback
+      const onPositionChange = (position: number) => {
+        setCurrentPosition(position);
+      };
+
       await audioService.playTriadSequence(currentSequence, (notes) => {
         console.log('Note change during playback:', notes);
         displayedNotesRef.current = notes;
         onNotesChange(notes);
-      });
+      }, audioService.getCurrentPosition(), onPositionChange);
+      
       setIsPlaying(false);
       if (!audioService.shouldStop) {
         displayedNotesRef.current = [];
         onNotesChange([]);
+        setCurrentPosition(0);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -80,6 +91,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     // Stop current playback and reset position
     audioService.restart()
     setIsPlaying(false)
+    setCurrentPosition(0)
     
     // Reset displayed notes
     displayedNotesRef.current = []
@@ -88,6 +100,10 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
 
   return (
     <div className="space-y-4">
+      {sequence && (
+        <ChordChart sequence={sequence} currentPosition={currentPosition} />
+      )}
+      
       <div className="flex gap-3">
         <button
           onClick={handlePlayback}
