@@ -201,8 +201,15 @@ export class AudioService {
     const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
     if (instrument && this.currentPlayingNotes.length > 0) {
       instrument.triggerRelease(this.currentPlayingNotes)
-      this.currentPlayingNotes = []
     }
+  }
+
+  restart(): void {
+    this.stopPlayback()
+    this.currentPosition = 0
+    this.savedPosition = 0
+    this.isFirstPlay = true
+    this._shouldStop = false
   }
 
   getCurrentPosition(): number {

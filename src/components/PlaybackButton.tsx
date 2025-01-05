@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Play, Pause } from 'lucide-react'
+import { Play, Pause, RotateCcw } from 'lucide-react'
 import { audioService } from '../services/audioService'
 import { Triad } from '../types'
 
@@ -74,6 +74,18 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     }
   }
 
+  const handleRestart = () => {
+    if (isGenerating) return
+
+    // Stop current playback and reset position
+    audioService.restart()
+    setIsPlaying(false)
+    
+    // Reset displayed notes
+    displayedNotesRef.current = []
+    onNotesChange([])
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex gap-3">
@@ -106,7 +118,23 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
             </>
           )}
         </button>
+
+        {sequence && (
+          <button
+            onClick={handleRestart}
+            disabled={isGenerating}
+            className={`w-12 flex items-center justify-center px-3 py-2 rounded-md
+              font-medium text-sm transition-colors
+              ${isGenerating 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+              }`}
+          >
+            <RotateCcw size={16} />
+          </button>
+        )}
       </div>
+
       {error && (
         <div className="text-red-500 text-sm">{error}</div>
       )}
