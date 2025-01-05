@@ -15,10 +15,16 @@ export class AudioService {
   }
   private currentInstrument: InstrumentType = 'piano'
   private isInitialized = false
-  private shouldStop = false
+  private _shouldStop = false
   private currentPlayingNotes: string[] = []
   private currentPosition = 0
   private savedPosition = 0
+  private currentMidiNotes: number[] = []
+  private stoppedMidiNotes: number[] = []
+
+  get shouldStop(): boolean {
+    return this._shouldStop;
+  }
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return
@@ -106,62 +112,76 @@ export class AudioService {
     if (!instrument) throw new Error('No instrument loaded')
 
     const notes = midiNotes.map(this.midiToNote)
+    console.log('Setting current notes:', midiNotes);
     this.currentPlayingNotes = notes
+    this.currentMidiNotes = midiNotes
     instrument.triggerAttack(notes)
     onNotesChange?.(midiNotes)
     
     try {
       await new Promise((resolve, reject) => {
-        const timeout = setTimeout(resolve, duration)
+        const timeout = setTimeout(() => {
+          if (!this._shouldStop) {
+            resolve('completed');
+          }
+        }, duration)
         const checkInterval = setInterval(() => {
-          if (this.shouldStop) {
+          if (this._shouldStop) {
+            // Capture the current notes at the moment we decide to stop
+            this.stoppedMidiNotes = [...this.currentMidiNotes];
             clearTimeout(timeout)
             clearInterval(checkInterval)
-            reject(new Error('Playback stopped'))
+            resolve('stopped');
           }
         }, 100)
       })
       
+      // Release the audio but don't clear visual notes
       instrument.triggerRelease(notes)
-      onNotesChange?.([])
     } catch (err) {
-      if (err instanceof Error && err.message === 'Playback stopped') {
-        instrument.triggerRelease(notes)
-        onNotesChange?.([])
-      } else {
-        throw err
-      }
+      instrument.triggerRelease(notes)
+      throw err
     }
   }
 
   async playTriadSequence(triads: Triad[], onNotesChange?: (notes: number[]) => void, startPosition: number = 0): Promise<void> {
     console.log('Starting sequence from position:', startPosition);
-    this.shouldStop = false
+    this._shouldStop = false
     // When resuming, start from the next position unless it would be the end
     const nextPosition = this.savedPosition + 1;
     this.currentPosition = startPosition || (nextPosition < triads.length ? nextPosition : this.savedPosition);
     
     try {
       for (let i = this.currentPosition; i < triads.length; i++) {
-        if (this.shouldStop) break
+        if (this._shouldStop) break
         const triad = triads[i]
         this.currentPosition = i
         console.log('Playing position:', i);
         await this.playTriad(triad.midiNotes, 1000, onNotesChange)
-        if (this.shouldStop) break
-        await new Promise((resolve, reject) => {
-          const timeout = setTimeout(resolve, 200)
-          const checkInterval = setInterval(() => {
-            if (this.shouldStop) {
-              clearTimeout(timeout)
-              clearInterval(checkInterval)
-              reject(new Error('Playback stopped'))
-            }
-          }, 50)
-        })
+        if (this._shouldStop) break
+        
+        // Only clear notes and add delay if we're continuing to the next note
+        if (!this._shouldStop && i < triads.length - 1) {
+          onNotesChange?.([])
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(resolve, 200)
+            const checkInterval = setInterval(() => {
+              if (this._shouldStop) {
+                clearTimeout(timeout)
+                clearInterval(checkInterval)
+                resolve('stopped')
+              }
+            }, 50)
+          })
+        }
+      }
+      
+      // Only clear notes if we completed the sequence
+      if (!this._shouldStop) {
+        onNotesChange?.([])
       }
     } catch (err) {
-      if (!(err instanceof Error && err.message === 'Playback stopped')) {
+      if (!(err instanceof Error)) {
         throw err
       }
     }
@@ -169,7 +189,7 @@ export class AudioService {
 
   stopPlayback(): void {
     console.log('Stopping playback at position:', this.currentPosition);
-    this.shouldStop = true
+    this._shouldStop = true
     this.savedPosition = this.currentPosition
     const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
     if (instrument && this.currentPlayingNotes.length > 0) {
@@ -181,6 +201,11 @@ export class AudioService {
   getCurrentPosition(): number {
     console.log('Getting current position:', this.savedPosition);
     return this.savedPosition;
+  }
+
+  getCurrentMidiNotes(): number[] {
+    // Return the stopped notes if we're stopping, otherwise return current notes
+    return this._shouldStop ? this.stoppedMidiNotes : this.currentMidiNotes;
   }
 
   generateGiantStepsSequence(): Triad[] {

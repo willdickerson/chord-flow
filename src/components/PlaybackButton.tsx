@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Play, Pause } from 'lucide-react'
 import { audioService } from '../services/audioService'
 import { Triad } from '../types'
@@ -12,6 +12,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const displayedNotesRef = useRef<number[]>([]);
 
   const handleGenerate = async () => {
     if (isGenerating) return
@@ -25,6 +26,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
       await new Promise(resolve => setTimeout(resolve, 0))
       const newSequence = audioService.generateGiantStepsSequence()
       setSequence(newSequence)
+      displayedNotesRef.current = [];
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -42,18 +44,26 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
         console.log('Stopping playback');
         audioService.stopPlayback();
         setIsPlaying(false);
-        onNotesChange([]);
+        // Keep displaying whatever notes were last shown
+        onNotesChange(displayedNotesRef.current);
       } else {
         console.log('Starting/resuming playback');
         setIsPlaying(true);
-        await audioService.playTriadSequence(sequence, onNotesChange);
+        await audioService.playTriadSequence(sequence, (notes) => {
+          console.log('Note change during playback:', notes);
+          displayedNotesRef.current = notes;
+          onNotesChange(notes);
+        });
         setIsPlaying(false);
-        onNotesChange([]);
+        if (!audioService.shouldStop) {
+          displayedNotesRef.current = [];
+          onNotesChange([]);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       setIsPlaying(false)
-      onNotesChange([])
+      onNotesChange(displayedNotesRef.current)
     }
   }
 
