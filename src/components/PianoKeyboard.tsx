@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Triad } from '../types';
 import { audioService } from '../services/audioService';
 
 interface PianoKeyboardProps {
@@ -11,7 +10,6 @@ const MIDI_START = 24; // C1
 const MIDI_END = 108;  // C8
 
 // Calculate key width based on viewport width
-const TOTAL_WHITE_KEYS = 52; // Number of white keys on a piano
 const KEY_WIDTH = 14;  // Making keys smaller to fit all 88 keys
 const WHITE_KEY_HEIGHT = 100;
 const BLACK_KEY_HEIGHT = 65;

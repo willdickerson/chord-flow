@@ -2,11 +2,6 @@ import { Piano, KeyboardMusic } from 'lucide-react'
 import { InstrumentType, audioService } from '../services/audioService'
 import { useState } from 'react'
 
-const instruments: { value: InstrumentType; label: string }[] = [
-  { value: 'piano', label: 'Piano' },
-  { value: 'synth', label: 'Synth' },
-]
-
 export const InstrumentSelector = () => {
   const [selectedInstrument, setSelectedInstrument] = useState<InstrumentType>('synth')
 

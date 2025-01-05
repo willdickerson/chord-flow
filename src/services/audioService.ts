@@ -121,7 +121,7 @@ export class AudioService {
     onNotesChange?.(midiNotes)
     
     try {
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve) => {
         const timeout = setTimeout(() => {
           if (!this._shouldStop) {
             resolve('completed');
@@ -181,7 +181,7 @@ export class AudioService {
         // Only clear notes and add delay if we're continuing to the next note
         if (!this._shouldStop && i < triads.length - 1) {
           onNotesChange?.([])
-          await new Promise((resolve, reject) => {
+          await new Promise((resolve) => {
             const timeout = setTimeout(resolve, 200)
             const checkInterval = setInterval(() => {
               if (this._shouldStop) {
