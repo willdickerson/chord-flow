@@ -1,4 +1,4 @@
-import React from 'react'
+import { Music } from 'lucide-react'
 import { InstrumentType, audioService } from '../services/audioService'
 
 const instruments: { value: InstrumentType; label: string }[] = [
@@ -6,22 +6,21 @@ const instruments: { value: InstrumentType; label: string }[] = [
   { value: 'synth', label: 'Synth' },
 ]
 
-export const InstrumentSelector: React.FC = () => {
+export const InstrumentSelector = () => {
   const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     audioService.setInstrument(event.target.value as InstrumentType)
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="instrument" className="text-sm font-medium text-gray-700">
-        Instrument:
-      </label>
+    <div className="flex items-center gap-3">
+      <div className="min-w-8 h-8 flex items-center justify-center rounded-md bg-gray-50">
+        <Music className="w-4 h-4 text-gray-500" />
+      </div>
       <select
-        id="instrument"
         onChange={handleChange}
-        className="block w-full rounded-md border-gray-300 shadow-sm 
-                 focus:border-blue-500 focus:ring-blue-500 sm:text-sm
-                 py-2 px-3 bg-white"
+        className="flex-1 w-full rounded-md border border-gray-200 py-2 px-3 text-sm
+                 bg-white text-gray-900 shadow-sm outline-none
+                 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
         defaultValue="piano"
       >
         {instruments.map(({ value, label }) => (
