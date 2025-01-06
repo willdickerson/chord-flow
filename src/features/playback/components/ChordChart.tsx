@@ -42,7 +42,7 @@ export const ChordChart: React.FC<ChordChartProps> = ({
         type: 'play',
         notes: chord.midiNotes,
         duration: 333,
-        stayLit: false,    // Don't stay lit since we're in playback mode
+        stayLit: true,     // Keep visual state lit even during playback
         releaseAudio: true // Always release the audio
       })
     } else {
