@@ -14,7 +14,7 @@ vi.mock('tone', () => ({
     triggerRelease: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
   })),
-  PolySynth: vi.fn().mockImplementation((Synth) => ({
+  PolySynth: vi.fn().mockImplementation(Synth => ({
     triggerAttack: vi.fn(),
     triggerRelease: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
@@ -52,7 +52,11 @@ describe('AudioService', () => {
 
     it('plays a triad', async () => {
       const mockOnNotesChange = vi.fn()
-      const playPromise = audioService.playTriad([60, 64, 67], 1000, mockOnNotesChange)
+      const playPromise = audioService.playTriad(
+        [60, 64, 67],
+        1000,
+        mockOnNotesChange
+      )
 
       // Should call onNotesChange with the midi notes
       expect(mockOnNotesChange).toHaveBeenCalledWith([60, 64, 67])
@@ -67,7 +71,11 @@ describe('AudioService', () => {
 
     it('stops playback', async () => {
       const mockOnNotesChange = vi.fn()
-      const playPromise = audioService.playTriad([60, 64, 67], 1000, mockOnNotesChange)
+      const playPromise = audioService.playTriad(
+        [60, 64, 67],
+        1000,
+        mockOnNotesChange
+      )
 
       // Wait a bit then stop
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -104,7 +112,7 @@ describe('AudioService', () => {
   describe('sequence generation', () => {
     it('generates Giant Steps sequence', () => {
       const sequence = audioService.generateGiantStepsSequence()
-      
+
       expect(sequence).toHaveLength(32) // Giant Steps has 32 chords (2 bars each)
       expect(sequence[0]).toHaveProperty('chordName')
       expect(sequence[0]).toHaveProperty('midiNotes')
@@ -159,7 +167,9 @@ describe('AudioService', () => {
 
       // Should start from the specified position
       expect(mockOnPositionChange).toHaveBeenCalledWith(startPosition)
-      expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[startPosition].midiNotes)
+      expect(mockOnNotesChange).toHaveBeenCalledWith(
+        sequence[startPosition].midiNotes
+      )
 
       // Stop playback to resolve the promise
       audioService.stopPlayback()

@@ -173,6 +173,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
           <button
             onClick={handleRestart}
             disabled={isGenerating}
+            aria-label="Restart"
             className={`w-12 flex items-center justify-center px-3 py-2 rounded-md
               font-medium text-sm transition-colors
               ${
