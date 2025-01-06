@@ -29,6 +29,7 @@ export class AudioService {
   private wasPositionSelected = false
   private volume = 0
   private chordDuration = 1000
+  private isLooping = false
 
   setVolume(value: number): void {
     this.volume = value
@@ -38,6 +39,10 @@ export class AudioService {
         instrument.volume.value = Tone.gainToDb(normalizedVolume)
       }
     })
+  }
+
+  setLooping(shouldLoop: boolean): void {
+    this.isLooping = shouldLoop
   }
 
   setChordDuration(duration: number): void {
@@ -274,6 +279,14 @@ export class AudioService {
       // Only clear notes if we completed the sequence
       if (!this._shouldStop) {
         onNotesChange?.([])
+        // If looping, start over from the beginning
+        if (this.isLooping) {
+          this.currentPosition = 0
+          this.isFirstPlay = true  // Reset first play flag
+          this.wasPositionSelected = false  // Reset position selection
+          this.savedPosition = 0  // Reset saved position
+          await this.playTriadSequence(triads, onNotesChange, 0, onPositionChange)
+        }
       }
     } catch (err) {
       if (!(err instanceof Error)) {

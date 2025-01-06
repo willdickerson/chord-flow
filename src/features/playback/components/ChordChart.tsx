@@ -1,7 +1,5 @@
 import React from 'react'
 import { Triad } from '../../../types'
-import { audioService } from '../../../services/audioService'
-import * as Tone from 'tone'
 
 interface ChordChartProps {
   sequence: Triad[] | null

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock } from 'lucide-react'
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat } from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
 import { ChordChart } from './ChordChart'
 import { audioService } from '../../../services/audioService'
@@ -29,6 +29,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [previousVolume, setPreviousVolume] = useState(100)
   const [isMuted, setIsMuted] = useState(false)
   const [chordDuration, setChordDuration] = useState(1000)
+  const [isLooping, setIsLooping] = useState(false)
+
+  const handleLoopToggle = () => {
+    const newLoopState = !isLooping
+    setIsLooping(newLoopState)
+    audioService.setLooping(newLoopState)
+  }
 
   const handleNotesChange = async (
     notes: number[] | { 
@@ -192,6 +199,16 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             }`}
         >
           <RotateCcw className="w-4 h-4" />
+        </button>
+
+        <button
+          onClick={handleLoopToggle}
+          aria-label={isLooping ? "Disable Loop" : "Enable Loop"}
+          className={`min-w-12 h-12 flex items-center justify-center
+            transition-colors bg-transparent p-0 border-0
+            ${isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
+        >
+          <Repeat className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-6">
