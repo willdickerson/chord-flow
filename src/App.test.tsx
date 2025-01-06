@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import App from './App'
 
 // Mock child components
 const mockPianoKeyboard = vi.fn()
 vi.mock('./features/keyboard/components/PianoKeyboard', () => ({
-  PianoKeyboard: (props: any) => {
+  PianoKeyboard: (props: unknown) => {
     mockPianoKeyboard(props)
     return <div data-testid="piano-keyboard">Mock Piano</div>
   },

@@ -14,6 +14,7 @@ vi.mock('tone', () => ({
     triggerRelease: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
   })),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   PolySynth: vi.fn().mockImplementation(Synth => ({
     triggerAttack: vi.fn(),
     triggerRelease: vi.fn(),
