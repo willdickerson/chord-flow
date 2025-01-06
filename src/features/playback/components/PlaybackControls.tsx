@@ -137,14 +137,14 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           onClick={handlePlayback}
           disabled={isGenerating}
           aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
-          className={`min-w-12 h-12 flex items-center justify-center rounded-md
-            transition-colors
+          className={`min-w-12 h-12 flex items-center justify-center
+            transition-colors bg-transparent p-0 border-0
             ${
               isGenerating
-                ? 'bg-gray-100 text-gray-400'
+                ? 'text-gray-400'
                 : isPlaying
-                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'text-purple-700 hover:text-purple-800'
+                  : 'text-gray-600 hover:text-gray-700'
             }`}
         >
           {isGenerating ? (
@@ -173,12 +173,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           onClick={handleRestart}
           disabled={isGenerating || !sequence}
           aria-label="Restart"
-          className={`min-w-12 h-12 flex items-center justify-center rounded-md
-            transition-colors
+          className={`min-w-12 h-12 flex items-center justify-center
+            transition-colors bg-transparent p-0 border-0
             ${
               isGenerating || !sequence
-                ? 'bg-gray-100 text-gray-400'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-purple-100 active:text-purple-700'
+                ? 'text-gray-400'
+                : 'text-gray-600 hover:text-gray-700 active:text-purple-700'
             }`}
         >
           <RotateCcw className="w-4 h-4" />
