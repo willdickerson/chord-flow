@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { PlaybackControls } from '../PlaybackControls'
 import { usePlaybackState } from '../../hooks/usePlaybackState'
 
@@ -33,8 +34,8 @@ describe('PlaybackControls', () => {
 
     render(<PlaybackControls onNotesChange={mockOnNotesChange} />)
 
-    expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /restart/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Restart' })).toBeDisabled()
   })
 
   it('shows loading state while generating', () => {
@@ -51,15 +52,16 @@ describe('PlaybackControls', () => {
 
     render(<PlaybackControls onNotesChange={mockOnNotesChange} />)
 
-    const playButton = screen.getByRole('button', { name: /play/i })
-    expect(playButton).toBeDisabled()
-    expect(playButton).toHaveClass('bg-gray-100')
+    const loadingButton = screen.getByRole('button', { name: 'Loading' })
+    expect(loadingButton).toBeDisabled()
+    expect(loadingButton).toHaveClass('bg-gray-100')
   })
 
-  it('shows pause button when playing', () => {
+  it('shows pause button when playing', async () => {
+    const user = userEvent.setup()
     const mockHandlePlayback = vi.fn()
     vi.mocked(usePlaybackState).mockReturnValue({
-      sequence: [{ chordName: 'C', notes: [60, 64, 67] }],
+      sequence: [{ chordName: 'C', midiNotes: [60, 64, 67] }],
       currentPosition: 0,
       isGenerating: false,
       isPlaying: true,
@@ -71,18 +73,19 @@ describe('PlaybackControls', () => {
 
     render(<PlaybackControls onNotesChange={mockOnNotesChange} />)
 
-    const pauseButton = screen.getByRole('button', { name: /pause/i })
+    const pauseButton = screen.getByRole('button', { name: 'Pause' })
     expect(pauseButton).toBeInTheDocument()
     expect(pauseButton).toHaveClass('bg-purple-100')
 
-    fireEvent.click(pauseButton)
+    await user.click(pauseButton)
     expect(mockHandlePlayback).toHaveBeenCalled()
   })
 
-  it('enables restart button when sequence exists', () => {
+  it('enables restart button when sequence exists', async () => {
+    const user = userEvent.setup()
     const mockHandleRestart = vi.fn()
     vi.mocked(usePlaybackState).mockReturnValue({
-      sequence: [{ chordName: 'C', notes: [60, 64, 67] }],
+      sequence: [{ chordName: 'C', midiNotes: [60, 64, 67] }],
       currentPosition: 0,
       isGenerating: false,
       isPlaying: false,
@@ -94,10 +97,10 @@ describe('PlaybackControls', () => {
 
     render(<PlaybackControls onNotesChange={mockOnNotesChange} />)
 
-    const restartButton = screen.getByRole('button', { name: /restart/i })
+    const restartButton = screen.getByRole('button', { name: 'Restart' })
     expect(restartButton).toBeEnabled()
 
-    fireEvent.click(restartButton)
+    await user.click(restartButton)
     expect(mockHandleRestart).toHaveBeenCalled()
   })
 

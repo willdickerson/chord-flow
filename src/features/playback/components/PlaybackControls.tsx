@@ -32,6 +32,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         <button
           onClick={handlePlayback}
           disabled={isGenerating}
+          aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
           className={`min-w-12 h-12 flex items-center justify-center rounded-md
             transition-colors
             ${
@@ -67,6 +68,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         <button
           onClick={handleRestart}
           disabled={isGenerating || !sequence}
+          aria-label="Restart"
           className={`min-w-12 h-12 flex items-center justify-center rounded-md
             transition-colors
             ${
