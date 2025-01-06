@@ -111,16 +111,19 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     if (isMuted) {
       setVolume(previousVolume)
       setIsMuted(false)
+      audioService.setVolume(previousVolume)
     } else {
       setPreviousVolume(volume)
       setVolume(0)
       setIsMuted(true)
+      audioService.setVolume(0)
     }
   }
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseInt(e.target.value)
     setVolume(newVolume)
+    audioService.setVolume(newVolume)
     if (newVolume > 0) {
       setIsMuted(false)
     } else {

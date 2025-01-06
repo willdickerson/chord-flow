@@ -27,6 +27,17 @@ export class AudioService {
   private stoppedMidiNotes: number[] = []
   private isFirstPlay = true
   private wasPositionSelected = false
+  private volume = 0
+
+  setVolume(value: number): void {
+    this.volume = value
+    const normalizedVolume = value / 100 // Convert 0-100 to 0-1
+    Object.values(this.instruments).forEach(instrument => {
+      if (instrument) {
+        instrument.volume.value = Tone.gainToDb(normalizedVolume)
+      }
+    })
+  }
 
   get shouldStop(): boolean {
     return this._shouldStop
