@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat } from 'lucide-react'
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat, ArrowUpWideNarrow } from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
 import { ChordChart } from './ChordChart'
 import { audioService } from '../../../services/audioService'
@@ -30,6 +30,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [isMuted, setIsMuted] = useState(false)
   const [chordDuration, setChordDuration] = useState(670)
   const [isLooping, setIsLooping] = useState(false)
+  const [isArpeggiating, setIsArpeggiating] = useState(false)
 
   useEffect(() => {
     // Set initial volume and chord duration
@@ -41,6 +42,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     const newLoopState = !isLooping
     setIsLooping(newLoopState)
     audioService.setLooping(newLoopState)
+  }
+
+  const handleArpeggiateToggle = () => {
+    const newArpState = !isArpeggiating
+    setIsArpeggiating(newArpState)
+    audioService.setArpeggiating(newArpState)
   }
 
   const handleNotesChange = async (
@@ -217,7 +224,17 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           <Repeat className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-6">
+        <button
+          onClick={handleArpeggiateToggle}
+          aria-label={isArpeggiating ? "Disable Arpeggiator" : "Enable Arpeggiator"}
+          className={`min-w-11 h-11 flex items-center justify-center
+            transition-colors bg-transparent p-0 border-0
+            ${isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
+        >
+          <ArrowUpWideNarrow className="w-4 h-4" />
+        </button>
+
+        <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
             <button 
               onClick={handleVolumeToggle}
@@ -232,7 +249,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               max="50"
               value={volume}
               onChange={handleVolumeChange}
-              className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
+              className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
               aria-label="Volume"
             />
           </div>
@@ -246,7 +263,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               step="100"
               value={chordDuration}
               onChange={handleDurationChange}
-              className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
+              className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
               aria-label="Chord Duration"
             />
           </div>

@@ -30,6 +30,7 @@ export class AudioService {
   private volume = 25
   private chordDuration = 670
   private isLooping = false
+  private isArpeggiating = false
 
   setVolume(value: number): void {
     this.volume = value
@@ -216,39 +217,79 @@ export class AudioService {
     duration: number,
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
-    const instrument = this.getCurrentInstrument()
-    if (!instrument) throw new Error('No instrument loaded')
+    if (midiNotes.length === 0) return
 
-    const notes = midiNotes.map(this.midiToNote)
-    console.log('Setting current notes:', midiNotes)
+    const instrument = this.getCurrentInstrument()
+    if (!instrument) {
+      throw new Error('No instrument loaded')
+    }
+
+    // Convert MIDI notes to note names
+    const notes = midiNotes.map(midi => this.midiToNote(midi))
     this.currentPlayingNotes = notes
     this.currentMidiNotes = midiNotes
-    instrument.triggerAttack(notes)
-    onNotesChange?.(midiNotes)
 
-    try {
-      await new Promise(resolve => {
-        const timeout = setTimeout(() => {
-          if (!this._shouldStop) {
-            resolve('completed')
-          }
-        }, duration)
-        const checkInterval = setInterval(() => {
-          if (this._shouldStop) {
-            // Capture the current notes at the moment we decide to stop
-            this.stoppedMidiNotes = [...this.currentMidiNotes]
-            clearTimeout(timeout)
-            clearInterval(checkInterval)
-            resolve('stopped')
-          }
-        }, 100)
-      })
+    if (this.isArpeggiating) {
+      // Play notes one at a time
+      const noteDelay = Math.floor(duration / midiNotes.length)
+      
+      for (let i = 0; i < midiNotes.length; i++) {
+        if (this._shouldStop) break
+        
+        const note = notes[i]
+        instrument.triggerAttack(note)
+        onNotesChange?.([midiNotes[i]])  // Update visual state for single note
 
-      // Release the audio but don't clear visual notes
-      instrument.triggerRelease(notes)
-    } catch (err) {
-      instrument.triggerRelease(notes)
-      throw err
+        await new Promise(resolve => {
+          const timeout = setTimeout(() => {
+            if (!this._shouldStop) {
+              resolve('completed')
+            }
+          }, noteDelay)
+          const checkInterval = setInterval(() => {
+            if (this._shouldStop) {
+              clearTimeout(timeout)
+              clearInterval(checkInterval)
+              resolve('stopped')
+            }
+          }, 50)
+        })
+
+        instrument.triggerRelease(note)
+        if (i < midiNotes.length - 1) {
+          onNotesChange?.([])  // Clear visual state between notes
+          await new Promise(resolve => setTimeout(resolve, 10))  // Tiny gap between notes
+        }
+      }
+    } else {
+      // Play all notes together
+      instrument.triggerAttack(notes)
+      onNotesChange?.(midiNotes)
+
+      try {
+        await new Promise(resolve => {
+          const timeout = setTimeout(() => {
+            if (!this._shouldStop) {
+              resolve('completed')
+            }
+          }, duration)
+          const checkInterval = setInterval(() => {
+            if (this._shouldStop) {
+              // Capture the current notes at the moment we decide to stop
+              this.stoppedMidiNotes = [...this.currentMidiNotes]
+              clearTimeout(timeout)
+              clearInterval(checkInterval)
+              resolve('stopped')
+            }
+          }, 100)
+        })
+
+        // Release the audio but don't clear visual notes
+        instrument.triggerRelease(notes)
+      } catch (err) {
+        instrument.triggerRelease(notes)
+        throw err
+      }
     }
   }
 
@@ -424,6 +465,57 @@ export class AudioService {
   setPosition(position: number): void {
     this.currentPosition = position
     this.savedPosition = position
+    this.wasPositionSelected = true
+    this.isFirstPlay = false
+  }
+
+  setArpeggiating(shouldArpeggiate: boolean): void {
+    this.isArpeggiating = shouldArpeggiate
+  }
+
+  getInitialArpeggiating(): boolean {
+    return this.isArpeggiating
+  }
+
+  getMidiNotesForChord(chordName: string): number[] {
+    const { root, quality } = this.parseChord(chordName)
+    const rootNote = this.noteToMidi(root)
+    if (rootNote === null) return []
+
+    const intervals = this.getTriadIntervals(quality)
+    return intervals.map(interval => rootNote + interval)
+  }
+
+  parseChord(chordName: string): { root: string; quality: string } {
+    const root = chordName.slice(0, 1)
+    const quality = chordName.slice(1)
+    return { root, quality }
+  }
+
+  getTriadIntervals(quality: string): number[] {
+    switch (quality) {
+      case 'maj':
+        return [0, 4, 7]  // Major triad: root, major third, perfect fifth
+      case 'min':
+        return [0, 3, 7]  // Minor triad: root, minor third, perfect fifth
+      case 'dim':
+        return [0, 3, 6]  // Diminished triad: root, minor third, diminished fifth
+      case 'aug':
+        return [0, 4, 8]  // Augmented triad: root, major third, augmented fifth
+      default:
+        return [0, 4, 7]  // Default to major
+    }
+  }
+
+  noteToMidi(note: string): number | null {
+    const baseNotes: { [key: string]: number } = {
+      'C': 60, 'D': 62, 'E': 64, 'F': 65, 'G': 67, 'A': 69, 'B': 71
+    }
+    return baseNotes[note] ?? null
+  }
+
+  setCurrentPosition(position: number): void {
+    this.currentPosition = position
     this.wasPositionSelected = true
     this.isFirstPlay = false
   }
