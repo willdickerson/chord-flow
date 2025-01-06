@@ -1,10 +1,10 @@
-import { InstrumentSelector } from './components/InstrumentSelector'
-import { PlaybackControls } from './components/PlaybackButton'
-import { PianoKeyboard } from './components/PianoKeyboard'
-import { useState } from 'react'
+import { useState } from 'react';
+import { PianoKeyboard } from './features/keyboard/components/PianoKeyboard';
+import { PlaybackControls } from './features/playback/components/PlaybackControls';
+import { InstrumentSelector } from './features/instruments/components/InstrumentSelector';
 
 function App() {
-  const [activeNotes, setActiveNotes] = useState<number[]>([])
+  const [activeNotes, setActiveNotes] = useState<number[]>([]);
 
   return (
     <div className="min-h-screen bg-white w-full">
@@ -43,7 +43,7 @@ function App() {
         </main>
       </div>
     </div>
-  )
+  );
 }
 
 export default App
