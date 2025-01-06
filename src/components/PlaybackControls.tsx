@@ -17,6 +17,13 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const displayedNotesRef = useRef<number[]>([])
   const initialChordNames = audioService.getInitialChordNames()
 
+  console.log('PlaybackControls render:', {
+    hasSequence: !!sequence,
+    currentPosition,
+    isGenerating,
+    isPlaying
+  })
+
   const generateSequence = async () => {
     try {
       setIsGenerating(true)
@@ -98,10 +105,11 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     onNotesChange([])
   }, [isGenerating, sequence, onNotesChange])
 
-  const handlePositionSelect = (position: number) => {
+  const handlePositionSelect = useCallback((position: number) => {
+    console.log('Position selected:', position)
     if (isGenerating || !sequence) return
 
-    // If playing, just stop
+    // If playing, stop playback first
     if (isPlaying) {
       audioService.stopPlayback()
       setIsPlaying(false)
@@ -110,84 +118,57 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     // Update position
     setCurrentPosition(position)
     audioService.setPosition(position)
-
-    // Show the notes for this chord
-    const selectedChord = sequence[position]
-    if (selectedChord) {
-      displayedNotesRef.current = selectedChord.midiNotes
-      onNotesChange(selectedChord.midiNotes)
-    }
-  }
+  }, [isGenerating, isPlaying, sequence])
 
   return (
     <div className="space-y-4">
-      <ChordChart
-        sequence={sequence}
-        currentPosition={currentPosition}
-        onPositionSelect={handlePositionSelect}
-        isEnabled={!!sequence}
-        initialChordNames={initialChordNames}
-      />
+      {error && <div className="text-red-500 text-sm">{error}</div>}
 
       <div className="flex gap-3">
         <button
           onClick={handlePlayback}
           disabled={isGenerating}
-          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md
-            font-medium text-sm transition-colors
+          aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
+          className={`
+            flex items-center justify-center w-10 h-10 rounded-full
+            transition-colors
             ${
               isGenerating
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-            }`}
+            }
+          `}
         >
-          {isGenerating ? (
-            <>
-              <div className="flex gap-1">
-                <div
-                  className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '0ms' }}
-                ></div>
-                <div
-                  className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '150ms' }}
-                ></div>
-                <div
-                  className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                  style={{ animationDelay: '300ms' }}
-                ></div>
-              </div>
-              <span>Generating</span>
-            </>
-          ) : (
-            <>
-              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-              <span>
-                {isPlaying ? 'Pause' : sequence ? 'Play' : 'Generate & Play'}
-              </span>
-            </>
-          )}
+          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
         </button>
 
-        {sequence && (
-          <button
-            onClick={handleRestart}
-            disabled={isGenerating}
-            aria-label="Restart"
-            className={`w-12 flex items-center justify-center px-3 py-2 rounded-md
-              font-medium text-sm transition-colors
-              ${
-                isGenerating
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-              }`}
-          >
-            <RotateCcw size={16} />
-          </button>
-        )}
+        <button
+          onClick={handleRestart}
+          disabled={isGenerating || !sequence}
+          aria-label="Restart"
+          className={`
+            flex items-center justify-center w-10 h-10 rounded-full
+            transition-colors
+            ${
+              isGenerating || !sequence
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+            }
+          `}
+        >
+          <RotateCcw size={20} />
+        </button>
       </div>
 
-      {error && <div className="text-red-500 text-sm">{error}</div>}
+      <ChordChart
+        sequence={sequence}
+        currentPosition={currentPosition}
+        onPositionSelect={handlePositionSelect}
+        isEnabled={!isGenerating}
+        initialChordNames={initialChordNames}
+        isPlaying={isPlaying}
+        onNotesChange={onNotesChange}
+      />
     </div>
   )
 }

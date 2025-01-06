@@ -33,12 +33,18 @@ export class AudioService {
   }
 
   async initialize(): Promise<void> {
-    if (this.isInitialized) return
+    if (this.isInitialized) {
+      console.log('Audio service already initialized')
+      return
+    }
 
+    console.log('Initializing audio service...')
     // Initialize Tone.js
     await Tone.start()
+    console.log('Tone.js started')
 
     // Create piano sampler
+    console.log('Creating instruments...')
     this.instruments.piano = new Tone.Sampler({
       urls: {
         A0: 'A0.mp3',
@@ -160,13 +166,21 @@ export class AudioService {
     return `${noteNames[noteIndex]}${octave}`
   }
 
+  getCurrentInstrument(): Tone.Sampler | Tone.PolySynth | null {
+    const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
+    console.log('Getting current instrument:', {
+      type: this.currentInstrument,
+      instrument: instrument ? 'loaded' : 'not loaded'
+    })
+    return instrument
+  }
+
   async playTriad(
     midiNotes: number[],
     duration: number,
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
-    const instrument =
-      this.instruments[this.currentInstrument] || this.instruments.synth
+    const instrument = this.getCurrentInstrument()
     if (!instrument) throw new Error('No instrument loaded')
 
     const notes = midiNotes.map(this.midiToNote)
@@ -266,8 +280,7 @@ export class AudioService {
     console.log('Stopping playback at position:', this.currentPosition)
     this._shouldStop = true
     this.savedPosition = this.currentPosition
-    const instrument =
-      this.instruments[this.currentInstrument] || this.instruments.synth
+    const instrument = this.getCurrentInstrument()
     if (instrument && this.currentPlayingNotes.length > 0) {
       instrument.triggerRelease(this.currentPlayingNotes)
     }
@@ -275,8 +288,7 @@ export class AudioService {
 
   restart(): void {
     this._shouldStop = true
-    const instrument =
-      this.instruments[this.currentInstrument] || this.instruments.synth
+    const instrument = this.getCurrentInstrument()
     if (instrument && this.currentPlayingNotes.length > 0) {
       instrument.triggerRelease(this.currentPlayingNotes)
       this.currentPlayingNotes = []
@@ -360,8 +372,7 @@ export class AudioService {
   }
 
   playNote(midiNote: number): void {
-    const instrument =
-      this.instruments[this.currentInstrument] || this.instruments.synth
+    const instrument = this.getCurrentInstrument()
     if (!instrument) throw new Error('No instrument loaded')
 
     const note = this.midiToNote(midiNote)
@@ -369,8 +380,7 @@ export class AudioService {
   }
 
   stopNote(midiNote: number): void {
-    const instrument =
-      this.instruments[this.currentInstrument] || this.instruments.synth
+    const instrument = this.getCurrentInstrument()
     if (!instrument) throw new Error('No instrument loaded')
 
     const note = this.midiToNote(midiNote)

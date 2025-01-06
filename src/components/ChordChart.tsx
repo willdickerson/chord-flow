@@ -1,5 +1,7 @@
 import React from 'react'
 import { Triad } from '../types'
+import { audioService } from '../services/audioService'
+import * as Tone from 'tone'
 
 interface ChordChartProps {
   sequence: Triad[] | null
@@ -7,6 +9,8 @@ interface ChordChartProps {
   onPositionSelect: (position: number) => void
   isEnabled: boolean
   initialChordNames?: string[]
+  isPlaying: boolean
+  onNotesChange: (notes: number[]) => void
 }
 
 export const ChordChart: React.FC<ChordChartProps> = ({
@@ -15,7 +19,83 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   onPositionSelect,
   isEnabled,
   initialChordNames = [],
+  isPlaying,
+  onNotesChange,
 }) => {
+  console.log('ChordChart render:', { 
+    hasSequence: !!sequence, 
+    currentPosition, 
+    isEnabled, 
+    isPlaying 
+  })
+
+  const handleChordClick = async (index: number) => {
+    console.log('Chord clicked:', index)
+    onPositionSelect(index)
+    
+    // Only play the chord if we're not currently playing and we have a sequence
+    if (!isPlaying && sequence) {
+      console.log('Attempting to play chord at index:', index)
+      try {
+        // Ensure audio context is started (required by browsers)
+        console.log('Starting Tone.js...')
+        await Tone.start()
+        console.log('Initializing audio service...')
+        await audioService.initialize()
+        
+        const chord = sequence[index]
+        console.log('Chord to play:', chord)
+        
+        // Update the visual keyboard state
+        onNotesChange(chord.midiNotes)
+        console.log('Updated visual keyboard with notes:', chord.midiNotes)
+        
+        // Get the current instrument
+        const instrument = audioService.getCurrentInstrument()
+        console.log('Current instrument:', instrument)
+        
+        if (!instrument) {
+          throw new Error('No instrument loaded')
+        }
+
+        // Convert MIDI notes to note names
+        const notes = chord.midiNotes.map(midi => {
+          const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+          const octave = Math.floor(midi / 12) - 1
+          const noteIndex = midi % 12
+          return `${noteNames[noteIndex]}${octave}`
+        })
+        console.log('Converted MIDI notes to:', notes)
+
+        // Play the chord
+        console.log('Triggering attack on notes:', notes)
+        instrument.triggerAttack(notes)
+        
+        // Hold for 1 second then release
+        console.log('Waiting 1 second before release...')
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        console.log('Triggering release on notes:', notes)
+        instrument.triggerRelease(notes)
+        
+        // Clear the visual keyboard state after the chord is done
+        if (!isPlaying) {
+          console.log('Clearing visual keyboard state')
+          onNotesChange([])
+        }
+      } catch (err) {
+        console.error('Failed to play chord:', err)
+        onNotesChange([])
+      }
+    } else {
+      console.log('Not playing chord because:', isPlaying ? 'playback is active' : 'no sequence available')
+    }
+  }
+
+  // Add a simple click handler to test event binding
+  const testClick = (index: number) => {
+    console.log('Test click on chord:', index)
+  }
+
   // Group chords into rows of 8
   const rows = (
     sequence
@@ -41,7 +121,11 @@ export const ChordChart: React.FC<ChordChartProps> = ({
             isEnabled ? (
               <button
                 key={index}
-                onClick={() => onPositionSelect(index)}
+                onClick={() => {
+                  console.log('Button clicked:', index)
+                  handleChordClick(index)
+                  testClick(index)
+                }}
                 className={`w-[60px] px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-center
                   ${
                     index === currentPosition

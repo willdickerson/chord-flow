@@ -87,6 +87,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         onPositionSelect={handlePositionSelect}
         isEnabled={!isGenerating && sequence !== null}
         initialChordNames={initialChordNames}
+        isPlaying={isPlaying}
+        onNotesChange={onNotesChange}
       />
     </div>
   )
