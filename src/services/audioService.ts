@@ -230,6 +230,11 @@ export class AudioService {
     this.currentMidiNotes = midiNotes
 
     if (this.isArpeggiating) {
+      // Show all notes at the start if manually selected
+      if (this.wasPositionSelected) {
+        onNotesChange?.(midiNotes)
+      }
+
       // Play notes one at a time
       const noteDelay = Math.floor(duration / midiNotes.length)
       
@@ -238,7 +243,11 @@ export class AudioService {
         
         const note = notes[i]
         instrument.triggerAttack(note)
-        onNotesChange?.([midiNotes[i]])  // Update visual state for single note
+
+        // Only update visual state if not manually selected
+        if (!this.wasPositionSelected) {
+          onNotesChange?.([midiNotes[i]])  // Show single note
+        }
 
         await new Promise(resolve => {
           const timeout = setTimeout(() => {
@@ -256,10 +265,17 @@ export class AudioService {
         })
 
         instrument.triggerRelease(note)
-        if (i < midiNotes.length - 1) {
+        
+        // Only clear between notes if not manually selected
+        if (i < midiNotes.length - 1 && !this.wasPositionSelected) {
           onNotesChange?.([])  // Clear visual state between notes
           await new Promise(resolve => setTimeout(resolve, 10))  // Tiny gap between notes
         }
+      }
+
+      // After last note, show all notes if manually selected
+      if (this.wasPositionSelected) {
+        onNotesChange?.(midiNotes)
       }
     } else {
       // Play all notes together
