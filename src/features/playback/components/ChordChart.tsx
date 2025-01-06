@@ -29,62 +29,35 @@ export const ChordChart: React.FC<ChordChartProps> = ({
     isPlaying 
   })
 
-  const handleChordClick = async (index: number) => {
-    console.log('Chord clicked:', index)
-    onPositionSelect(index)
+  const handleChordClick = (index: number) => {
+    console.log('ChordChart handleChordClick:', { index, isPlaying, hasSequence: !!sequence })
+    if (!sequence) return
+
+    const chord = sequence[index]
+    console.log('Chord to play:', chord)
     
-    // Only play the chord if we're not currently playing and we have a sequence
-    if (!isPlaying && sequence) {
-      console.log('Attempting to play chord at index:', index)
-      try {
-        // Ensure audio context is started (required by browsers)
-        console.log('Starting Tone.js...')
-        await Tone.start()
-        console.log('Initializing audio service...')
-        await audioService.initialize()
-        
-        const chord = sequence[index]
-        console.log('Chord to play:', chord)
-        
-        // Update the visual keyboard state
-        onNotesChange(chord.midiNotes)
-        console.log('Updated visual keyboard with notes:', chord.midiNotes)
-        
-        // Get the current instrument
-        const instrument = audioService.getCurrentInstrument()
-        console.log('Current instrument:', instrument)
-        
-        if (!instrument) {
-          throw new Error('No instrument loaded')
-        }
-
-        // Convert MIDI notes to note names
-        const notes = chord.midiNotes.map(midi => {
-          const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-          const octave = Math.floor(midi / 12) - 1
-          const noteIndex = midi % 12
-          return `${noteNames[noteIndex]}${octave}`
-        })
-        console.log('Converted MIDI notes to:', notes)
-
-        // Play the chord
-        console.log('Triggering attack on notes:', notes)
-        instrument.triggerAttack(notes)
-        
-        // Hold for 1/3 second then release
-        console.log('Waiting 333ms before release...')
-        await new Promise(resolve => setTimeout(resolve, 333))
-        console.log('Triggering release on notes:', notes)
-        instrument.triggerRelease(notes)
-        
-        // Keep the visual keyboard state lit up
-        // We no longer clear the notes after playing
-      } catch (err) {
-        console.error('Failed to play chord:', err)
-        onNotesChange([])
-      }
+    if (isPlaying) {
+      console.log('Playing while sequence is active')
+      // If playing, just update position and play the chord without pausing
+      onPositionSelect(index)
+      onNotesChange({
+        type: 'play',
+        notes: chord.midiNotes,
+        duration: 333,
+        stayLit: false,    // Don't stay lit since we're in playback mode
+        releaseAudio: true // Always release the audio
+      })
     } else {
-      console.log('Not playing chord because:', isPlaying ? 'playback is active' : 'no sequence available')
+      console.log('Playing while sequence is paused')
+      // If paused, update position and play the chord
+      onPositionSelect(index)
+      onNotesChange({
+        type: 'play',
+        notes: chord.midiNotes,
+        duration: 333,
+        stayLit: true,     // Keep visual state lit
+        releaseAudio: true // Always release the audio
+      })
     }
   }
 
