@@ -27,8 +27,8 @@ export class AudioService {
   private stoppedMidiNotes: number[] = []
   private isFirstPlay = true
   private wasPositionSelected = false
-  private volume = 0
-  private chordDuration = 1000
+  private volume = 25
+  private chordDuration = 670
   private isLooping = false
 
   setVolume(value: number): void {
@@ -39,6 +39,18 @@ export class AudioService {
         instrument.volume.value = Tone.gainToDb(normalizedVolume)
       }
     })
+  }
+
+  getInitialVolume(): number {
+    return this.volume
+  }
+
+  getInitialChordDuration(): number {
+    return this.chordDuration
+  }
+
+  getInitialLooping(): boolean {
+    return this.isLooping
   }
 
   setLooping(shouldLoop: boolean): void {
@@ -141,6 +153,9 @@ export class AudioService {
       baseUrl:
         'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
     }).toDestination()
+
+    // Set initial volume for all instruments
+    this.setVolume(this.volume)
 
     this.isInitialized = true
   }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat } from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
 import { ChordChart } from './ChordChart'
@@ -25,11 +25,17 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
   const initialChordNames = audioService.getInitialChordNames()
 
-  const [volume, setVolume] = useState(100)
-  const [previousVolume, setPreviousVolume] = useState(100)
+  const [volume, setVolume] = useState(25)
+  const [previousVolume, setPreviousVolume] = useState(25)
   const [isMuted, setIsMuted] = useState(false)
-  const [chordDuration, setChordDuration] = useState(1000)
+  const [chordDuration, setChordDuration] = useState(670)
   const [isLooping, setIsLooping] = useState(false)
+
+  useEffect(() => {
+    // Set initial volume and chord duration
+    audioService.setVolume(15)
+    audioService.setChordDuration(670)
+  }, [])
 
   const handleLoopToggle = () => {
     const newLoopState = !isLooping
@@ -223,7 +229,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             <input
               type="range"
               min="0"
-              max="100"
+              max="50"
               value={volume}
               onChange={handleVolumeChange}
               className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
