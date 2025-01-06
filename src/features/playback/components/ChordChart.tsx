@@ -108,7 +108,7 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   return (
     <div className="space-y-2">
       {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex gap-2">
+        <div key={rowIndex} role="row" className="flex gap-2">
           {row.map(({ chord, index }) =>
             isEnabled ? (
               <button

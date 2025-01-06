@@ -4,6 +4,24 @@ import userEvent from '@testing-library/user-event'
 import { ChordChart } from '../ChordChart'
 import type { Triad } from '../../../../types'
 
+// Mock Tone.js
+vi.mock('tone', () => ({
+  start: vi.fn(),
+  Sampler: vi.fn(),
+  PolySynth: vi.fn(),
+}))
+
+// Mock audioService
+vi.mock('../../../../services/audioService', () => ({
+  audioService: {
+    initialize: vi.fn(),
+    getCurrentInstrument: () => ({
+      triggerAttack: vi.fn(),
+      triggerRelease: vi.fn(),
+    }),
+  },
+}))
+
 describe('ChordChart', () => {
   const mockSequence: Triad[] = [
     { chordName: 'C', midiNotes: [60, 64, 67] },
@@ -13,6 +31,11 @@ describe('ChordChart', () => {
   ]
 
   const mockInitialChordNames = ['C', 'G', 'Am', 'F']
+  const mockOnNotesChange = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
 
   it('renders initial chord names when no sequence', () => {
     render(
@@ -22,6 +45,8 @@ describe('ChordChart', () => {
         onPositionSelect={() => {}}
         isEnabled={false}
         initialChordNames={mockInitialChordNames}
+        isPlaying={false}
+        onNotesChange={mockOnNotesChange}
       />
     )
 
@@ -38,6 +63,8 @@ describe('ChordChart', () => {
         onPositionSelect={() => {}}
         isEnabled={true}
         initialChordNames={mockInitialChordNames}
+        isPlaying={false}
+        onNotesChange={mockOnNotesChange}
       />
     )
 
@@ -46,7 +73,7 @@ describe('ChordChart', () => {
     })
   })
 
-  it('highlights current position and renders others as not current', () => {
+  it('highlights current position', () => {
     const currentPosition = 1
     render(
       <ChordChart
@@ -55,20 +82,20 @@ describe('ChordChart', () => {
         onPositionSelect={() => {}}
         isEnabled={true}
         initialChordNames={mockInitialChordNames}
+        isPlaying={false}
+        onNotesChange={mockOnNotesChange}
       />
     )
 
     // Check current chord is highlighted
-    const currentChordButton = screen.getByRole('button', {
-      name: mockSequence[currentPosition].chordName,
-    })
-    expect(currentChordButton).toHaveAttribute('data-current', 'true')
+    const currentChordButton = screen.getByText(mockSequence[currentPosition].chordName)
+    expect(currentChordButton).toHaveClass('bg-purple-100', 'text-purple-700')
 
     // Check other chords are not highlighted
     mockSequence.forEach(({ chordName }, index) => {
       if (index !== currentPosition) {
-        const button = screen.getByRole('button', { name: chordName })
-        expect(button).toHaveAttribute('data-current', 'false')
+        const button = screen.getByText(chordName)
+        expect(button).toHaveClass('bg-gray-50', 'text-gray-600')
       }
     })
   })
@@ -83,12 +110,12 @@ describe('ChordChart', () => {
         onPositionSelect={mockOnPositionSelect}
         isEnabled={true}
         initialChordNames={mockInitialChordNames}
+        isPlaying={false}
+        onNotesChange={mockOnNotesChange}
       />
     )
 
-    const secondChordButton = screen.getByRole('button', {
-      name: mockSequence[1].chordName,
-    })
+    const secondChordButton = screen.getByText(mockSequence[1].chordName)
     await user.click(secondChordButton)
     expect(mockOnPositionSelect).toHaveBeenCalledWith(1)
   })
@@ -101,6 +128,8 @@ describe('ChordChart', () => {
         onPositionSelect={() => {}}
         isEnabled={false}
         initialChordNames={mockInitialChordNames}
+        isPlaying={false}
+        onNotesChange={mockOnNotesChange}
       />
     )
 
@@ -108,26 +137,29 @@ describe('ChordChart', () => {
     const buttons = screen.queryAllByRole('button')
     expect(buttons).toHaveLength(0)
 
-    // Should find all chords as text in divs
+    // Should find divs with chord names
     mockSequence.forEach(({ chordName }) => {
-      const chord = screen.getByText(chordName)
-      expect(chord.parentElement?.tagName).toBe('DIV')
+      const div = screen.getByText(chordName)
+      expect(div.tagName).toBe('DIV')
     })
   })
 
   it('groups chords into rows of 8', () => {
-    const longSequence: Triad[] = Array.from({ length: 10 }, (_, i) => ({
+    // Create a sequence with 10 chords to test row grouping
+    const testSequence: Triad[] = Array.from({ length: 10 }, (_, i) => ({
       chordName: `Chord${i}`,
       midiNotes: [60 + i],
     }))
 
     render(
       <ChordChart
-        sequence={longSequence}
+        sequence={testSequence}
         currentPosition={0}
         onPositionSelect={() => {}}
         isEnabled={true}
         initialChordNames={[]}
+        isPlaying={false}
+        onNotesChange={mockOnNotesChange}
       />
     )
 
@@ -136,9 +168,18 @@ describe('ChordChart', () => {
     expect(rows).toHaveLength(2)
 
     // First row should have 8 chords
-    expect(rows[0].querySelectorAll('button')).toHaveLength(8)
+    const firstRowChords = rows[0].querySelectorAll('button')
+    expect(firstRowChords).toHaveLength(8)
 
     // Second row should have 2 chords
-    expect(rows[1].querySelectorAll('button')).toHaveLength(2)
+    const secondRowChords = rows[1].querySelectorAll('button')
+    expect(secondRowChords).toHaveLength(2)
+
+    // Verify the chord names are in the correct order
+    testSequence.forEach((chord, index) => {
+      const rowIndex = Math.floor(index / 8)
+      const button = rows[rowIndex].querySelector(`button:nth-child(${(index % 8) + 1})`)
+      expect(button).toHaveTextContent(chord.chordName)
+    })
   })
 })
