@@ -28,6 +28,7 @@ export class AudioService {
   private isFirstPlay = true
   private wasPositionSelected = false
   private volume = 0
+  private chordDuration = 1000
 
   setVolume(value: number): void {
     this.volume = value
@@ -37,6 +38,10 @@ export class AudioService {
         instrument.volume.value = Tone.gainToDb(normalizedVolume)
       }
     })
+  }
+
+  setChordDuration(duration: number): void {
+    this.chordDuration = duration
   }
 
   get shouldStop(): boolean {
@@ -257,22 +262,12 @@ export class AudioService {
         this.currentPosition = i
         console.log('Playing position:', i)
         onPositionChange?.(i)
-        await this.playTriad(triad.midiNotes, 1000, onNotesChange)
+        await this.playTriad(triad.midiNotes, this.chordDuration, onNotesChange)
         if (this._shouldStop) break
 
-        // Only clear notes and add delay if we're continuing to the next note
+        // Only clear notes if we're continuing to the next note
         if (!this._shouldStop && i < triads.length - 1) {
           onNotesChange?.([])
-          await new Promise(resolve => {
-            const timeout = setTimeout(resolve, 200)
-            const checkInterval = setInterval(() => {
-              if (this._shouldStop) {
-                clearTimeout(timeout)
-                clearInterval(checkInterval)
-                resolve('stopped')
-              }
-            }, 50)
-          })
         }
       }
 

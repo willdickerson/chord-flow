@@ -28,6 +28,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [volume, setVolume] = useState(100)
   const [previousVolume, setPreviousVolume] = useState(100)
   const [isMuted, setIsMuted] = useState(false)
+  const [chordDuration, setChordDuration] = useState(1000)
 
   const handleNotesChange = async (
     notes: number[] | { 
@@ -131,6 +132,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     }
   }
 
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDuration = parseInt(e.target.value)
+    setChordDuration(newDuration)
+    audioService.setChordDuration(newDuration)
+  }
+
   return (
     <div className="space-y-4">
       {error && <div className="text-red-500 text-sm">{error}</div>}
@@ -214,7 +221,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               min="100"
               max="2000"
               step="100"
-              defaultValue="1000"
+              value={chordDuration}
+              onChange={handleDurationChange}
               className="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
               aria-label="Chord Duration"
             />
