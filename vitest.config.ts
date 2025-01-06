@@ -18,7 +18,7 @@ export default defineConfig({
         '.eslintrc.js',
         'eslint.config.js',
         'vite.config.ts',
-        'vitest.config.ts'
+        'vitest.config.ts',
       ],
     },
   },

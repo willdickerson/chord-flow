@@ -13,16 +13,21 @@ vi.mock('./features/keyboard/components/PianoKeyboard', () => ({
 
 vi.mock('./features/playback/components/PlaybackControls', () => ({
   PlaybackControls: vi.fn().mockImplementation(({ onNotesChange }) => (
-    <div data-testid="playback-controls" onClick={() => onNotesChange([60, 64, 67])}>
+    <div
+      data-testid="playback-controls"
+      onClick={() => onNotesChange([60, 64, 67])}
+    >
       Mock PlaybackControls
     </div>
   )),
 }))
 
 vi.mock('./features/instruments/components/InstrumentSelector', () => ({
-  InstrumentSelector: vi.fn().mockImplementation(() => (
-    <div data-testid="instrument-selector">Mock InstrumentSelector</div>
-  )),
+  InstrumentSelector: vi
+    .fn()
+    .mockImplementation(() => (
+      <div data-testid="instrument-selector">Mock InstrumentSelector</div>
+    )),
 }))
 
 describe('App', () => {
@@ -39,7 +44,9 @@ describe('App', () => {
     render(<App />)
     expect(screen.getByText('Giant Steps Voice Leading')).toBeInTheDocument()
     expect(
-      screen.getByText("Optimal voice leading triads for Coltrane's Giant Steps.")
+      screen.getByText(
+        "Optimal voice leading triads for Coltrane's Giant Steps."
+      )
     ).toBeInTheDocument()
   })
 
@@ -52,7 +59,7 @@ describe('App', () => {
 
   it('updates activeNotes state when PlaybackControls triggers onNotesChange', async () => {
     render(<App />)
-    
+
     // Initially no active notes
     expect(mockPianoKeyboard).toHaveBeenLastCalledWith(
       expect.objectContaining({ activeNotes: [] })
