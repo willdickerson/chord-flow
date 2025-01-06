@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { PianoKeyboard } from './features/keyboard/components/PianoKeyboard';
-import { PlaybackControls } from './features/playback/components/PlaybackControls';
-import { InstrumentSelector } from './features/instruments/components/InstrumentSelector';
+import { useState } from 'react'
+import { PianoKeyboard } from './features/keyboard/components/PianoKeyboard'
+import { PlaybackControls } from './features/playback/components/PlaybackControls'
+import { InstrumentSelector } from './features/instruments/components/InstrumentSelector'
 
 function App() {
-  const [activeNotes, setActiveNotes] = useState<number[]>([]);
+  const [activeNotes, setActiveNotes] = useState<number[]>([])
 
   return (
     <div className="min-h-screen bg-white w-full">
@@ -21,7 +21,7 @@ function App() {
           <PianoKeyboard activeNotes={activeNotes} />
         </div>
       </div>
-      
+
       {/* Main Content */}
       <div className="container mx-auto flex items-center justify-center p-4">
         <main className="w-full max-w-lg rounded-xl shadow-sm border border-gray-100 p-8">
@@ -34,7 +34,7 @@ function App() {
                 Optimal voice leading triads for Coltrane's Giant Steps.
               </p>
             </div>
-            
+
             <div className="space-y-6">
               <InstrumentSelector />
               <PlaybackControls onNotesChange={setActiveNotes} />
@@ -43,7 +43,7 @@ function App() {
         </main>
       </div>
     </div>
-  );
+  )
 }
 
 export default App

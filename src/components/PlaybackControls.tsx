@@ -5,7 +5,7 @@ import { Triad } from '../types'
 import { ChordChart } from './ChordChart'
 
 interface PlaybackControlsProps {
-  onNotesChange: (notes: number[]) => void;
+  onNotesChange: (notes: number[]) => void
 }
 
 export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
@@ -14,21 +14,21 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const displayedNotesRef = useRef<number[]>([]);
-  const initialChordNames = audioService.getInitialChordNames();
+  const displayedNotesRef = useRef<number[]>([])
+  const initialChordNames = audioService.getInitialChordNames()
 
   const generateSequence = async () => {
     try {
       setIsGenerating(true)
       setError(null)
       await audioService.initialize()
-      
+
       // Generate path in next tick to allow loading state to render
       await new Promise(resolve => setTimeout(resolve, 0))
       const newSequence = audioService.generateGiantStepsSequence()
       setSequence(newSequence)
       setCurrentPosition(0)
-      displayedNotesRef.current = [];
+      displayedNotesRef.current = []
       return newSequence
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -40,15 +40,15 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
 
   const handlePlayback = async () => {
     if (isGenerating) return
-    
+
     try {
       setError(null)
-      
+
       if (isPlaying) {
-        audioService.stopPlayback();
-        setIsPlaying(false);
+        audioService.stopPlayback()
+        setIsPlaying(false)
         // Keep displaying whatever notes were last shown
-        onNotesChange(displayedNotesRef.current);
+        onNotesChange(displayedNotesRef.current)
         return
       }
 
@@ -57,28 +57,28 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
         currentSequence = await generateSequence()
         if (!currentSequence) return
       }
-      
-      setIsPlaying(true);
-      
+
+      setIsPlaying(true)
+
       await audioService.playTriadSequence(
         currentSequence,
-        (notes) => {
-          displayedNotesRef.current = notes;
-          onNotesChange(notes);
+        notes => {
+          displayedNotesRef.current = notes
+          onNotesChange(notes)
         },
         currentPosition,
-        (position) => {
-          setCurrentPosition(position);
+        position => {
+          setCurrentPosition(position)
         }
-      );
-      
-      setIsPlaying(false);
+      )
+
+      setIsPlaying(false)
       if (!audioService.shouldStop) {
         // Sequence completed naturally - reset everything to start
-        displayedNotesRef.current = [];
-        onNotesChange([]);
-        setCurrentPosition(0);
-        audioService.setPosition(0);
+        displayedNotesRef.current = []
+        onNotesChange([])
+        setCurrentPosition(0)
+        audioService.setPosition(0)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -96,7 +96,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
     setCurrentPosition(0)
     displayedNotesRef.current = []
     onNotesChange([])
-  }, [isGenerating, sequence, onNotesChange]);
+  }, [isGenerating, sequence, onNotesChange])
 
   const handlePositionSelect = (position: number) => {
     if (isGenerating || !sequence) return
@@ -121,41 +121,50 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
 
   return (
     <div className="space-y-4">
-      <ChordChart 
-        sequence={sequence} 
+      <ChordChart
+        sequence={sequence}
         currentPosition={currentPosition}
         onPositionSelect={handlePositionSelect}
         isEnabled={!!sequence}
         initialChordNames={initialChordNames}
       />
-      
+
       <div className="flex gap-3">
         <button
           onClick={handlePlayback}
           disabled={isGenerating}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md
             font-medium text-sm transition-colors
-            ${isGenerating 
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+            ${
+              isGenerating
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
             }`}
         >
           {isGenerating ? (
             <>
               <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" 
-                     style={{ animationDelay: '0ms' }}></div>
-                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" 
-                     style={{ animationDelay: '150ms' }}></div>
-                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" 
-                     style={{ animationDelay: '300ms' }}></div>
+                <div
+                  className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                ></div>
+                <div
+                  className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                ></div>
+                <div
+                  className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                ></div>
               </div>
               <span>Generating</span>
             </>
           ) : (
             <>
               {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-              <span>{isPlaying ? 'Pause' : sequence ? 'Play' : 'Generate & Play'}</span>
+              <span>
+                {isPlaying ? 'Pause' : sequence ? 'Play' : 'Generate & Play'}
+              </span>
             </>
           )}
         </button>
@@ -166,9 +175,10 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
             disabled={isGenerating}
             className={`w-12 flex items-center justify-center px-3 py-2 rounded-md
               font-medium text-sm transition-colors
-              ${isGenerating 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+              ${
+                isGenerating
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
               }`}
           >
             <RotateCcw size={16} />
@@ -176,9 +186,7 @@ export const PlaybackControls = ({ onNotesChange }: PlaybackControlsProps) => {
         )}
       </div>
 
-      {error && (
-        <div className="text-red-500 text-sm">{error}</div>
-      )}
+      {error && <div className="text-red-500 text-sm">{error}</div>}
     </div>
   )
 }

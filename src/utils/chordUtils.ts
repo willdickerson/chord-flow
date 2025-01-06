@@ -1,16 +1,21 @@
-import { CHROMATIC_SCALE, SCALE_INTERVALS, ENHARMONIC_MAP, Inversion } from '../types'
+import {
+  CHROMATIC_SCALE,
+  SCALE_INTERVALS,
+  ENHARMONIC_MAP,
+  Inversion,
+} from '../types'
 
 export function parseChord(chord: string): {
-    originalRoot: string
-    standardizedRoot: string
-    chordType: string
-  } {
-    const match = chord.match(/([A-G][#b]?)(.*)/)!
-    const originalRoot = match[1]
-    const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
-    const chordType = match[2] || 'M' // Default to major if not specified
-    return { originalRoot, standardizedRoot, chordType }
-  }
+  originalRoot: string
+  standardizedRoot: string
+  chordType: string
+} {
+  const match = chord.match(/([A-G][#b]?)(.*)/)!
+  const originalRoot = match[1]
+  const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
+  const chordType = match[2] || 'M' // Default to major if not specified
+  return { originalRoot, standardizedRoot, chordType }
+}
 
 export function generateTriads(
   chord: string,
@@ -86,7 +91,9 @@ export function findAllTriadsInRange(
   notes: string[],
   midiRange: [number, number]
 ): number[][] {
-    const baseMidis = notes.map(note => NOTE_TO_MIDI_BASE[note] ?? NOTE_TO_MIDI_BASE[ENHARMONIC_MAP[note]])
+  const baseMidis = notes.map(
+    note => NOTE_TO_MIDI_BASE[note] ?? NOTE_TO_MIDI_BASE[ENHARMONIC_MAP[note]]
+  )
   const validMidis: number[][] = []
 
   // Generate all possible octave combinations (-2 to +2)

@@ -1,112 +1,115 @@
-import { useState, useRef, useCallback } from 'react';
-import { audioService } from '../../../services/audioService';
-import { Triad } from '../../../types';
+import { useState, useRef, useCallback } from 'react'
+import { audioService } from '../../../services/audioService'
+import { Triad } from '../../../types'
 
 export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
-  const [sequence, setSequence] = useState<Triad[] | null>(null);
-  const [currentPosition, setCurrentPosition] = useState<number>(0);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const displayedNotesRef = useRef<number[]>([]);
+  const [sequence, setSequence] = useState<Triad[] | null>(null)
+  const [currentPosition, setCurrentPosition] = useState<number>(0)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const displayedNotesRef = useRef<number[]>([])
 
   const generateSequence = async () => {
     try {
-      setIsGenerating(true);
-      setError(null);
-      await audioService.initialize();
-      
-      await new Promise(resolve => setTimeout(resolve, 0));
-      const newSequence = audioService.generateGiantStepsSequence();
-      setSequence(newSequence);
-      setCurrentPosition(0);
-      displayedNotesRef.current = [];
-      return newSequence;
+      setIsGenerating(true)
+      setError(null)
+      await audioService.initialize()
+
+      await new Promise(resolve => setTimeout(resolve, 0))
+      const newSequence = audioService.generateGiantStepsSequence()
+      setSequence(newSequence)
+      setCurrentPosition(0)
+      displayedNotesRef.current = []
+      return newSequence
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      return null;
+      setError(err instanceof Error ? err.message : 'An error occurred')
+      return null
     } finally {
-      setIsGenerating(false);
+      setIsGenerating(false)
     }
-  };
+  }
 
   const handlePlayback = async () => {
-    if (isGenerating) return;
-    
+    if (isGenerating) return
+
     try {
-      setError(null);
-      
+      setError(null)
+
       if (isPlaying) {
-        audioService.stopPlayback();
-        setIsPlaying(false);
-        onNotesChange(displayedNotesRef.current);
-        return;
+        audioService.stopPlayback()
+        setIsPlaying(false)
+        onNotesChange(displayedNotesRef.current)
+        return
       }
 
-      let currentSequence = sequence;
+      let currentSequence = sequence
       if (!currentSequence) {
-        currentSequence = await generateSequence();
-        if (!currentSequence) return;
+        currentSequence = await generateSequence()
+        if (!currentSequence) return
       }
-      
-      setIsPlaying(true);
-      
+
+      setIsPlaying(true)
+
       await audioService.playTriadSequence(
         currentSequence,
-        (notes) => {
-          displayedNotesRef.current = notes;
-          onNotesChange(notes);
+        notes => {
+          displayedNotesRef.current = notes
+          onNotesChange(notes)
         },
         currentPosition,
-        (position) => {
-          setCurrentPosition(position);
+        position => {
+          setCurrentPosition(position)
         }
-      );
-      
-      setIsPlaying(false);
+      )
+
+      setIsPlaying(false)
       if (!audioService.shouldStop) {
-        displayedNotesRef.current = [];
-        onNotesChange([]);
-        setCurrentPosition(0);
-        audioService.setPosition(0);
+        displayedNotesRef.current = []
+        onNotesChange([])
+        setCurrentPosition(0)
+        audioService.setPosition(0)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setIsPlaying(false);
-      onNotesChange(displayedNotesRef.current);
+      setError(err instanceof Error ? err.message : 'An error occurred')
+      setIsPlaying(false)
+      onNotesChange(displayedNotesRef.current)
     }
-  };
+  }
 
   const handleRestart = useCallback(() => {
-    if (isGenerating || !sequence) return;
+    if (isGenerating || !sequence) return
 
-    audioService.restart();
-    setIsPlaying(false);
-    setCurrentPosition(0);
-    displayedNotesRef.current = [];
-    onNotesChange([]);
-  }, [isGenerating, sequence, onNotesChange]);
+    audioService.restart()
+    setIsPlaying(false)
+    setCurrentPosition(0)
+    displayedNotesRef.current = []
+    onNotesChange([])
+  }, [isGenerating, sequence, onNotesChange])
 
-  const handlePositionSelect = useCallback((position: number) => {
-    if (isGenerating || !sequence) return;
+  const handlePositionSelect = useCallback(
+    (position: number) => {
+      if (isGenerating || !sequence) return
 
-    // If playing, stop playback first
-    if (isPlaying) {
-      audioService.stopPlayback();
-      setIsPlaying(false);
-    }
+      // If playing, stop playback first
+      if (isPlaying) {
+        audioService.stopPlayback()
+        setIsPlaying(false)
+      }
 
-    // Update position
-    setCurrentPosition(position);
-    audioService.setPosition(position);
+      // Update position
+      setCurrentPosition(position)
+      audioService.setPosition(position)
 
-    // Show the notes for this chord
-    const selectedChord = sequence[position];
-    if (selectedChord) {
-      displayedNotesRef.current = selectedChord.midiNotes;
-      onNotesChange(selectedChord.midiNotes);
-    }
-  }, [isGenerating, sequence, isPlaying, onNotesChange]);
+      // Show the notes for this chord
+      const selectedChord = sequence[position]
+      if (selectedChord) {
+        displayedNotesRef.current = selectedChord.midiNotes
+        onNotesChange(selectedChord.midiNotes)
+      }
+    },
+    [isGenerating, sequence, isPlaying, onNotesChange]
+  )
 
   return {
     sequence,
@@ -117,5 +120,5 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     handlePlayback,
     handleRestart,
     handlePositionSelect,
-  };
-};
+  }
+}

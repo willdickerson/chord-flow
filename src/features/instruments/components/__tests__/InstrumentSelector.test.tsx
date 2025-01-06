@@ -1,57 +1,110 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { InstrumentSelector } from '../InstrumentSelector';
-import { audioService } from '../../../../services/audioService';
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { InstrumentSelector } from '../InstrumentSelector'
+import { audioService } from '../../../../services/audioService'
+import type { InstrumentType } from '../../../../services/audioService'
 
-// Mock audioService
 vi.mock('../../../../services/audioService', () => ({
   audioService: {
     setInstrument: vi.fn(),
-  }
-}));
+  },
+}))
 
 describe('InstrumentSelector', () => {
+  const instruments: InstrumentType[] = ['synth', 'piano', 'guitar']
+
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
-  it('renders all instrument buttons', () => {
-    render(<InstrumentSelector />);
-    
-    expect(screen.getByRole('button', { name: /synth/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /piano/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /guitar/i })).toBeInTheDocument();
-  });
+  it('renders all instrument buttons with correct initial state', () => {
+    render(<InstrumentSelector />)
 
-  it('highlights selected instrument', () => {
-    render(<InstrumentSelector />);
-    
-    const synthButton = screen.getByRole('button', { name: /synth/i });
-    const pianoButton = screen.getByRole('button', { name: /piano/i });
-    
-    // Initially synth should be selected
-    expect(synthButton).toHaveClass('bg-purple-100');
-    expect(pianoButton).not.toHaveClass('bg-purple-100');
-    
-    // Click piano
-    fireEvent.click(pianoButton);
-    expect(synthButton).not.toHaveClass('bg-purple-100');
-    expect(pianoButton).toHaveClass('bg-purple-100');
-  });
+    // All buttons should be present with correct labels
+    instruments.forEach(instrument => {
+      const button = screen.getByRole('button', {
+        name: instrument.charAt(0).toUpperCase() + instrument.slice(1),
+      })
+      expect(button).toBeInTheDocument()
+    })
 
-  it('calls audioService.setInstrument when instrument is selected', () => {
-    render(<InstrumentSelector />);
-    
-    const pianoButton = screen.getByRole('button', { name: /piano/i });
-    fireEvent.click(pianoButton);
-    
-    expect(audioService.setInstrument).toHaveBeenCalledWith('piano');
-  });
+    // Synth should be initially selected
+    const synthButton = screen.getByRole('button', { name: 'Synth' })
+    expect(synthButton).toHaveAttribute('aria-pressed', 'true')
+    expect(synthButton).toHaveClass('bg-purple-100', 'text-purple-700')
 
-  it('applies hover styles to unselected instruments', () => {
-    render(<InstrumentSelector />);
-    
-    const pianoButton = screen.getByRole('button', { name: /piano/i });
-    expect(pianoButton).toHaveClass('hover:bg-gray-100');
-  });
-});
+    // Others should be unselected
+    const otherButtons = instruments
+      .filter(i => i !== 'synth')
+      .map(i =>
+        screen.getByRole('button', {
+          name: i.charAt(0).toUpperCase() + i.slice(1),
+        })
+      )
+
+    otherButtons.forEach(button => {
+      expect(button).toHaveAttribute('aria-pressed', 'false')
+      expect(button).toHaveClass('bg-gray-50', 'text-gray-500')
+      expect(button).not.toHaveClass('bg-purple-100', 'text-purple-700')
+    })
+  })
+
+  it('updates selection and calls audioService when clicking instruments', async () => {
+    const user = userEvent.setup()
+    render(<InstrumentSelector />)
+
+    // Test each instrument
+    for (const instrument of instruments) {
+      const buttonName =
+        instrument.charAt(0).toUpperCase() + instrument.slice(1)
+      const button = screen.getByRole('button', { name: buttonName })
+
+      await user.click(button)
+
+      // Verify audioService was called
+      expect(audioService.setInstrument).toHaveBeenCalledWith(instrument)
+
+      // Verify selected button state
+      expect(button).toHaveAttribute('aria-pressed', 'true')
+      expect(button).toHaveClass('bg-purple-100', 'text-purple-700')
+
+      // Verify other buttons are unselected
+      const otherButtons = instruments
+        .filter(i => i !== instrument)
+        .map(i =>
+          screen.getByRole('button', {
+            name: i.charAt(0).toUpperCase() + i.slice(1),
+          })
+        )
+
+      otherButtons.forEach(otherButton => {
+        expect(otherButton).toHaveAttribute('aria-pressed', 'false')
+        expect(otherButton).toHaveClass('bg-gray-50', 'text-gray-500')
+        expect(otherButton).not.toHaveClass('bg-purple-100', 'text-purple-700')
+      })
+    }
+  })
+
+  it('maintains selection after clicking the same instrument', async () => {
+    const user = userEvent.setup()
+    render(<InstrumentSelector />)
+
+    const pianoButton = screen.getByRole('button', { name: 'Piano' })
+
+    // First click to select
+    await user.click(pianoButton)
+    expect(audioService.setInstrument).toHaveBeenCalledWith('piano')
+    expect(pianoButton).toHaveAttribute('aria-pressed', 'true')
+    expect(pianoButton).toHaveClass('bg-purple-100', 'text-purple-700')
+
+    // Clear mock to verify next call
+    vi.clearAllMocks()
+
+    // Click again
+    await user.click(pianoButton)
+    expect(audioService.setInstrument).toHaveBeenCalledWith('piano')
+    expect(pianoButton).toHaveAttribute('aria-pressed', 'true')
+    expect(pianoButton).toHaveClass('bg-purple-100', 'text-purple-700')
+  })
+})
