@@ -25,13 +25,6 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   const displayedNotesRef = useRef<number[]>([])
   const setCurrentPosition = (position: number) => onPositionSelect(position)
 
-  console.log('ChordChart render:', {
-    hasSequence: !!sequence,
-    currentPosition,
-    isEnabled,
-    isPlaying,
-  })
-
   const handleChordClick = async (index: number) => {
     if (!sequence || sequence.length === 0) {
       console.warn('No sequence available')
@@ -88,10 +81,7 @@ export const ChordChart: React.FC<ChordChartProps> = ({
             isEnabled ? (
               <button
                 key={index}
-                onClick={() => {
-                  console.log('Button clicked:', index)
-                  handleChordClick(index)
-                }}
+                onClick={() => handleChordClick(index)}
                 className={`w-[60px] px-3 py-1.5 rounded-md text-sm font-medium transition-colors text-center
                   ${
                     index === currentPosition

@@ -27,16 +27,12 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     try {
       setIsGenerating(true)
       setError(null)
-      console.log(
-        'Generating sequence with voice leading state:',
-        voiceLeadingState
-      )
 
       const newSequence =
         audioService.generateGiantStepsSequence(voiceLeadingState)
       console.log('Generated new sequence with voice leading settings:', {
-        voiceLeadingState,
-        sequenceLength: newSequence.length,
+        voices: voiceLeadingState,
+        sequence: newSequence,
       })
       setSequence(newSequence)
       setCurrentPosition(0)
@@ -99,12 +95,10 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
           notes => {
             displayedNotesRef.current = notes
             onNotesChange(notes)
-            // Update position when notes change
             setCurrentPosition(audioService.getCurrentPosition())
           }
         )
       } else {
-        console.log('Stopping playback at position:', currentPosition)
         audioService.stopPlayback()
         setIsPlaying(false)
       }
@@ -168,7 +162,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   )
 
   const handleStop = useCallback(() => {
-    console.log('Stopping playback')
     audioService.stopPlayback()
     setIsPlaying(false)
     onNotesChange([])

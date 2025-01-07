@@ -320,11 +320,6 @@ export class AudioService {
       return
     }
 
-    console.log('Starting playback:', {
-      sequenceLength: sequence.length,
-      startPosition,
-    })
-
     this._shouldStop = false
     this.currentPosition = startPosition
     this.savedPosition = startPosition
@@ -340,8 +335,6 @@ export class AudioService {
     sequence: Triad[],
     onNotesChange?: (notes: number[]) => void
   ) {
-    console.log('Playing next triad at position:', this.currentPosition)
-
     if (this._shouldStop || this.currentPosition >= sequence.length) {
       console.log('Stopping sequence at position:', this.currentPosition)
       // If we're looping and not manually stopped, start from beginning
@@ -350,7 +343,7 @@ export class AudioService {
         !this._shouldStop &&
         this.currentPosition >= sequence.length
       ) {
-        console.log('Looping back to start')
+        console.log('Reached end, looping back to start')
         this.currentPosition = 0
         this.savedPosition = 0
         this.playNextTriad(sequence, onNotesChange)
@@ -370,10 +363,6 @@ export class AudioService {
     }
 
     const triad = sequence[this.currentPosition]
-    console.log('Playing triad at position:', {
-      position: this.currentPosition,
-      triad,
-    })
 
     // Update visualization before playing
     this.savedPosition = this.currentPosition
@@ -390,7 +379,6 @@ export class AudioService {
         this.playNextTriad(sequence, onNotesChange)
       } else if (!this._shouldStop && this._isLooping) {
         // We've reached the end but we're looping
-        console.log('Reached end, looping back to start')
         this.currentPosition = 0
         this.savedPosition = 0
         this.playNextTriad(sequence, onNotesChange)
@@ -419,7 +407,6 @@ export class AudioService {
   }
 
   restart(): void {
-    console.log('Restarting playback')
     this._shouldStop = true
     const instrument = this.getCurrentInstrument()
     if (instrument) {
@@ -460,43 +447,26 @@ export class AudioService {
     duration: number,
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
-    console.log('playTriad called:', {
-      midiNotes,
-      duration,
-      isArpeggiating: this._isArpeggiating,
-      currentInstrument: this.currentInstrument,
-    })
-
     if (midiNotes.length === 0) return
 
     const instrument = this.getCurrentInstrument()
-    console.log('Got instrument:', instrument ? 'yes' : 'no')
-
     if (!instrument) {
       throw new Error('No instrument loaded')
     }
-
-    // Convert MIDI notes to note names
-    const notes = midiNotes.map(midi => this.midiToNote(midi))
-    console.log('Converted to note names:', notes)
 
     // Update current notes for visualization
     this.currentMidiNotes = midiNotes
     onNotesChange?.(this.currentMidiNotes)
 
     if (this._isArpeggiating) {
-      console.log('Playing arpeggiated')
       const noteDelay = duration / midiNotes.length
       const noteDuration = noteDelay * 0.95 // Slightly shorter than delay to prevent overlap
       const now = Tone.now()
 
-      notes.forEach((note, i) => {
+      midiNotes.forEach((note, i) => {
         const startTime = now + (i * noteDelay) / 1000
-        console.log(
-          `Scheduling note ${note} at ${startTime} for ${noteDuration / 1000}s`
-        )
         instrument.triggerAttackRelease(
-          note,
+          this.midiToNote(note),
           noteDuration / 1000,
           startTime,
           0.7
@@ -505,8 +475,7 @@ export class AudioService {
 
       await new Promise(resolve => setTimeout(resolve, duration))
     } else {
-      console.log('Playing all notes together:', notes)
-      instrument.triggerAttack(notes)
+      instrument.triggerAttack(midiNotes.map(note => this.midiToNote(note)))
 
       try {
         await new Promise(resolve => {
@@ -524,12 +493,10 @@ export class AudioService {
           }, 100)
         })
 
-        console.log('Releasing notes:', notes)
-        // Release the audio but don't clear visual notes
-        instrument.triggerRelease(notes)
+        instrument.triggerRelease(midiNotes.map(note => this.midiToNote(note)))
       } catch (err) {
         console.error('Error playing notes:', err)
-        instrument.triggerRelease(notes)
+        instrument.triggerRelease(midiNotes.map(note => this.midiToNote(note)))
         throw err
       }
     }
@@ -588,15 +555,8 @@ export class AudioService {
       }
 
       console.log('Voice movement costs:', {
-        from: currentNotes,
-        to: nextNotes,
-        individualCosts: costs,
-        weights: {
-          bass: voiceLeadingState.bass ? primaryWeight : secondaryWeight,
-          middle: voiceLeadingState.middle ? primaryWeight : secondaryWeight,
-          high: voiceLeadingState.high ? primaryWeight : secondaryWeight,
-        },
         totalCost,
+        individualCosts: costs,
       })
 
       return totalCost

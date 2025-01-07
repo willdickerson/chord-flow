@@ -81,15 +81,11 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           useArpeggiator?: boolean
         }
   ) => {
-    console.log('handleNotesChange called:', notes)
-
     if (Array.isArray(notes)) {
-      console.log('Updating keyboard state with array:', notes)
       onNotesChange(notes)
     } else {
       if (notes.type === 'play' && notes.notes) {
         try {
-          console.log('Starting audio playback...')
           // Ensure audio context is started (required by browsers)
           await Tone.start()
           await audioService.initialize()
@@ -100,9 +96,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               ? notes.useArpeggiator
               : audioService.isArpeggiating
           console.log('Playing with settings:', {
-            duration,
-            useArp,
-            notes: notes.notes,
+            isArpeggiating,
+            isLooping,
+            currentInstrument: audioService.getCurrentInstrument(),
           })
 
           // Always update visual state
@@ -138,7 +134,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           }
         }
       } else if (notes.type === 'pause') {
-        console.log('Pausing playback')
         onNotesChange([])
       }
     }
