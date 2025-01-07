@@ -37,6 +37,8 @@ describe('ChordChart', () => {
   const mockOnNotesChange = vi.fn()
   const mockAudioService = {
     getChordDuration: () => 670,
+    initialize: vi.fn().mockResolvedValue(undefined),
+    playTriad: vi.fn().mockResolvedValue(undefined),
     get isArpeggiating() {
       return false
     },

@@ -9,26 +9,26 @@ vi.mock('../../../../services/audioService', () => ({
   audioService: {
     initialize: vi.fn(),
     generateGiantStepsSequence: vi.fn(),
-    playTriadSequence: vi.fn(),
+    startPlayback: vi.fn(),
     stopPlayback: vi.fn(),
     setPosition: vi.fn(),
     restart: vi.fn(),
     shouldStop: false,
+    getCurrentPosition: vi.fn(),
   },
 }))
 
+const mockSequence = [
+  { root: 60, midiNotes: [60, 64, 67], type: 'major' },
+  { root: 62, midiNotes: [62, 65, 69], type: 'minor' },
+]
+
 describe('usePlaybackState', () => {
   const mockOnNotesChange = vi.fn()
-  const mockSequence: Triad[] = [
-    { chordName: 'C', midiNotes: [60, 64, 67] },
-    { chordName: 'G', midiNotes: [55, 59, 62] },
-  ]
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(
-      mockSequence
-    )
+    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(mockSequence)
     vi.mocked(audioService.initialize).mockResolvedValue(undefined)
   })
 
@@ -45,24 +45,25 @@ describe('usePlaybackState', () => {
   it('handles playback start', async () => {
     const { result } = renderHook(() => usePlaybackState(mockOnNotesChange))
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let resolvePlayback: () => void
-    vi.mocked(audioService.playTriadSequence).mockImplementation(
-      async (sequence, onNotes, startPosition, onPosition) => {
-        onPosition(startPosition)
-        onNotes(sequence[startPosition].midiNotes)
-        return new Promise<void>(resolve => {
-          resolvePlayback = resolve
-        })
+    // Mock sequence generation
+    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(mockSequence)
+    
+    // Mock startPlayback implementation
+    vi.mocked(audioService.startPlayback).mockImplementation(
+      (sequence, startPosition, onComplete, onNotes) => {
+        if (onNotes) onNotes(sequence[startPosition].midiNotes)
       }
     )
 
     // Start playing
     await act(async () => {
-      // We need this promise to keep track of the playback state
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const playPromise = result.current.handlePlayback()
-      // Wait for state updates
+      const playbackPromise = result.current.handlePlayback()
+      // Ensure we wait for the state to be updated
+      await playbackPromise
+    })
+
+    // Wait for React to process all state updates
+    await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0))
     })
 
@@ -70,10 +71,10 @@ describe('usePlaybackState', () => {
     expect(result.current.isPlaying).toBe(true)
     expect(audioService.initialize).toHaveBeenCalled()
     expect(audioService.generateGiantStepsSequence).toHaveBeenCalled()
-    expect(audioService.playTriadSequence).toHaveBeenCalledWith(
+    expect(audioService.startPlayback).toHaveBeenCalledWith(
       mockSequence,
-      expect.any(Function),
       0,
+      expect.any(Function),
       expect.any(Function)
     )
   })
@@ -81,24 +82,24 @@ describe('usePlaybackState', () => {
   it('handles playback pause', async () => {
     const { result } = renderHook(() => usePlaybackState(mockOnNotesChange))
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let resolvePlayback: () => void
-    vi.mocked(audioService.playTriadSequence).mockImplementation(
-      async (sequence, onNotes, startPosition, onPosition) => {
-        onPosition(startPosition)
-        onNotes(sequence[startPosition].midiNotes)
-        return new Promise<void>(resolve => {
-          resolvePlayback = resolve
-        })
+    // Mock sequence generation
+    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(mockSequence)
+    
+    // Mock startPlayback implementation
+    vi.mocked(audioService.startPlayback).mockImplementation(
+      (sequence, startPosition, onComplete, onNotes) => {
+        if (onNotes) onNotes(sequence[startPosition].midiNotes)
       }
     )
 
     // Start playing
     await act(async () => {
-      // We need this promise to keep track of the playback state
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const playPromise = result.current.handlePlayback()
-      // Wait for state updates
+      const playbackPromise = result.current.handlePlayback()
+      await playbackPromise
+    })
+
+    // Wait for React to process all state updates
+    await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 0))
     })
 
@@ -106,7 +107,13 @@ describe('usePlaybackState', () => {
 
     // Then pause
     await act(async () => {
-      await result.current.handlePlayback()
+      const pausePromise = result.current.handlePlayback()
+      await pausePromise
+    })
+
+    // Wait for React to process all state updates
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0))
     })
 
     expect(result.current.isPlaying).toBe(false)
@@ -116,20 +123,20 @@ describe('usePlaybackState', () => {
   it('handles restart', async () => {
     const { result } = renderHook(() => usePlaybackState(mockOnNotesChange))
 
-    vi.mocked(audioService.playTriadSequence).mockResolvedValue(undefined)
+    vi.mocked(audioService.startPlayback).mockResolvedValue(undefined)
 
     // First start playing to get sequence
     await act(async () => {
       await result.current.handlePlayback()
       // Wait for state updates
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise(resolve => setTimeout(resolve, 100))
     })
 
     // Then restart
     await act(async () => {
       result.current.handleRestart()
       // Need to wait for state updates
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise(resolve => setTimeout(resolve, 100))
     })
 
     expect(result.current.currentPosition).toBe(0)
@@ -141,20 +148,20 @@ describe('usePlaybackState', () => {
   it('handles position selection', async () => {
     const { result } = renderHook(() => usePlaybackState(mockOnNotesChange))
 
-    vi.mocked(audioService.playTriadSequence).mockResolvedValue(undefined)
+    vi.mocked(audioService.startPlayback).mockResolvedValue(undefined)
 
     // First start playing to get sequence
     await act(async () => {
       await result.current.handlePlayback()
       // Wait for state updates
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise(resolve => setTimeout(resolve, 100))
     })
 
     // Then select position
     await act(async () => {
       result.current.handlePositionSelect(1)
       // Need to wait for state updates
-      await new Promise(resolve => setTimeout(resolve, 0))
+      await new Promise(resolve => setTimeout(resolve, 100))
     })
 
     expect(result.current.currentPosition).toBe(1)

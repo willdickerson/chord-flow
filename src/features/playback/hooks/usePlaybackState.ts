@@ -46,11 +46,10 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     }
   }, [voiceLeadingState, onNotesChange])
 
-  // Generate initial sequence on mount
+  // Only generate sequence when needed, not on mount
   useEffect(() => {
-    console.log('Generating initial sequence')
-    generateSequence()
-  }, [generateSequence])
+    console.log('Initializing playback state')
+  }, [])
 
   const handlePlayback = async () => {
     if (isGenerating) return
@@ -66,14 +65,22 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
           const newSequence = await generateSequence()
           if (!newSequence) {
             console.error('Failed to generate sequence')
+            setError('Failed to generate sequence')
             return
           }
+          setSequence(newSequence)
         }
         
         console.log('Starting sequence from position:', currentPosition)
+        // Set playing state before starting playback
         setIsPlaying(true)
+        
+        // Use the current sequence value
+        const currentSequence = sequence || await generateSequence()
+        if (!currentSequence) return
+        
         audioService.startPlayback(
-          sequence, 
+          currentSequence, 
           currentPosition, 
           () => {
             setIsPlaying(false)
@@ -97,7 +104,8 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
       }
     } catch (error) {
       console.error('Playback error:', error)
-      setError('Failed to start playback')
+      const errorMessage = error instanceof Error ? error.message : 'Generation failed'
+      setError(errorMessage)
       setIsPlaying(false)
     }
   }

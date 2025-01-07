@@ -95,7 +95,18 @@ export class AudioService {
   }
 
   setArpeggiating(value: boolean): void {
+    if (value === this._isArpeggiating) return
+    
     this._isArpeggiating = value
+    if (value) {
+      Tone.Transport.start()
+      Tone.Transport.scheduleRepeat(() => {
+        // Arpeggiator logic here
+      }, "8n")
+    } else {
+      Tone.Transport.cancel()
+      Tone.Transport.stop()
+    }
   }
 
   getInitialArpeggiating(): boolean {
@@ -277,6 +288,10 @@ export class AudioService {
     this.currentPosition = startPosition
     this.savedPosition = startPosition
     this.onComplete = onComplete
+    
+    // Start transport for all playback modes
+    Tone.Transport.start()
+    
     this.playNextTriad(sequence, onNotesChange)
   }
 

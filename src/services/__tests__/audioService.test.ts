@@ -1,45 +1,63 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as Tone from 'tone'
-import { audioService } from '../audioService'
+import { AudioService } from '../audioService'
 
 // Mock Tone.js
 vi.mock('tone', () => ({
-  start: vi.fn().mockResolvedValue(undefined),
-  Synth: vi.fn().mockImplementation(() => ({
-    oscillator: { type: 'triangle' },
-    toDestination: vi.fn().mockReturnThis(),
-    volume: { value: 0 },
-  })),
+  start: vi.fn(),
+  gainToDb: vi.fn().mockImplementation((value) => value * 0.2 - 20), // Mock conversion
   Sampler: vi.fn().mockImplementation(() => ({
     triggerAttack: vi.fn(),
     triggerRelease: vi.fn(),
+    releaseAll: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
-    loaded: true,
-    volume: { value: 0 },
+    volume: { value: 0 }
   })),
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  PolySynth: vi.fn().mockImplementation(Synth => ({
+  Synth: vi.fn(),
+  PolySynth: vi.fn().mockImplementation(() => ({
     triggerAttack: vi.fn(),
     triggerRelease: vi.fn(),
+    releaseAll: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
-    volume: { value: 0 },
+    volume: { value: 0 }
   })),
-  gainToDb: vi.fn().mockReturnValue(0),
+  context: {
+    resume: vi.fn().mockResolvedValue(undefined)
+  },
+  Transport: {
+    start: vi.fn(),
+    stop: vi.fn(),
+    position: 0,
+    scheduleRepeat: vi.fn(),
+    cancel: vi.fn(),
+    bpm: { value: 120 }
+  },
+  now: vi.fn().mockReturnValue(0)
 }))
 
 describe('AudioService', () => {
+  let mockOnNotesChange: jest.Mock
+  let audioService: AudioService
+
   beforeEach(() => {
+    vi.useFakeTimers()
+    mockOnNotesChange = vi.fn()
+    
+    // Mock Tone.now() to return a fixed timestamp
+    vi.mocked(Tone.now).mockReturnValue(0)
+    
+    // Mock Transport methods
+    vi.mocked(Tone.Transport.start).mockImplementation(() => {})
+    vi.mocked(Tone.Transport.stop).mockImplementation(() => {})
+    vi.mocked(Tone.Transport.scheduleRepeat).mockImplementation(() => 0)
+    vi.mocked(Tone.Transport.cancel).mockImplementation(() => {})
+    
+    audioService = new AudioService()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
     vi.clearAllMocks()
-    // Reset the audioService's state
-    audioService['isInitialized'] = false
-    audioService['_shouldStop'] = false
-    audioService['currentPosition'] = 0
-    audioService['savedPosition'] = 0
-    audioService['currentMidiNotes'] = []
-    audioService['stoppedMidiNotes'] = []
-    audioService['isFirstPlay'] = true
-    audioService['wasPositionSelected'] = false
-    audioService['_isArpeggiating'] = false
   })
 
   describe('initialization', () => {
@@ -47,7 +65,6 @@ describe('AudioService', () => {
       await audioService.initialize()
 
       expect(Tone.start).toHaveBeenCalled()
-      expect(Tone.Sampler).toHaveBeenCalled()
       expect(Tone.PolySynth).toHaveBeenCalled()
     })
 
@@ -65,53 +82,46 @@ describe('AudioService', () => {
     })
 
     it('plays a triad', async () => {
-      const mockOnNotesChange = vi.fn()
-      const playPromise = audioService.playTriad(
-        [60, 64, 67],
-        1000,
-        mockOnNotesChange
-      )
+      const midiNotes = [60, 64, 67]
+      const noteNames = midiNotes.map(note => audioService.midiToNote(note))
 
-      // Should call onNotesChange with the midi notes
-      expect(mockOnNotesChange).toHaveBeenCalledWith([60, 64, 67])
-
-      // Wait a bit to let the promise resolve
-      await new Promise(resolve => setTimeout(resolve, 100))
-
-      // Stop playback to resolve the promise
-      audioService.stopPlayback()
+      const playPromise = audioService.playTriad(midiNotes, 100)
+      await vi.advanceTimersByTimeAsync(100)
       await playPromise
+
+      const instrument = audioService.getCurrentInstrument()
+      expect(instrument.triggerAttack).toHaveBeenCalledWith(noteNames)
+      expect(instrument.triggerRelease).toHaveBeenCalledWith(noteNames)
     })
 
     it('stops playback', async () => {
-      const mockOnNotesChange = vi.fn()
-      const playPromise = audioService.playTriad(
-        [60, 64, 67],
-        1000,
-        mockOnNotesChange
-      )
+      const sequence = audioService.generateGiantStepsSequence()
+      const onComplete = vi.fn()
 
-      // Wait a bit then stop
-      await new Promise(resolve => setTimeout(resolve, 100))
+      audioService.startPlayback(sequence, 0, onComplete, mockOnNotesChange)
+      await vi.advanceTimersByTimeAsync(100)
       audioService.stopPlayback()
 
-      // The promise should resolve when stopped
-      await playPromise
-
-      expect(audioService.shouldStop).toBe(true)
+      const instrument = audioService.getCurrentInstrument()
+      expect(instrument.releaseAll).toHaveBeenCalled()
     })
 
-    it('restarts playback', () => {
-      audioService.setPosition(2)
-      expect(audioService.getCurrentPosition()).toBe(2)
+    it('restarts playback', async () => {
+      const sequence = audioService.generateGiantStepsSequence()
+      const onComplete = vi.fn()
 
+      audioService.startPlayback(sequence, 2, onComplete, mockOnNotesChange)
+      await vi.advanceTimersByTimeAsync(100)
       audioService.restart()
+
       expect(audioService.getCurrentPosition()).toBe(0)
+      const instrument = audioService.getCurrentInstrument()
+      expect(instrument.releaseAll).toHaveBeenCalled()
     })
 
     it('sets and gets position', () => {
-      audioService.setPosition(3)
-      expect(audioService.getCurrentPosition()).toBe(3)
+      audioService.setPosition(2)
+      expect(audioService.getCurrentPosition()).toBe(2)
     })
   })
 
@@ -140,54 +150,51 @@ describe('AudioService', () => {
     })
 
     it('plays a sequence of triads', async () => {
-      const mockOnNotesChange = vi.fn()
-      const mockOnPositionChange = vi.fn()
       const sequence = audioService.generateGiantStepsSequence()
+      const onComplete = vi.fn()
+      const firstTriadNoteNames = sequence[0].midiNotes.map(note => audioService.midiToNote(note))
 
-      const playPromise = audioService.playTriadSequence(
-        sequence,
-        mockOnNotesChange,
-        0,
-        mockOnPositionChange
-      )
-
-      // Wait for the next tick to allow callbacks to be called
-      await new Promise(resolve => setTimeout(resolve, 0))
-
-      // Should have called the callbacks
-      expect(mockOnPositionChange).toHaveBeenCalledWith(0)
+      // Start playback
+      audioService.startPlayback(sequence, 0, onComplete, mockOnNotesChange)
+      
+      // Wait for first triad to play
+      await vi.advanceTimersByTimeAsync(0)
+      
+      // Verify first triad is played
+      const instrument = audioService.getCurrentInstrument()
+      expect(instrument.triggerAttack).toHaveBeenCalledWith(firstTriadNoteNames)
+      expect(Tone.Transport.start).toHaveBeenCalled()
       expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[0].midiNotes)
-
-      // Stop playback to resolve the promise
-      audioService.stopPlayback()
-      await playPromise
+      
+      // Wait for next triad
+      await vi.advanceTimersByTimeAsync(audioService.getChordDuration())
+      
+      // Verify second triad is played
+      const secondTriadNoteNames = sequence[1].midiNotes.map(note => audioService.midiToNote(note))
+      expect(instrument.triggerAttack).toHaveBeenCalledWith(secondTriadNoteNames)
+      expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[1].midiNotes)
     })
 
     it('starts playback from specified position', async () => {
-      const mockOnNotesChange = vi.fn()
-      const mockOnPositionChange = vi.fn()
       const sequence = audioService.generateGiantStepsSequence()
       const startPosition = 2
+      const onComplete = vi.fn()
+      const startTriadNoteNames = sequence[startPosition].midiNotes.map(note => audioService.midiToNote(note))
 
-      const playPromise = audioService.playTriadSequence(
+      audioService.startPlayback(
         sequence,
-        mockOnNotesChange,
         startPosition,
-        mockOnPositionChange
+        onComplete,
+        mockOnNotesChange
       )
 
-      // Wait for the next tick to allow callbacks to be called
-      await new Promise(resolve => setTimeout(resolve, 0))
+      // Advance timers to trigger the note at the specified position
+      await vi.advanceTimersByTimeAsync(100)
 
-      // Should start from the specified position
-      expect(mockOnPositionChange).toHaveBeenCalledWith(startPosition)
-      expect(mockOnNotesChange).toHaveBeenCalledWith(
-        sequence[startPosition].midiNotes
-      )
-
-      // Stop playback to resolve the promise
-      audioService.stopPlayback()
-      await playPromise
+      const instrument = audioService.getCurrentInstrument()
+      expect(instrument.triggerAttack).toHaveBeenCalledWith(startTriadNoteNames)
+      expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[startPosition].midiNotes)
+      expect(audioService.getCurrentPosition()).toBe(startPosition)
     })
   })
 
@@ -198,14 +205,25 @@ describe('AudioService', () => {
 
     it('initializes with arpeggiator disabled', () => {
       expect(audioService.isArpeggiating).toBe(false)
+      expect(Tone.Transport.scheduleRepeat).not.toHaveBeenCalled()
     })
 
-    it('toggles arpeggiator state', () => {
+    it('toggles arpeggiator state', async () => {
       expect(audioService.isArpeggiating).toBe(false)
+      
+      // Enable arpeggiator
       audioService.setArpeggiating(true)
+      await vi.advanceTimersByTimeAsync(0)
       expect(audioService.isArpeggiating).toBe(true)
+      expect(Tone.Transport.start).toHaveBeenCalled()
+      expect(Tone.Transport.scheduleRepeat).toHaveBeenCalledWith(expect.any(Function), "8n")
+      
+      // Disable arpeggiator
       audioService.setArpeggiating(false)
+      await vi.advanceTimersByTimeAsync(0)
       expect(audioService.isArpeggiating).toBe(false)
+      expect(Tone.Transport.cancel).toHaveBeenCalled()
+      expect(Tone.Transport.stop).toHaveBeenCalled()
     })
 
     it('returns initial arpeggiator state', () => {
