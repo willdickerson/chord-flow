@@ -502,6 +502,32 @@ export class AudioService {
     }
   }
 
+  playNote(midiNote: number): void {
+    const instrument = this.getCurrentInstrument()
+    if (!instrument) {
+      throw new Error('No instrument loaded')
+    }
+    
+    const note = this.midiToNote(midiNote)
+    instrument.triggerAttack(note)
+    
+    // Update current notes for visualization
+    this.currentMidiNotes = [midiNote]
+  }
+
+  stopNote(midiNote: number): void {
+    const instrument = this.getCurrentInstrument()
+    if (!instrument) {
+      return
+    }
+    
+    const note = this.midiToNote(midiNote)
+    instrument.triggerRelease(note)
+    
+    // Remove the note from current notes
+    this.currentMidiNotes = this.currentMidiNotes.filter(n => n !== midiNote)
+  }
+
   getCurrentMidiNotes(): number[] {
     return this.currentMidiNotes
   }
