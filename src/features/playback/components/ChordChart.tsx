@@ -53,18 +53,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({
       onNotesChange(triad.midiNotes)
       setCurrentPosition(index)
 
-      // Play the triad
+      // Play the triad but maintain the visual state
       await audioService.playTriad(triad.midiNotes, audioService.getChordDuration())
-
-      // Clear notes after playing
-      if (!isPlaying) {
-        displayedNotesRef.current = []
-        onNotesChange([])
-      }
     } catch (err) {
       console.error('Error playing chord:', err)
-      displayedNotesRef.current = []
-      onNotesChange([])
     }
   }
 

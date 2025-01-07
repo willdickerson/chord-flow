@@ -26,11 +26,7 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
       setIsGenerating(true)
       setError(null)
       console.log('Generating sequence with voice leading state:', voiceLeadingState)
-
-      // Ensure audio is initialized
-      await audioService.initialize()
       
-      await new Promise(resolve => setTimeout(resolve, 0))
       const newSequence = audioService.generateGiantStepsSequence(voiceLeadingState)
       console.log('Generated new sequence with voice leading settings:', {
         voiceLeadingState,
@@ -60,6 +56,9 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     if (isGenerating) return
 
     try {
+      // Initialize audio before starting playback
+      await audioService.initialize()
+
       if (!isPlaying) {
         // Check if we have a sequence
         if (!sequence || sequence.length === 0) {
@@ -70,9 +69,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
             return
           }
         }
-
-        // Initialize audio before starting playback
-        await audioService.initialize()
         
         console.log('Starting sequence from position:', currentPosition)
         setIsPlaying(true)
@@ -99,8 +95,8 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
         audioService.stopPlayback()
         setIsPlaying(false)
       }
-    } catch (err) {
-      console.error('Playback error:', err)
+    } catch (error) {
+      console.error('Playback error:', error)
       setError('Failed to start playback')
       setIsPlaying(false)
     }

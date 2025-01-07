@@ -60,21 +60,23 @@ const giantStepsTriads = Object.fromEntries(
 )
 
 export class AudioService {
-  private instruments: { [key in InstrumentType]: Tone.PolySynth | null } = {
-    synth: null,
+  private instruments: Record<InstrumentType, Tone.Sampler | Tone.PolySynth | null> = {
     piano: null,
+    synth: null,
     guitar: null,
   }
-  private isInitialized = false
   private currentInstrument: InstrumentType = 'synth'
+  private isInitialized = false
   private _shouldStop = false
   private volume = -12
   private _isArpeggiating = false
+  private _isLooping = false
   private playbackTimeout: NodeJS.Timeout | null = null
   private currentPosition = 0
   private savedPosition = 0
   private onComplete: (() => void) | null = null
   private chordDuration = 670
+  private currentMidiNotes: number[] = [] // Track current notes for visualization
 
   get shouldStop(): boolean {
     return this._shouldStop
@@ -82,6 +84,14 @@ export class AudioService {
 
   get isArpeggiating(): boolean {
     return this._isArpeggiating
+  }
+
+  get isLooping(): boolean {
+    return this._isLooping
+  }
+
+  setLooping(value: boolean): void {
+    this._isLooping = value
   }
 
   setArpeggiating(value: boolean): void {
@@ -92,7 +102,18 @@ export class AudioService {
     return this._isArpeggiating
   }
 
+  isInstrumentReady(type: InstrumentType): boolean {
+    const instrument = this.instruments[type]
+    if (!instrument) return false
+    if (type === 'synth') return true
+    return instrument instanceof Tone.Sampler && instrument.loaded
+  }
+
   setInstrument(type: InstrumentType): void {
+    if (!this.isInstrumentReady(type)) {
+      console.warn(`${type} is not ready yet`)
+      return
+    }
     this.currentInstrument = type
   }
 
@@ -102,9 +123,10 @@ export class AudioService {
 
   setVolume(value: number): void {
     this.volume = value
+    const normalizedVolume = value / 100 // Convert 0-100 to 0-1
     Object.values(this.instruments).forEach(instrument => {
       if (instrument) {
-        instrument.volume.value = value
+        instrument.volume.value = Tone.gainToDb(normalizedVolume)
       }
     })
   }
@@ -135,19 +157,103 @@ export class AudioService {
       return
     }
 
-    console.log('Initializing audio service')
-    await Tone.start()
-    this.instruments.synth = new Tone.PolySynth().toDestination()
-    this.isInitialized = true
-    console.log('Audio service initialized')
+    console.log('Initializing audio service...')
+    try {
+      await Tone.start()
+      console.log('Tone.js started')
+
+      // Initialize synth first for immediate playback
+      console.log('Loading synth...')
+      this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'triangle' },
+        envelope: {
+          attack: 0.005,
+          decay: 0.1,
+          sustain: 0.3,
+          release: 1
+        }
+      }).toDestination()
+
+      // Set initial volume for synth
+      if (this.instruments.synth) {
+        this.instruments.synth.volume.value = Tone.gainToDb(this.volume / 100)
+      }
+
+      // Mark as initialized once synth is ready
+      this.isInitialized = true
+      console.log('Synth initialized, starting sample loading...')
+
+      // Load sampled instruments in the background
+      this.loadSampledInstruments()
+    } catch (err) {
+      console.error('Failed to initialize audio service:', err)
+      throw err
+    }
   }
 
-  getCurrentInstrument(): Tone.PolySynth | null {
+  private async loadSampledInstruments() {
+    try {
+      // Initialize piano with Salamander samples
+      console.log('Loading piano...')
+      this.instruments.piano = new Tone.Sampler({
+        urls: {
+          A0: 'A0.mp3', C1: 'C1.mp3', 'D#1': 'Ds1.mp3', 'F#1': 'Fs1.mp3',
+          A1: 'A1.mp3', C2: 'C2.mp3', 'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3',
+          A2: 'A2.mp3', C3: 'C3.mp3', 'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3',
+          A3: 'A3.mp3', C4: 'C4.mp3', 'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3',
+          A4: 'A4.mp3', C5: 'C5.mp3', 'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3',
+          A5: 'A5.mp3', C6: 'C6.mp3', 'D#6': 'Ds6.mp3', 'F#6': 'Fs6.mp3',
+          A6: 'A6.mp3', C7: 'C7.mp3', 'D#7': 'Ds7.mp3', 'F#7': 'Fs7.mp3',
+          A7: 'A7.mp3', C8: 'C8.mp3'
+        },
+        release: 1,
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
+        onload: () => {
+          console.log('Piano samples loaded')
+          if (this.instruments.piano) {
+            this.instruments.piano.volume.value = Tone.gainToDb(this.volume / 100)
+          }
+        }
+      }).toDestination()
+
+      // Initialize guitar with nylon guitar samples
+      console.log('Loading guitar...')
+      this.instruments.guitar = new Tone.Sampler({
+        urls: {
+          'E2': 'E2.mp3', 'F#2': 'Fs2.mp3', 'G#2': 'Gs2.mp3',
+          'A2': 'A2.mp3', 'B2': 'B2.mp3', 'D3': 'D3.mp3',
+          'E3': 'E3.mp3', 'F#3': 'Fs3.mp3', 'G3': 'G3.mp3',
+          'A3': 'A3.mp3', 'B3': 'B3.mp3', 'C#4': 'Cs4.mp3',
+          'D#4': 'Ds4.mp3', 'E4': 'E4.mp3', 'F#4': 'Fs4.mp3',
+          'G#4': 'Gs4.mp3'
+        },
+        release: 1.2,
+        volume: -3,
+        baseUrl: 'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
+        onload: () => {
+          console.log('Guitar samples loaded')
+          if (this.instruments.guitar) {
+            this.instruments.guitar.volume.value = Tone.gainToDb(this.volume / 100)
+          }
+        }
+      }).toDestination()
+
+    } catch (err) {
+      console.error('Failed to load sampled instruments:', err)
+    }
+  }
+
+  getCurrentInstrument(): Tone.Sampler | Tone.PolySynth | null {
     if (!this.isInitialized) {
       console.warn('Audio service not initialized')
       return null
     }
-    return this.instruments.synth
+    const instrument = this.instruments[this.currentInstrument]
+    if (!this.isInstrumentReady(this.currentInstrument)) {
+      console.warn(`Current instrument (${this.currentInstrument}) is not ready`)
+      return null
+    }
+    return instrument
   }
 
   startPlayback(
@@ -175,25 +281,28 @@ export class AudioService {
   }
 
   private playNextTriad(sequence: Triad[], onNotesChange?: (notes: number[]) => void) {
-    if (!sequence || sequence.length === 0) {
-      console.error('Cannot play next triad: no sequence provided')
-      if (this.onComplete) {
-        this.onComplete()
-      }
-      onNotesChange?.([])
-      return
-    }
-
+    console.log('Playing next triad at position:', this.currentPosition)
+    
     if (this._shouldStop || this.currentPosition >= sequence.length) {
-      console.log('Playback complete:', {
-        shouldStop: this._shouldStop,
-        position: this.currentPosition,
-        sequenceLength: sequence.length
-      })
+      console.log('Stopping sequence at position:', this.currentPosition)
+      // If we're looping and not manually stopped, start from beginning
+      if (this._isLooping && !this._shouldStop && this.currentPosition >= sequence.length) {
+        console.log('Looping back to start')
+        this.currentPosition = 0
+        this.savedPosition = 0
+        this.playNextTriad(sequence, onNotesChange)
+        return
+      }
+
+      // Otherwise stop playback and clear state
+      this._shouldStop = true
+      const instrument = this.getCurrentInstrument()
+      if (instrument) {
+        instrument.releaseAll()
+      }
       if (this.onComplete) {
         this.onComplete()
       }
-      onNotesChange?.([])
       return
     }
 
@@ -205,35 +314,60 @@ export class AudioService {
     
     // Update visualization before playing
     this.savedPosition = this.currentPosition
-    onNotesChange?.(triad.midiNotes)
+    this.currentMidiNotes = triad.midiNotes
+    onNotesChange?.(this.currentMidiNotes)
     
-    this.playTriad(triad.midiNotes, this.chordDuration)
+    this.playTriad(triad.midiNotes, this.chordDuration, onNotesChange)
 
     this.playbackTimeout = setTimeout(() => {
-      // Clear notes before moving to next chord
+      // Only advance position and play next chord if not stopped
       if (!this._shouldStop && this.currentPosition < sequence.length - 1) {
-        onNotesChange?.([])
+        this.currentPosition++
+        this.savedPosition = this.currentPosition
+        this.playNextTriad(sequence, onNotesChange)
+      } else if (!this._shouldStop && this._isLooping) {
+        // We've reached the end but we're looping
+        console.log('Reached end, looping back to start')
+        this.currentPosition = 0
+        this.savedPosition = 0
+        this.playNextTriad(sequence, onNotesChange)
+      } else if (!this._shouldStop) {
+        // We've reached the end of the sequence
+        this._shouldStop = true
+        const instrument = this.getCurrentInstrument()
+        if (instrument) {
+          instrument.releaseAll()
+        }
+        if (this.onComplete) {
+          this.onComplete()
+        }
       }
-      this.currentPosition++
-      this.savedPosition = this.currentPosition
-      this.playNextTriad(sequence, onNotesChange)
     }, this.chordDuration)
   }
 
-  stopPlayback() {
+  stopPlayback(): void {
     console.log('Stopping playback at position:', this.currentPosition)
     this._shouldStop = true
-    if (this.playbackTimeout) {
-      clearTimeout(this.playbackTimeout)
-      this.playbackTimeout = null
-    }
     const instrument = this.getCurrentInstrument()
     if (instrument) {
       instrument.releaseAll()
     }
+    // Don't clear currentMidiNotes here to maintain visualization
   }
 
-  setPosition(position: number) {
+  restart(): void {
+    console.log('Restarting playback')
+    this._shouldStop = true
+    const instrument = this.getCurrentInstrument()
+    if (instrument) {
+      instrument.releaseAll()
+    }
+    this.currentPosition = 0
+    this.savedPosition = 0
+    this.currentMidiNotes = []
+  }
+
+  setPosition(position: number): void {
     this.currentPosition = position
     this.savedPosition = position
   }
@@ -245,7 +379,7 @@ export class AudioService {
     return `${noteNames[noteIndex]}${octave}`
   }
 
-  async playTriad(midiNotes: number[], duration: number): Promise<void> {
+  async playTriad(midiNotes: number[], duration: number, onNotesChange?: (notes: number[]) => void): Promise<void> {
     console.log('playTriad called:', {
       midiNotes,
       duration,
@@ -266,31 +400,25 @@ export class AudioService {
     const notes = midiNotes.map(midi => this.midiToNote(midi))
     console.log('Converted to note names:', notes)
 
+    // Update current notes for visualization
+    this.currentMidiNotes = midiNotes
+    onNotesChange?.(this.currentMidiNotes)
+
     if (this._isArpeggiating) {
       console.log('Playing arpeggiated')
       const noteDelay = duration / midiNotes.length
       const noteDuration = noteDelay * 0.95 // Slightly shorter than delay to prevent overlap
       const now = Tone.now()
 
-      // Schedule all notes with Tone.js
       notes.forEach((note, i) => {
         const startTime = now + (i * noteDelay) / 1000
-        console.log(
-          `Scheduling note ${note} at ${startTime} for ${noteDuration / 1000}s`
-        )
-        instrument.triggerAttackRelease(
-          note,
-          noteDuration / 1000,
-          startTime,
-          0.7
-        )
+        console.log(`Scheduling note ${note} at ${startTime} for ${noteDuration / 1000}s`)
+        instrument.triggerAttackRelease(note, noteDuration / 1000, startTime, 0.7)
       })
 
-      // Wait for the full chord duration
       await new Promise(resolve => setTimeout(resolve, duration))
     } else {
       console.log('Playing all notes together:', notes)
-      // Play all notes together
       instrument.triggerAttack(notes)
 
       try {
@@ -318,6 +446,15 @@ export class AudioService {
         throw err
       }
     }
+  }
+
+  getCurrentMidiNotes(): number[] {
+    return this.currentMidiNotes
+  }
+
+  clearCurrentNotes(onNotesChange?: (notes: number[]) => void): void {
+    this.currentMidiNotes = []
+    onNotesChange?.([])
   }
 
   generateGiantStepsSequence(voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState): Triad[] {
