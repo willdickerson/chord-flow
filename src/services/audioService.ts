@@ -276,18 +276,18 @@ export class AudioService {
       }
 
       const noteDelay = duration / midiNotes.length
+      const noteDuration = noteDelay * 0.95 // Slightly shorter than delay to prevent overlap
       const now = Tone.now()
 
       // Schedule all notes with Tone.js
       notes.forEach((note, i) => {
         const startTime = now + (i * noteDelay / 1000)
-        const duration = noteDelay / 1000
-        console.log(`Scheduling note ${note} at ${startTime} for ${duration}s`)
-        instrument.triggerAttackRelease(note, duration, startTime, 0.7)
+        console.log(`Scheduling note ${note} at ${startTime} for ${noteDuration/1000}s`)
+        instrument.triggerAttackRelease(note, noteDuration/1000, startTime, 0.7)
       })
 
-      // Wait for all notes to complete
-      await new Promise(resolve => setTimeout(resolve, duration + 100))
+      // Wait for the full chord duration
+      await new Promise(resolve => setTimeout(resolve, duration))
     } else {
       console.log('Playing all notes together:', notes)
       // Play all notes together
