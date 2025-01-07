@@ -11,15 +11,18 @@ import {
 } from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
 import { ChordChart } from './ChordChart'
+import { VoiceLeadingControls } from './VoiceLeadingControls'
 import { audioService } from '../../../services/audioService'
 import * as Tone from 'tone'
 
 interface PlaybackControlsProps {
   onNotesChange: (notes: number[]) => void
+  onVoiceLeadingChange?: (voices: { bass: boolean; middle: boolean; high: boolean }) => void
 }
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onNotesChange,
+  onVoiceLeadingChange,
 }) => {
   const {
     sequence,
@@ -28,8 +31,11 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     isPlaying,
     error,
     handlePlayback,
+    handleStop,
     handleRestart,
     handlePositionSelect,
+    handleVoiceLeadingChange,
+    generateSequence,
   } = usePlaybackState(onNotesChange)
 
   const initialChordNames = audioService.getInitialChordNames()
@@ -281,6 +287,18 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Voice Leading Controls */}
+      <VoiceLeadingControls
+        isEnabled={!isPlaying}
+        onVoiceLeadingChange={voices => {
+          // Stop playback and reset state when voice leading changes
+          if (isPlaying) {
+            handleStop()
+          }
+          handleVoiceLeadingChange(voices)
+        }}
+      />
 
       <ChordChart
         sequence={sequence}

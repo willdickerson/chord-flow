@@ -1,6 +1,12 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { audioService } from '../../../services/audioService'
 import { Triad } from '../../../types'
+
+interface VoiceLeadingState {
+  bass: boolean
+  middle: boolean
+  high: boolean
+}
 
 export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   const [sequence, setSequence] = useState<Triad[] | null>(null)
@@ -8,72 +14,95 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [voiceLeadingState, setVoiceLeadingState] = useState<VoiceLeadingState>({
+    bass: true,
+    middle: true,
+    high: true,
+  })
   const displayedNotesRef = useRef<number[]>([])
 
-  const generateSequence = async () => {
+  const generateSequence = useCallback(async () => {
     try {
       setIsGenerating(true)
       setError(null)
-      await audioService.initialize()
+      console.log('Generating sequence with voice leading state:', voiceLeadingState)
 
+      // Ensure audio is initialized
+      await audioService.initialize()
+      
       await new Promise(resolve => setTimeout(resolve, 0))
-      const newSequence = audioService.generateGiantStepsSequence()
+      const newSequence = audioService.generateGiantStepsSequence(voiceLeadingState)
+      console.log('Generated new sequence with voice leading settings:', {
+        voiceLeadingState,
+        sequenceLength: newSequence.length
+      })
       setSequence(newSequence)
       setCurrentPosition(0)
       displayedNotesRef.current = []
+      onNotesChange([])
       return newSequence
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      console.error('Error generating sequence:', err)
+      setError('Failed to generate sequence')
       return null
     } finally {
       setIsGenerating(false)
     }
-  }
+  }, [voiceLeadingState, onNotesChange])
+
+  // Generate initial sequence on mount
+  useEffect(() => {
+    console.log('Generating initial sequence')
+    generateSequence()
+  }, [generateSequence])
 
   const handlePlayback = async () => {
     if (isGenerating) return
 
     try {
-      setError(null)
+      if (!isPlaying) {
+        // Check if we have a sequence
+        if (!sequence || sequence.length === 0) {
+          console.log('No sequence available, generating one...')
+          const newSequence = await generateSequence()
+          if (!newSequence) {
+            console.error('Failed to generate sequence')
+            return
+          }
+        }
 
-      if (isPlaying) {
+        // Initialize audio before starting playback
+        await audioService.initialize()
+        
+        console.log('Starting sequence from position:', currentPosition)
+        setIsPlaying(true)
+        audioService.startPlayback(
+          sequence, 
+          currentPosition, 
+          () => {
+            setIsPlaying(false)
+            if (!audioService.shouldStop) {
+              setCurrentPosition(0)
+              displayedNotesRef.current = []
+              onNotesChange([])
+            }
+          },
+          (notes) => {
+            displayedNotesRef.current = notes
+            onNotesChange(notes)
+            // Update position when notes change
+            setCurrentPosition(audioService.getCurrentPosition())
+          }
+        )
+      } else {
+        console.log('Stopping playback at position:', currentPosition)
         audioService.stopPlayback()
         setIsPlaying(false)
-        onNotesChange(displayedNotesRef.current)
-        return
-      }
-
-      let currentSequence = sequence
-      if (!currentSequence) {
-        currentSequence = await generateSequence()
-        if (!currentSequence) return
-      }
-
-      setIsPlaying(true)
-
-      await audioService.playTriadSequence(
-        currentSequence,
-        notes => {
-          displayedNotesRef.current = notes
-          onNotesChange(notes)
-        },
-        currentPosition,
-        position => {
-          setCurrentPosition(position)
-        }
-      )
-
-      setIsPlaying(false)
-      if (!audioService.shouldStop) {
-        displayedNotesRef.current = []
-        onNotesChange([])
-        setCurrentPosition(0)
-        audioService.setPosition(0)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      console.error('Playback error:', err)
+      setError('Failed to start playback')
       setIsPlaying(false)
-      onNotesChange(displayedNotesRef.current)
     }
   }
 
@@ -111,14 +140,37 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     [isGenerating, sequence, isPlaying, onNotesChange]
   )
 
+  const handleVoiceLeadingChange = useCallback((voices: VoiceLeadingState) => {
+    console.log('Updating voice leading state:', voices)
+    setVoiceLeadingState(voices)
+    // Stop any current playback and reset position
+    if (isPlaying) {
+      audioService.stopPlayback()
+      setIsPlaying(false)
+    }
+    setCurrentPosition(0)
+    // Generate new sequence with updated voice leading settings
+    generateSequence()
+  }, [isPlaying, generateSequence])
+
+  const handleStop = useCallback(() => {
+    console.log('Stopping playback')
+    audioService.stopPlayback()
+    setIsPlaying(false)
+    onNotesChange([])
+  }, [onNotesChange])
+
   return {
     sequence,
     currentPosition,
     isGenerating,
     isPlaying,
     error,
+    voiceLeadingState,
     handlePlayback,
     handleRestart,
     handlePositionSelect,
+    handleVoiceLeadingChange,
+    handleStop,
   }
 }

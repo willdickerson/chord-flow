@@ -11,7 +11,8 @@ import { findAllTriadsInRange } from './chordUtils'
 export function buildVoiceLeadingGraph(
   chords: ChordName[],
   midiRange: [number, number],
-  triads: { [key: string]: Inversion[] }
+  triads: { [key: string]: Inversion[] },
+  costFunction: (currentNotes: number[], nextNotes: number[]) => number = calculateVoiceLeadingCost
 ): VoiceLeadingGraph {
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
@@ -43,7 +44,7 @@ export function buildVoiceLeadingGraph(
       const possibleConnections: { node: GraphNode; cost: number }[] = []
 
       for (const nextNode of nextNodes) {
-        const cost = calculateVoiceLeadingCost(
+        const cost = costFunction(
           currentNode.midiNotes,
           nextNode.midiNotes
         )

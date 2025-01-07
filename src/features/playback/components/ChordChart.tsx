@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { Triad } from '../../../types'
 
 interface ChordChartProps {
@@ -9,7 +9,7 @@ interface ChordChartProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
-  audioService: unknown // Assuming audioService is an object with getChordDuration and isArpeggiating methods
+  audioService: unknown // Assuming audioService is an object with getChordDuration, isArpeggiating, initialize and playTriad methods
 }
 
 export const ChordChart: React.FC<ChordChartProps> = ({
@@ -22,6 +22,9 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   onNotesChange,
   audioService, // Add audioService as a prop
 }) => {
+  const displayedNotesRef = useRef<number[]>([])
+  const setCurrentPosition = (position: number) => onPositionSelect(position)
+
   console.log('ChordChart render:', {
     hasSequence: !!sequence,
     currentPosition,
@@ -29,42 +32,39 @@ export const ChordChart: React.FC<ChordChartProps> = ({
     isPlaying,
   })
 
-  const handleChordClick = (index: number) => {
-    console.log('ChordChart handleChordClick:', {
-      index,
-      isPlaying,
-      hasSequence: !!sequence,
-      isArpeggiating: audioService.isArpeggiating,
-    })
-    if (!sequence) return
+  const handleChordClick = async (index: number) => {
+    if (!sequence || sequence.length === 0) {
+      console.warn('No sequence available')
+      return
+    }
 
-    const chord = sequence[index]
-    console.log('Chord to play:', chord)
+    try {
+      // Initialize audio if needed
+      await audioService.initialize()
 
-    if (isPlaying) {
-      console.log('Playing while sequence is active')
-      // If playing, just update position and play the chord without pausing
-      onPositionSelect(index)
-      onNotesChange({
-        type: 'play',
-        notes: chord.midiNotes,
-        duration: audioService.getChordDuration(),
-        stayLit: true, // Keep visual state lit even during playback
-        releaseAudio: true, // Always release the audio
-        useArpeggiator: audioService.isArpeggiating, // Use current arpeggiator state
-      })
-    } else {
-      console.log('Playing while sequence is paused')
-      // If paused, update position and play the chord
-      onPositionSelect(index)
-      onNotesChange({
-        type: 'play',
-        notes: chord.midiNotes,
-        duration: audioService.getChordDuration(),
-        stayLit: true, // Keep visual state lit
-        releaseAudio: true, // Always release the audio
-        useArpeggiator: audioService.isArpeggiating, // Use current arpeggiator state
-      })
+      const triad = sequence[index]
+      if (!triad) {
+        console.warn('No triad at position:', index)
+        return
+      }
+
+      // Update displayed notes and position
+      displayedNotesRef.current = triad.midiNotes
+      onNotesChange(triad.midiNotes)
+      setCurrentPosition(index)
+
+      // Play the triad
+      await audioService.playTriad(triad.midiNotes, audioService.getChordDuration())
+
+      // Clear notes after playing
+      if (!isPlaying) {
+        displayedNotesRef.current = []
+        onNotesChange([])
+      }
+    } catch (err) {
+      console.error('Error playing chord:', err)
+      displayedNotesRef.current = []
+      onNotesChange([])
     }
   }
 
