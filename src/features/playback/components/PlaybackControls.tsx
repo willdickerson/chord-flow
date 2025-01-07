@@ -57,73 +57,57 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       duration?: number; 
       stayLit?: boolean;
       releaseAudio?: boolean;
+      useArpeggiator?: boolean;
     }
   ) => {
-    console.log('PlaybackControls handleNotesChange:', { notes, isPlaying })
+    console.log('handleNotesChange called:', notes)
     
     if (Array.isArray(notes)) {
-      console.log('Legacy format - updating keyboard state')
+      console.log('Updating keyboard state with array:', notes)
       onNotesChange(notes)
-      return
-    }
+    } else {
+      if (notes.type === 'play' && notes.notes) {
+        try {
+          console.log('Starting audio playback...')
+          // Ensure audio context is started (required by browsers)
+          await Tone.start()
+          await audioService.initialize()
 
-    if (notes.type === 'pause') {
-      console.log('Pausing playback')
-      handlePlayback()
-      return
-    }
+          const duration = notes.duration || audioService.getChordDuration()
+          const useArp = notes.useArpeggiator !== undefined ? notes.useArpeggiator : audioService.isArpeggiating
+          console.log('Playing with settings:', { duration, useArp, notes: notes.notes })
 
-    if (notes.type === 'play' && notes.notes) {
-      console.log('Playing notes:', { notes: notes.notes, stayLit: notes.stayLit, releaseAudio: notes.releaseAudio })
-      try {
-        // Ensure audio context is started (required by browsers)
-        console.log('Starting Tone.js...')
-        await Tone.start()
-        console.log('Initializing audio service...')
-        await audioService.initialize()
-        
-        // Always update visual keyboard state for clicked chords
-        console.log('Updating visual keyboard state:', notes.notes)
-        onNotesChange(notes.notes)
-        
-        // Get the current instrument
-        const instrument = audioService.getCurrentInstrument()
-        console.log('Got instrument:', instrument ? 'yes' : 'no')
-        if (!instrument) {
-          throw new Error('No instrument loaded')
-        }
+          // Always update visual state
+          onNotesChange(notes.notes)
 
-        // Convert MIDI notes to note names
-        const noteNames = notes.notes.map(midi => {
-          const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-          const octave = Math.floor(midi / 12) - 1
-          const noteIndex = midi % 12
-          return `${noteNames[noteIndex]}${octave}`
-        })
-        console.log('Converted to note names:', noteNames)
+          // Temporarily set arpeggiator state if needed
+          const originalArpState = audioService.isArpeggiating
+          if (useArp !== originalArpState) {
+            audioService.setArpeggiating(useArp)
+          }
 
-        // Play the chord
-        console.log('Triggering attack...')
-        instrument.triggerAttack(noteNames)
-        
-        // Release after specified duration if releaseAudio is true
-        if (notes.releaseAudio) {
-          console.log('Will release audio after duration')
-          await new Promise(resolve => setTimeout(resolve, notes.duration || 333))
-          console.log('Triggering release...')
-          instrument.triggerRelease(noteNames)
-          
-          // Only clear visual keyboard if not staying lit
+          try {
+            // Play the notes
+            await audioService.playTriad(notes.notes, duration, (updatedNotes) => {
+              if (!notes.stayLit) {
+                onNotesChange(updatedNotes)
+              }
+            })
+          } finally {
+            // Restore original arpeggiator state
+            if (useArp !== originalArpState) {
+              audioService.setArpeggiating(originalArpState)
+            }
+          }
+        } catch (err) {
+          console.error('Failed to play notes:', err)
           if (!notes.stayLit) {
-            console.log('Clearing visual keyboard state')
             onNotesChange([])
           }
         }
-      } catch (err) {
-        console.error('Failed to play notes:', err)
-        if (!isPlaying) {
-          onNotesChange([])
-        }
+      } else if (notes.type === 'pause') {
+        console.log('Pausing playback')
+        onNotesChange([])
       }
     }
   }
@@ -270,14 +254,15 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         </div>
       </div>
 
-      <ChordChart
+      <ChordChart 
         sequence={sequence}
         currentPosition={currentPosition}
         onPositionSelect={handlePositionSelect}
-        isEnabled={!isGenerating && sequence !== null}
+        isEnabled={!isGenerating && !error}
         initialChordNames={initialChordNames}
         isPlaying={isPlaying}
         onNotesChange={handleNotesChange}
+        audioService={audioService}
       />
     </div>
   )

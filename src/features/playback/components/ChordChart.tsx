@@ -9,6 +9,7 @@ interface ChordChartProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
+  audioService: any // Assuming audioService is an object with getChordDuration and isArpeggiating methods
 }
 
 export const ChordChart: React.FC<ChordChartProps> = ({
@@ -19,6 +20,7 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   initialChordNames = [],
   isPlaying,
   onNotesChange,
+  audioService, // Add audioService as a prop
 }) => {
   console.log('ChordChart render:', { 
     hasSequence: !!sequence, 
@@ -28,7 +30,12 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   })
 
   const handleChordClick = (index: number) => {
-    console.log('ChordChart handleChordClick:', { index, isPlaying, hasSequence: !!sequence })
+    console.log('ChordChart handleChordClick:', { 
+      index, 
+      isPlaying, 
+      hasSequence: !!sequence,
+      isArpeggiating: audioService.isArpeggiating
+    })
     if (!sequence) return
 
     const chord = sequence[index]
@@ -41,9 +48,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({
       onNotesChange({
         type: 'play',
         notes: chord.midiNotes,
-        duration: 333,
+        duration: audioService.getChordDuration(),
         stayLit: true,     // Keep visual state lit even during playback
-        releaseAudio: true // Always release the audio
+        releaseAudio: true, // Always release the audio
+        useArpeggiator: audioService.isArpeggiating // Use current arpeggiator state
       })
     } else {
       console.log('Playing while sequence is paused')
@@ -52,9 +60,10 @@ export const ChordChart: React.FC<ChordChartProps> = ({
       onNotesChange({
         type: 'play',
         notes: chord.midiNotes,
-        duration: 333,
+        duration: audioService.getChordDuration(),
         stayLit: true,     // Keep visual state lit
-        releaseAudio: true // Always release the audio
+        releaseAudio: true, // Always release the audio
+        useArpeggiator: audioService.isArpeggiating // Use current arpeggiator state
       })
     }
   }

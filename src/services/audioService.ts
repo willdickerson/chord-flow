@@ -30,7 +30,7 @@ export class AudioService {
   private volume = 25
   private chordDuration = 670
   private isLooping = false
-  private isArpeggiating = false
+  private _isArpeggiating = false
 
   setVolume(value: number): void {
     this.volume = value
@@ -67,98 +67,127 @@ export class AudioService {
   }
 
   async initialize(): Promise<void> {
+    console.log('Initializing audio service...')
     if (this.isInitialized) {
-      console.log('Audio service already initialized')
+      console.log('Already initialized')
       return
     }
 
-    console.log('Initializing audio service...')
-    // Initialize Tone.js
-    await Tone.start()
-    console.log('Tone.js started')
+    try {
+      // Start Tone.js first
+      console.log('Starting Tone.js...')
+      await Tone.start()
+      console.log('Tone.js started')
 
-    // Create piano sampler
-    console.log('Creating instruments...')
-    this.instruments.piano = new Tone.Sampler({
-      urls: {
-        A0: 'A0.mp3',
-        C1: 'C1.mp3',
-        'D#1': 'Ds1.mp3',
-        'F#1': 'Fs1.mp3',
-        A1: 'A1.mp3',
-        C2: 'C2.mp3',
-        'D#2': 'Ds2.mp3',
-        'F#2': 'Fs2.mp3',
-        A2: 'A2.mp3',
-        C3: 'C3.mp3',
-        'D#3': 'Ds3.mp3',
-        'F#3': 'Fs3.mp3',
-        A3: 'A3.mp3',
-        C4: 'C4.mp3',
-        'D#4': 'Ds4.mp3',
-        'F#4': 'Fs4.mp3',
-        A4: 'A4.mp3',
-        C5: 'C5.mp3',
-        'D#5': 'Ds5.mp3',
-        'F#5': 'Fs5.mp3',
-        A5: 'A5.mp3',
-        C6: 'C6.mp3',
-        'D#6': 'Ds6.mp3',
-        'F#6': 'Fs6.mp3',
-        A6: 'A6.mp3',
-        C7: 'C7.mp3',
-        'D#7': 'Ds7.mp3',
-        'F#7': 'Fs7.mp3',
-        A7: 'A7.mp3',
-        C8: 'C8.mp3',
-      },
-      release: 1,
-      baseUrl: 'https://tonejs.github.io/audio/salamander/',
-    }).toDestination()
+      console.log('Loading synth...')
+      // Initialize synth
+      this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
+        oscillator: {
+          type: 'triangle',
+        },
+        envelope: {
+          attack: 0.005,
+          decay: 0.1,
+          sustain: 0.3,
+          release: 1,
+        },
+      }).toDestination()
 
-    // Create basic synth
-    this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
-      oscillator: {
-        type: 'triangle',
-      },
-      envelope: {
-        attack: 0.005,
-        decay: 0.1,
-        sustain: 0.3,
+      console.log('Loading piano...')
+      // Initialize piano
+      this.instruments.piano = new Tone.Sampler({
+        urls: {
+          A0: 'A0.mp3',
+          C1: 'C1.mp3',
+          'D#1': 'Ds1.mp3',
+          'F#1': 'Fs1.mp3',
+          A1: 'A1.mp3',
+          C2: 'C2.mp3',
+          'D#2': 'Ds2.mp3',
+          'F#2': 'Fs2.mp3',
+          A2: 'A2.mp3',
+          C3: 'C3.mp3',
+          'D#3': 'Ds3.mp3',
+          'F#3': 'Fs3.mp3',
+          A3: 'A3.mp3',
+          C4: 'C4.mp3',
+          'D#4': 'Ds4.mp3',
+          'F#4': 'Fs4.mp3',
+          A4: 'A4.mp3',
+          C5: 'C5.mp3',
+          'D#5': 'Ds5.mp3',
+          'F#5': 'Fs5.mp3',
+          A5: 'A5.mp3',
+          C6: 'C6.mp3',
+          'D#6': 'Ds6.mp3',
+          'F#6': 'Fs6.mp3',
+          A6: 'A6.mp3',
+          C7: 'C7.mp3',
+          'D#7': 'Ds7.mp3',
+          'F#7': 'Fs7.mp3',
+          A7: 'A7.mp3',
+          C8: 'C8.mp3',
+        },
         release: 1,
-      },
-    }).toDestination()
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
+        onload: () => {
+          console.log('Piano samples loaded')
+        }
+      }).toDestination()
 
-    // Create guitar sampler with nylon guitar samples
-    this.instruments.guitar = new Tone.Sampler({
-      urls: {
-        E2: 'E2.mp3',
-        'F#2': 'Fs2.mp3',
-        'G#2': 'Gs2.mp3',
-        A2: 'A2.mp3',
-        B2: 'B2.mp3',
-        D3: 'D3.mp3',
-        E3: 'E3.mp3',
-        'F#3': 'Fs3.mp3',
-        G3: 'G3.mp3',
-        A3: 'A3.mp3',
-        B3: 'B3.mp3',
-        'C#4': 'Cs4.mp3',
-        'D#4': 'Ds4.mp3',
-        E4: 'E4.mp3',
-        'F#4': 'Fs4.mp3',
-        'G#4': 'Gs4.mp3',
-      },
-      release: 1.2,
-      volume: -3,
-      baseUrl:
-        'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
-    }).toDestination()
+      console.log('Loading guitar...')
+      // Initialize guitar
+      this.instruments.guitar = new Tone.Sampler({
+        urls: {
+          E2: 'E2.mp3',
+          'F#2': 'Fs2.mp3',
+          'G#2': 'Gs2.mp3',
+          A2: 'A2.mp3',
+          B2: 'B2.mp3',
+          D3: 'D3.mp3',
+          E3: 'E3.mp3',
+          'F#3': 'Fs3.mp3',
+          G3: 'G3.mp3',
+          A3: 'A3.mp3',
+          B3: 'B3.mp3',
+          'C#4': 'Cs4.mp3',
+          'D#4': 'Ds4.mp3',
+          E4: 'E4.mp3',
+          'F#4': 'Fs4.mp3',
+          'G#4': 'Gs4.mp3',
+        },
+        release: 1.2,
+        volume: -3,
+        baseUrl:
+          'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
+        onload: () => {
+          console.log('Guitar samples loaded')
+        }
+      }).toDestination()
 
-    // Set initial volume for all instruments
-    this.setVolume(this.volume)
+      // Wait for samples to load
+      console.log('Waiting for instruments to load...')
+      await new Promise((resolve) => {
+        const checkLoaded = () => {
+          if (this.instruments.piano.loaded && this.instruments.guitar.loaded) {
+            console.log('All instruments loaded successfully')
+            resolve(true)
+          } else {
+            setTimeout(checkLoaded, 100)
+          }
+        }
+        checkLoaded()
+      })
 
-    this.isInitialized = true
+      // Set initial volume
+      this.setVolume(this.volume)
+
+      this.isInitialized = true
+      console.log('Audio service initialized successfully')
+    } catch (err) {
+      console.error('Failed to initialize audio service:', err)
+      throw err
+    }
   }
 
   private async waitForLoad(): Promise<void> {
@@ -204,11 +233,9 @@ export class AudioService {
   }
 
   getCurrentInstrument(): Tone.Sampler | Tone.PolySynth | null {
+    console.log('Getting current instrument:', this.currentInstrument)
     const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
-    console.log('Getting current instrument:', {
-      type: this.currentInstrument,
-      instrument: instrument ? 'loaded' : 'not loaded'
-    })
+    console.log('Got instrument:', instrument ? 'yes' : 'no')
     return instrument
   }
 
@@ -217,67 +244,52 @@ export class AudioService {
     duration: number,
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
+    console.log('playTriad called:', { 
+      midiNotes, 
+      duration, 
+      isArpeggiating: this.isArpeggiating,
+      currentInstrument: this.currentInstrument
+    })
+    
     if (midiNotes.length === 0) return
 
     const instrument = this.getCurrentInstrument()
+    console.log('Got instrument:', instrument ? 'yes' : 'no')
+    
     if (!instrument) {
       throw new Error('No instrument loaded')
     }
 
     // Convert MIDI notes to note names
     const notes = midiNotes.map(midi => this.midiToNote(midi))
+    console.log('Converted to note names:', notes)
+    
     this.currentPlayingNotes = notes
     this.currentMidiNotes = midiNotes
 
     if (this.isArpeggiating) {
-      // Show all notes at the start if manually selected
-      if (this.wasPositionSelected) {
-        onNotesChange?.(midiNotes)
-      }
-
-      // Play notes one at a time
-      const noteDelay = Math.floor(duration / midiNotes.length)
+      console.log('Playing arpeggiated')
       
-      for (let i = 0; i < midiNotes.length; i++) {
-        if (this._shouldStop) break
-        
-        const note = notes[i]
-        instrument.triggerAttack(note)
-
-        // Only update visual state if not manually selected
-        if (!this.wasPositionSelected) {
-          onNotesChange?.([midiNotes[i]])  // Show single note
-        }
-
-        await new Promise(resolve => {
-          const timeout = setTimeout(() => {
-            if (!this._shouldStop) {
-              resolve('completed')
-            }
-          }, noteDelay)
-          const checkInterval = setInterval(() => {
-            if (this._shouldStop) {
-              clearTimeout(timeout)
-              clearInterval(checkInterval)
-              resolve('stopped')
-            }
-          }, 50)
-        })
-
-        instrument.triggerRelease(note)
-        
-        // Only clear between notes if not manually selected
-        if (i < midiNotes.length - 1 && !this.wasPositionSelected) {
-          onNotesChange?.([])  // Clear visual state between notes
-          await new Promise(resolve => setTimeout(resolve, 10))  // Tiny gap between notes
-        }
+      // Show all notes initially if we want them to stay lit
+      if (onNotesChange) {
+        onNotesChange(midiNotes)
       }
 
-      // After last note, show all notes if manually selected
-      if (this.wasPositionSelected) {
-        onNotesChange?.(midiNotes)
-      }
+      const noteDelay = duration / midiNotes.length
+      const now = Tone.now()
+
+      // Schedule all notes with Tone.js
+      notes.forEach((note, i) => {
+        const startTime = now + (i * noteDelay / 1000)
+        const duration = noteDelay / 1000
+        console.log(`Scheduling note ${note} at ${startTime} for ${duration}s`)
+        instrument.triggerAttackRelease(note, duration, startTime, 0.7)
+      })
+
+      // Wait for all notes to complete
+      await new Promise(resolve => setTimeout(resolve, duration + 100))
     } else {
+      console.log('Playing all notes together:', notes)
       // Play all notes together
       instrument.triggerAttack(notes)
       onNotesChange?.(midiNotes)
@@ -291,8 +303,6 @@ export class AudioService {
           }, duration)
           const checkInterval = setInterval(() => {
             if (this._shouldStop) {
-              // Capture the current notes at the moment we decide to stop
-              this.stoppedMidiNotes = [...this.currentMidiNotes]
               clearTimeout(timeout)
               clearInterval(checkInterval)
               resolve('stopped')
@@ -300,9 +310,11 @@ export class AudioService {
           }, 100)
         })
 
+        console.log('Releasing notes:', notes)
         // Release the audio but don't clear visual notes
         instrument.triggerRelease(notes)
       } catch (err) {
+        console.error('Error playing notes:', err)
         instrument.triggerRelease(notes)
         throw err
       }
@@ -485,8 +497,13 @@ export class AudioService {
     this.isFirstPlay = false
   }
 
-  setArpeggiating(shouldArpeggiate: boolean): void {
-    this.isArpeggiating = shouldArpeggiate
+  get isArpeggiating(): boolean {
+    return this._isArpeggiating
+  }
+
+  setArpeggiating(value: boolean) {
+    console.log('Setting arpeggiating:', value)
+    this._isArpeggiating = value
   }
 
   getInitialArpeggiating(): boolean {
@@ -534,6 +551,10 @@ export class AudioService {
     this.currentPosition = position
     this.wasPositionSelected = true
     this.isFirstPlay = false
+  }
+
+  getChordDuration(): number {
+    return this.chordDuration
   }
 }
 
