@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat, ArrowUpWideNarrow } from 'lucide-react'
+import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat, TrendingUp } from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
 import { ChordChart } from './ChordChart'
 import { audioService } from '../../../services/audioService'
@@ -215,7 +215,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             transition-colors bg-transparent p-0 border-0
             ${isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
         >
-          <ArrowUpWideNarrow className="w-4 h-4" />
+          <TrendingUp className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-5">
