@@ -58,15 +58,16 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
             onClick={() => handleVoiceToggle('bass')}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
               ${
-                isEnabled
-                  ? 'hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200'
-                  : 'opacity-50 cursor-not-allowed'
+                !isEnabled
+                  ? selectedVoices.bass
+                    ? 'bg-purple-100/50 text-purple-700/50'
+                    : 'bg-gray-50/50 text-gray-500/50'
+                  : selectedVoices.bass
+                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }
-              ${
-                selectedVoices.bass
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-gray-50 text-gray-500'
-              }`}
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
+              ${!isEnabled ? 'cursor-not-allowed' : ''}`}
             disabled={!isEnabled}
             title="Optimize Bass Voice"
           >
@@ -78,15 +79,16 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
             onClick={() => handleVoiceToggle('middle')}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
               ${
-                isEnabled
-                  ? 'hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200'
-                  : 'opacity-50 cursor-not-allowed'
+                !isEnabled
+                  ? selectedVoices.middle
+                    ? 'bg-purple-100/50 text-purple-700/50'
+                    : 'bg-gray-50/50 text-gray-500/50'
+                  : selectedVoices.middle
+                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }
-              ${
-                selectedVoices.middle
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-gray-50 text-gray-500'
-              }`}
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
+              ${!isEnabled ? 'cursor-not-allowed' : ''}`}
             disabled={!isEnabled}
             title="Optimize Middle Voice"
           >
@@ -98,15 +100,16 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
             onClick={() => handleVoiceToggle('high')}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
               ${
-                isEnabled
-                  ? 'hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-200'
-                  : 'opacity-50 cursor-not-allowed'
+                !isEnabled
+                  ? selectedVoices.high
+                    ? 'bg-purple-100/50 text-purple-700/50'
+                    : 'bg-gray-50/50 text-gray-500/50'
+                  : selectedVoices.high
+                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }
-              ${
-                selectedVoices.high
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-gray-50 text-gray-500'
-              }`}
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
+              ${!isEnabled ? 'cursor-not-allowed' : ''}`}
             disabled={!isEnabled}
             title="Optimize High Voice"
           >
