@@ -9,7 +9,7 @@ interface ChordChartProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
-  audioService: any // Assuming audioService is an object with getChordDuration and isArpeggiating methods
+  audioService: unknown // Assuming audioService is an object with getChordDuration and isArpeggiating methods
 }
 
 export const ChordChart: React.FC<ChordChartProps> = ({

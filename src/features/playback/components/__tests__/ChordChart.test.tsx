@@ -19,6 +19,9 @@ vi.mock('../../../../services/audioService', () => ({
       triggerAttack: vi.fn(),
       triggerRelease: vi.fn(),
     }),
+    get isArpeggiating() {
+      return false
+    }
   },
 }))
 
@@ -32,6 +35,12 @@ describe('ChordChart', () => {
 
   const mockInitialChordNames = ['C', 'G', 'Am', 'F']
   const mockOnNotesChange = vi.fn()
+  const mockAudioService = {
+    getChordDuration: () => 670,
+    get isArpeggiating() {
+      return false
+    }
+  }
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -47,6 +56,7 @@ describe('ChordChart', () => {
         initialChordNames={mockInitialChordNames}
         isPlaying={false}
         onNotesChange={mockOnNotesChange}
+        audioService={mockAudioService}
       />
     )
 
@@ -65,6 +75,7 @@ describe('ChordChart', () => {
         initialChordNames={mockInitialChordNames}
         isPlaying={false}
         onNotesChange={mockOnNotesChange}
+        audioService={mockAudioService}
       />
     )
 
@@ -84,6 +95,7 @@ describe('ChordChart', () => {
         initialChordNames={mockInitialChordNames}
         isPlaying={false}
         onNotesChange={mockOnNotesChange}
+        audioService={mockAudioService}
       />
     )
 
@@ -103,6 +115,7 @@ describe('ChordChart', () => {
   it('calls onPositionSelect when chord is clicked', async () => {
     const user = userEvent.setup()
     const mockOnPositionSelect = vi.fn()
+
     render(
       <ChordChart
         sequence={mockSequence}
@@ -112,6 +125,7 @@ describe('ChordChart', () => {
         initialChordNames={mockInitialChordNames}
         isPlaying={false}
         onNotesChange={mockOnNotesChange}
+        audioService={mockAudioService}
       />
     )
 
@@ -130,6 +144,7 @@ describe('ChordChart', () => {
         initialChordNames={mockInitialChordNames}
         isPlaying={false}
         onNotesChange={mockOnNotesChange}
+        audioService={mockAudioService}
       />
     )
 
@@ -160,6 +175,7 @@ describe('ChordChart', () => {
         initialChordNames={[]}
         isPlaying={false}
         onNotesChange={mockOnNotesChange}
+        audioService={mockAudioService}
       />
     )
 

@@ -8,25 +8,38 @@ vi.mock('tone', () => ({
   Synth: vi.fn().mockImplementation(() => ({
     oscillator: { type: 'triangle' },
     toDestination: vi.fn().mockReturnThis(),
+    volume: { value: 0 },
   })),
   Sampler: vi.fn().mockImplementation(() => ({
     triggerAttack: vi.fn(),
     triggerRelease: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
+    loaded: true,
+    volume: { value: 0 },
   })),
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   PolySynth: vi.fn().mockImplementation(Synth => ({
     triggerAttack: vi.fn(),
     triggerRelease: vi.fn(),
     toDestination: vi.fn().mockReturnThis(),
+    volume: { value: 0 },
   })),
+  gainToDb: vi.fn().mockReturnValue(0),
 }))
 
 describe('AudioService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Reset the audioService's initialized state
+    // Reset the audioService's state
     audioService['isInitialized'] = false
+    audioService['_shouldStop'] = false
+    audioService['currentPosition'] = 0
+    audioService['savedPosition'] = 0
+    audioService['currentMidiNotes'] = []
+    audioService['stoppedMidiNotes'] = []
+    audioService['isFirstPlay'] = true
+    audioService['wasPositionSelected'] = false
+    audioService['_isArpeggiating'] = false
   })
 
   describe('initialization', () => {
@@ -138,12 +151,12 @@ describe('AudioService', () => {
         mockOnPositionChange
       )
 
-      // Wait a bit to let it start playing
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Wait for the next tick to allow callbacks to be called
+      await new Promise(resolve => setTimeout(resolve, 0))
 
       // Should have called the callbacks
       expect(mockOnPositionChange).toHaveBeenCalledWith(0)
-      expect(mockOnNotesChange).toHaveBeenCalled()
+      expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[0].midiNotes)
 
       // Stop playback to resolve the promise
       audioService.stopPlayback()
@@ -163,18 +176,43 @@ describe('AudioService', () => {
         mockOnPositionChange
       )
 
-      // Wait a bit to let it start playing
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Wait for the next tick to allow callbacks to be called
+      await new Promise(resolve => setTimeout(resolve, 0))
 
       // Should start from the specified position
       expect(mockOnPositionChange).toHaveBeenCalledWith(startPosition)
-      expect(mockOnNotesChange).toHaveBeenCalledWith(
-        sequence[startPosition].midiNotes
-      )
+      expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[startPosition].midiNotes)
 
       // Stop playback to resolve the promise
       audioService.stopPlayback()
       await playPromise
+    })
+  })
+
+  describe('arpeggiator', () => {
+    beforeEach(async () => {
+      await audioService.initialize()
+    })
+
+    it('initializes with arpeggiator disabled', () => {
+      expect(audioService.isArpeggiating).toBe(false)
+    })
+
+    it('toggles arpeggiator state', () => {
+      expect(audioService.isArpeggiating).toBe(false)
+      audioService.setArpeggiating(true)
+      expect(audioService.isArpeggiating).toBe(true)
+      audioService.setArpeggiating(false)
+      expect(audioService.isArpeggiating).toBe(false)
+    })
+
+    it('returns initial arpeggiator state', () => {
+      const initialState = audioService.getInitialArpeggiating()
+      expect(initialState).toBe(false)
+      
+      audioService.setArpeggiating(true)
+      const updatedState = audioService.getInitialArpeggiating()
+      expect(updatedState).toBe(true)
     })
   })
 })
