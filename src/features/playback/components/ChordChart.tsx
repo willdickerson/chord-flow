@@ -22,25 +22,25 @@ export const ChordChart: React.FC<ChordChartProps> = ({
   onNotesChange,
   audioService, // Add audioService as a prop
 }) => {
-  console.log('ChordChart render:', { 
-    hasSequence: !!sequence, 
-    currentPosition, 
-    isEnabled, 
-    isPlaying 
+  console.log('ChordChart render:', {
+    hasSequence: !!sequence,
+    currentPosition,
+    isEnabled,
+    isPlaying,
   })
 
   const handleChordClick = (index: number) => {
-    console.log('ChordChart handleChordClick:', { 
-      index, 
-      isPlaying, 
+    console.log('ChordChart handleChordClick:', {
+      index,
+      isPlaying,
       hasSequence: !!sequence,
-      isArpeggiating: audioService.isArpeggiating
+      isArpeggiating: audioService.isArpeggiating,
     })
     if (!sequence) return
 
     const chord = sequence[index]
     console.log('Chord to play:', chord)
-    
+
     if (isPlaying) {
       console.log('Playing while sequence is active')
       // If playing, just update position and play the chord without pausing
@@ -49,9 +49,9 @@ export const ChordChart: React.FC<ChordChartProps> = ({
         type: 'play',
         notes: chord.midiNotes,
         duration: audioService.getChordDuration(),
-        stayLit: true,     // Keep visual state lit even during playback
+        stayLit: true, // Keep visual state lit even during playback
         releaseAudio: true, // Always release the audio
-        useArpeggiator: audioService.isArpeggiating // Use current arpeggiator state
+        useArpeggiator: audioService.isArpeggiating, // Use current arpeggiator state
       })
     } else {
       console.log('Playing while sequence is paused')
@@ -61,9 +61,9 @@ export const ChordChart: React.FC<ChordChartProps> = ({
         type: 'play',
         notes: chord.midiNotes,
         duration: audioService.getChordDuration(),
-        stayLit: true,     // Keep visual state lit
+        stayLit: true, // Keep visual state lit
         releaseAudio: true, // Always release the audio
-        useArpeggiator: audioService.isArpeggiating // Use current arpeggiator state
+        useArpeggiator: audioService.isArpeggiating, // Use current arpeggiator state
       })
     }
   }

@@ -21,7 +21,7 @@ vi.mock('../../../../services/audioService', () => ({
     }),
     get isArpeggiating() {
       return false
-    }
+    },
   },
 }))
 
@@ -39,7 +39,7 @@ describe('ChordChart', () => {
     getChordDuration: () => 670,
     get isArpeggiating() {
       return false
-    }
+    },
   }
 
   beforeEach(() => {
@@ -100,7 +100,9 @@ describe('ChordChart', () => {
     )
 
     // Check current chord is highlighted
-    const currentChordButton = screen.getByText(mockSequence[currentPosition].chordName)
+    const currentChordButton = screen.getByText(
+      mockSequence[currentPosition].chordName
+    )
     expect(currentChordButton).toHaveClass('bg-purple-100', 'text-purple-700')
 
     // Check other chords are not highlighted
@@ -194,7 +196,9 @@ describe('ChordChart', () => {
     // Verify the chord names are in the correct order
     testSequence.forEach((chord, index) => {
       const rowIndex = Math.floor(index / 8)
-      const button = rows[rowIndex].querySelector(`button:nth-child(${(index % 8) + 1})`)
+      const button = rows[rowIndex].querySelector(
+        `button:nth-child(${(index % 8) + 1})`
+      )
       expect(button).toHaveTextContent(chord.chordName)
     })
   })

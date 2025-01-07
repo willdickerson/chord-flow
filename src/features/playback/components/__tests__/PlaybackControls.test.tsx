@@ -175,14 +175,14 @@ describe('PlaybackControls', () => {
 
     const user = userEvent.setup()
     const arpButton = screen.getByRole('button', { name: /Enable Arpeggiator/ })
-    
+
     // Initial state - not arpeggiating
     expect(arpButton).toHaveClass('text-gray-600')
-    
+
     // Click to enable
     await user.click(arpButton)
     expect(arpButton).toHaveClass('text-purple-700')
-    
+
     // Click to disable
     await user.click(arpButton)
     expect(arpButton).toHaveClass('text-gray-600')
@@ -274,7 +274,9 @@ describe('PlaybackControls', () => {
 
     render(<PlaybackControls onNotesChange={mockOnNotesChange} />)
 
-    const durationSlider = screen.getByRole('slider', { name: 'Chord Duration' })
+    const durationSlider = screen.getByRole('slider', {
+      name: 'Chord Duration',
+    })
 
     // Initial value should be 670
     expect(durationSlider).toHaveValue('670')
@@ -301,14 +303,14 @@ describe('PlaybackControls', () => {
 
     const user = userEvent.setup()
     const loopButton = screen.getByRole('button', { name: /Enable Loop/ })
-    
+
     // Initial state - not looping
     expect(loopButton).toHaveClass('text-gray-600')
-    
+
     // Click to enable
     await user.click(loopButton)
     expect(loopButton).toHaveClass('text-purple-700')
-    
+
     // Click to disable
     await user.click(loopButton)
     expect(loopButton).toHaveClass('text-gray-600')

@@ -181,7 +181,9 @@ describe('AudioService', () => {
 
       // Should start from the specified position
       expect(mockOnPositionChange).toHaveBeenCalledWith(startPosition)
-      expect(mockOnNotesChange).toHaveBeenCalledWith(sequence[startPosition].midiNotes)
+      expect(mockOnNotesChange).toHaveBeenCalledWith(
+        sequence[startPosition].midiNotes
+      )
 
       // Stop playback to resolve the promise
       audioService.stopPlayback()
@@ -209,7 +211,7 @@ describe('AudioService', () => {
     it('returns initial arpeggiator state', () => {
       const initialState = audioService.getInitialArpeggiating()
       expect(initialState).toBe(false)
-      
+
       audioService.setArpeggiating(true)
       const updatedState = audioService.getInitialArpeggiating()
       expect(updatedState).toBe(true)

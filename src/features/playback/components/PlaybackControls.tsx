@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { Play, Pause, RotateCcw, Volume2, VolumeX, Clock, Repeat, TrendingUp } from 'lucide-react'
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+  Clock,
+  Repeat,
+  TrendingUp,
+} from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
 import { ChordChart } from './ChordChart'
 import { audioService } from '../../../services/audioService'
@@ -51,17 +60,19 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   }
 
   const handleNotesChange = async (
-    notes: number[] | { 
-      type: 'pause' | 'play'; 
-      notes?: number[]; 
-      duration?: number; 
-      stayLit?: boolean;
-      releaseAudio?: boolean;
-      useArpeggiator?: boolean;
-    }
+    notes:
+      | number[]
+      | {
+          type: 'pause' | 'play'
+          notes?: number[]
+          duration?: number
+          stayLit?: boolean
+          releaseAudio?: boolean
+          useArpeggiator?: boolean
+        }
   ) => {
     console.log('handleNotesChange called:', notes)
-    
+
     if (Array.isArray(notes)) {
       console.log('Updating keyboard state with array:', notes)
       onNotesChange(notes)
@@ -74,8 +85,15 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           await audioService.initialize()
 
           const duration = notes.duration || audioService.getChordDuration()
-          const useArp = notes.useArpeggiator !== undefined ? notes.useArpeggiator : audioService.isArpeggiating
-          console.log('Playing with settings:', { duration, useArp, notes: notes.notes })
+          const useArp =
+            notes.useArpeggiator !== undefined
+              ? notes.useArpeggiator
+              : audioService.isArpeggiating
+          console.log('Playing with settings:', {
+            duration,
+            useArp,
+            notes: notes.notes,
+          })
 
           // Always update visual state
           onNotesChange(notes.notes)
@@ -88,11 +106,15 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
           try {
             // Play the notes
-            await audioService.playTriad(notes.notes, duration, (updatedNotes) => {
-              if (!notes.stayLit) {
-                onNotesChange(updatedNotes)
+            await audioService.playTriad(
+              notes.notes,
+              duration,
+              updatedNotes => {
+                if (!notes.stayLit) {
+                  onNotesChange(updatedNotes)
+                }
               }
-            })
+            )
           } finally {
             // Restore original arpeggiator state
             if (useArp !== originalArpState) {
@@ -200,7 +222,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
         <button
           onClick={handleLoopToggle}
-          aria-label={isLooping ? "Disable Loop" : "Enable Loop"}
+          aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
           className={`min-w-12 h-12 flex items-center justify-center
             transition-colors bg-transparent p-0 border-0
             ${isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
@@ -210,7 +232,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
         <button
           onClick={handleArpeggiateToggle}
-          aria-label={isArpeggiating ? "Disable Arpeggiator" : "Enable Arpeggiator"}
+          aria-label={
+            isArpeggiating ? 'Disable Arpeggiator' : 'Enable Arpeggiator'
+          }
           className={`min-w-11 h-11 flex items-center justify-center
             transition-colors bg-transparent p-0 border-0
             ${isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
@@ -220,12 +244,16 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
-            <button 
+            <button
               onClick={handleVolumeToggle}
               className="text-gray-500 hover:text-gray-700 p-0 bg-white"
-              aria-label={isMuted ? "Unmute" : "Mute"}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
             >
-              {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              {isMuted ? (
+                <VolumeX className="w-4 h-4" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
             </button>
             <input
               type="range"
@@ -254,7 +282,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
         </div>
       </div>
 
-      <ChordChart 
+      <ChordChart
         sequence={sequence}
         currentPosition={currentPosition}
         onPositionSelect={handlePositionSelect}

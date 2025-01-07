@@ -132,7 +132,7 @@ export class AudioService {
         baseUrl: 'https://tonejs.github.io/audio/salamander/',
         onload: () => {
           console.log('Piano samples loaded')
-        }
+        },
       }).toDestination()
 
       console.log('Loading guitar...')
@@ -162,12 +162,12 @@ export class AudioService {
           'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
         onload: () => {
           console.log('Guitar samples loaded')
-        }
+        },
       }).toDestination()
 
       // Wait for samples to load
       console.log('Waiting for instruments to load...')
-      await new Promise((resolve) => {
+      await new Promise(resolve => {
         const checkLoaded = () => {
           if (this.instruments.piano.loaded && this.instruments.guitar.loaded) {
             console.log('All instruments loaded successfully')
@@ -234,7 +234,8 @@ export class AudioService {
 
   getCurrentInstrument(): Tone.Sampler | Tone.PolySynth | null {
     console.log('Getting current instrument:', this.currentInstrument)
-    const instrument = this.instruments[this.currentInstrument] || this.instruments.synth
+    const instrument =
+      this.instruments[this.currentInstrument] || this.instruments.synth
     console.log('Got instrument:', instrument ? 'yes' : 'no')
     return instrument
   }
@@ -244,18 +245,18 @@ export class AudioService {
     duration: number,
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
-    console.log('playTriad called:', { 
-      midiNotes, 
-      duration, 
+    console.log('playTriad called:', {
+      midiNotes,
+      duration,
       isArpeggiating: this.isArpeggiating,
-      currentInstrument: this.currentInstrument
+      currentInstrument: this.currentInstrument,
     })
-    
+
     if (midiNotes.length === 0) return
 
     const instrument = this.getCurrentInstrument()
     console.log('Got instrument:', instrument ? 'yes' : 'no')
-    
+
     if (!instrument) {
       throw new Error('No instrument loaded')
     }
@@ -263,13 +264,13 @@ export class AudioService {
     // Convert MIDI notes to note names
     const notes = midiNotes.map(midi => this.midiToNote(midi))
     console.log('Converted to note names:', notes)
-    
+
     this.currentPlayingNotes = notes
     this.currentMidiNotes = midiNotes
 
     if (this.isArpeggiating) {
       console.log('Playing arpeggiated')
-      
+
       // Show all notes initially if we want them to stay lit
       if (onNotesChange) {
         onNotesChange(midiNotes)
@@ -281,9 +282,16 @@ export class AudioService {
 
       // Schedule all notes with Tone.js
       notes.forEach((note, i) => {
-        const startTime = now + (i * noteDelay / 1000)
-        console.log(`Scheduling note ${note} at ${startTime} for ${noteDuration/1000}s`)
-        instrument.triggerAttackRelease(note, noteDuration/1000, startTime, 0.7)
+        const startTime = now + (i * noteDelay) / 1000
+        console.log(
+          `Scheduling note ${note} at ${startTime} for ${noteDuration / 1000}s`
+        )
+        instrument.triggerAttackRelease(
+          note,
+          noteDuration / 1000,
+          startTime,
+          0.7
+        )
       })
 
       // Wait for the full chord duration
@@ -366,10 +374,15 @@ export class AudioService {
         // If looping, start over from the beginning
         if (this.isLooping) {
           this.currentPosition = 0
-          this.isFirstPlay = true  // Reset first play flag
-          this.wasPositionSelected = false  // Reset position selection
-          this.savedPosition = 0  // Reset saved position
-          await this.playTriadSequence(triads, onNotesChange, 0, onPositionChange)
+          this.isFirstPlay = true // Reset first play flag
+          this.wasPositionSelected = false // Reset position selection
+          this.savedPosition = 0 // Reset saved position
+          await this.playTriadSequence(
+            triads,
+            onNotesChange,
+            0,
+            onPositionChange
+          )
         }
       }
     } catch (err) {
@@ -528,21 +541,27 @@ export class AudioService {
   getTriadIntervals(quality: string): number[] {
     switch (quality) {
       case 'maj':
-        return [0, 4, 7]  // Major triad: root, major third, perfect fifth
+        return [0, 4, 7] // Major triad: root, major third, perfect fifth
       case 'min':
-        return [0, 3, 7]  // Minor triad: root, minor third, perfect fifth
+        return [0, 3, 7] // Minor triad: root, minor third, perfect fifth
       case 'dim':
-        return [0, 3, 6]  // Diminished triad: root, minor third, diminished fifth
+        return [0, 3, 6] // Diminished triad: root, minor third, diminished fifth
       case 'aug':
-        return [0, 4, 8]  // Augmented triad: root, major third, augmented fifth
+        return [0, 4, 8] // Augmented triad: root, major third, augmented fifth
       default:
-        return [0, 4, 7]  // Default to major
+        return [0, 4, 7] // Default to major
     }
   }
 
   noteToMidi(note: string): number | null {
     const baseNotes: { [key: string]: number } = {
-      'C': 60, 'D': 62, 'E': 64, 'F': 65, 'G': 67, 'A': 69, 'B': 71
+      C: 60,
+      D: 62,
+      E: 64,
+      F: 65,
+      G: 67,
+      A: 69,
+      B: 71,
     }
     return baseNotes[note] ?? null
   }
