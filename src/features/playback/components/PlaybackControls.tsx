@@ -222,7 +222,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           <div className="flex items-center gap-2">
             <button 
               onClick={handleVolumeToggle}
-              className="text-gray-500 hover:text-gray-700 p-0"
+              className="text-gray-500 hover:text-gray-700 p-0 bg-white"
               aria-label={isMuted ? "Unmute" : "Mute"}
             >
               {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
