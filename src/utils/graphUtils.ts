@@ -12,7 +12,10 @@ export function buildVoiceLeadingGraph(
   chords: ChordName[],
   midiRange: [number, number],
   triads: { [key: string]: Inversion[] },
-  costFunction: (currentNotes: number[], nextNotes: number[]) => number = calculateVoiceLeadingCost
+  costFunction: (
+    currentNotes: number[],
+    nextNotes: number[]
+  ) => number = calculateVoiceLeadingCost
 ): VoiceLeadingGraph {
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
@@ -44,10 +47,7 @@ export function buildVoiceLeadingGraph(
       const possibleConnections: { node: GraphNode; cost: number }[] = []
 
       for (const nextNode of nextNodes) {
-        const cost = costFunction(
-          currentNode.midiNotes,
-          nextNode.midiNotes
-        )
+        const cost = costFunction(currentNode.midiNotes, nextNode.midiNotes)
         possibleConnections.push({ node: nextNode, cost })
       }
 

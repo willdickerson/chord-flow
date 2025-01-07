@@ -14,23 +14,29 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [voiceLeadingState, setVoiceLeadingState] = useState<VoiceLeadingState>({
-    bass: true,
-    middle: true,
-    high: true,
-  })
+  const [voiceLeadingState, setVoiceLeadingState] = useState<VoiceLeadingState>(
+    {
+      bass: true,
+      middle: true,
+      high: true,
+    }
+  )
   const displayedNotesRef = useRef<number[]>([])
 
   const generateSequence = useCallback(async () => {
     try {
       setIsGenerating(true)
       setError(null)
-      console.log('Generating sequence with voice leading state:', voiceLeadingState)
-      
-      const newSequence = audioService.generateGiantStepsSequence(voiceLeadingState)
+      console.log(
+        'Generating sequence with voice leading state:',
+        voiceLeadingState
+      )
+
+      const newSequence =
+        audioService.generateGiantStepsSequence(voiceLeadingState)
       console.log('Generated new sequence with voice leading settings:', {
         voiceLeadingState,
-        sequenceLength: newSequence.length
+        sequenceLength: newSequence.length,
       })
       setSequence(newSequence)
       setCurrentPosition(0)
@@ -70,18 +76,18 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
           }
           setSequence(newSequence)
         }
-        
+
         console.log('Starting sequence from position:', currentPosition)
         // Set playing state before starting playback
         setIsPlaying(true)
-        
+
         // Use the current sequence value
-        const currentSequence = sequence || await generateSequence()
+        const currentSequence = sequence || (await generateSequence())
         if (!currentSequence) return
-        
+
         audioService.startPlayback(
-          currentSequence, 
-          currentPosition, 
+          currentSequence,
+          currentPosition,
           () => {
             setIsPlaying(false)
             if (!audioService.shouldStop) {
@@ -90,7 +96,7 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
               onNotesChange([])
             }
           },
-          (notes) => {
+          notes => {
             displayedNotesRef.current = notes
             onNotesChange(notes)
             // Update position when notes change
@@ -104,7 +110,8 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
       }
     } catch (error) {
       console.error('Playback error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Generation failed'
+      const errorMessage =
+        error instanceof Error ? error.message : 'Generation failed'
       setError(errorMessage)
       setIsPlaying(false)
     }
@@ -144,18 +151,21 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     [isGenerating, sequence, isPlaying, onNotesChange]
   )
 
-  const handleVoiceLeadingChange = useCallback((voices: VoiceLeadingState) => {
-    console.log('Updating voice leading state:', voices)
-    setVoiceLeadingState(voices)
-    // Stop any current playback and reset position
-    if (isPlaying) {
-      audioService.stopPlayback()
-      setIsPlaying(false)
-    }
-    setCurrentPosition(0)
-    // Generate new sequence with updated voice leading settings
-    generateSequence()
-  }, [isPlaying, generateSequence])
+  const handleVoiceLeadingChange = useCallback(
+    (voices: VoiceLeadingState) => {
+      console.log('Updating voice leading state:', voices)
+      setVoiceLeadingState(voices)
+      // Stop any current playback and reset position
+      if (isPlaying) {
+        audioService.stopPlayback()
+        setIsPlaying(false)
+      }
+      setCurrentPosition(0)
+      // Generate new sequence with updated voice leading settings
+      generateSequence()
+    },
+    [isPlaying, generateSequence]
+  )
 
   const handleStop = useCallback(() => {
     console.log('Stopping playback')

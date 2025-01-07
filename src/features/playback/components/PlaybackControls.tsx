@@ -17,7 +17,11 @@ import * as Tone from 'tone'
 
 interface PlaybackControlsProps {
   onNotesChange: (notes: number[]) => void
-  onVoiceLeadingChange?: (voices: { bass: boolean; middle: boolean; high: boolean }) => void
+  onVoiceLeadingChange?: (voices: {
+    bass: boolean
+    middle: boolean
+    high: boolean
+  }) => void
 }
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({

@@ -28,7 +28,9 @@ describe('usePlaybackState', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(mockSequence)
+    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(
+      mockSequence
+    )
     vi.mocked(audioService.initialize).mockResolvedValue(undefined)
   })
 
@@ -46,8 +48,10 @@ describe('usePlaybackState', () => {
     const { result } = renderHook(() => usePlaybackState(mockOnNotesChange))
 
     // Mock sequence generation
-    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(mockSequence)
-    
+    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(
+      mockSequence
+    )
+
     // Mock startPlayback implementation
     vi.mocked(audioService.startPlayback).mockImplementation(
       (sequence, startPosition, onComplete, onNotes) => {
@@ -83,8 +87,10 @@ describe('usePlaybackState', () => {
     const { result } = renderHook(() => usePlaybackState(mockOnNotesChange))
 
     // Mock sequence generation
-    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(mockSequence)
-    
+    vi.mocked(audioService.generateGiantStepsSequence).mockReturnValue(
+      mockSequence
+    )
+
     // Mock startPlayback implementation
     vi.mocked(audioService.startPlayback).mockImplementation(
       (sequence, startPosition, onComplete, onNotes) => {

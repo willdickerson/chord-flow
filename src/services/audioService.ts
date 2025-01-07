@@ -60,7 +60,10 @@ const giantStepsTriads = Object.fromEntries(
 )
 
 export class AudioService {
-  private instruments: Record<InstrumentType, Tone.Sampler | Tone.PolySynth | null> = {
+  private instruments: Record<
+    InstrumentType,
+    Tone.Sampler | Tone.PolySynth | null
+  > = {
     piano: null,
     synth: null,
     guitar: null,
@@ -96,13 +99,13 @@ export class AudioService {
 
   setArpeggiating(value: boolean): void {
     if (value === this._isArpeggiating) return
-    
+
     this._isArpeggiating = value
     if (value) {
       Tone.Transport.start()
       Tone.Transport.scheduleRepeat(() => {
         // Arpeggiator logic here
-      }, "8n")
+      }, '8n')
     } else {
       Tone.Transport.cancel()
       Tone.Transport.stop()
@@ -181,8 +184,8 @@ export class AudioService {
           attack: 0.005,
           decay: 0.1,
           sustain: 0.3,
-          release: 1
-        }
+          release: 1,
+        },
       }).toDestination()
 
       // Set initial volume for synth
@@ -208,47 +211,83 @@ export class AudioService {
       console.log('Loading piano...')
       this.instruments.piano = new Tone.Sampler({
         urls: {
-          A0: 'A0.mp3', C1: 'C1.mp3', 'D#1': 'Ds1.mp3', 'F#1': 'Fs1.mp3',
-          A1: 'A1.mp3', C2: 'C2.mp3', 'D#2': 'Ds2.mp3', 'F#2': 'Fs2.mp3',
-          A2: 'A2.mp3', C3: 'C3.mp3', 'D#3': 'Ds3.mp3', 'F#3': 'Fs3.mp3',
-          A3: 'A3.mp3', C4: 'C4.mp3', 'D#4': 'Ds4.mp3', 'F#4': 'Fs4.mp3',
-          A4: 'A4.mp3', C5: 'C5.mp3', 'D#5': 'Ds5.mp3', 'F#5': 'Fs5.mp3',
-          A5: 'A5.mp3', C6: 'C6.mp3', 'D#6': 'Ds6.mp3', 'F#6': 'Fs6.mp3',
-          A6: 'A6.mp3', C7: 'C7.mp3', 'D#7': 'Ds7.mp3', 'F#7': 'Fs7.mp3',
-          A7: 'A7.mp3', C8: 'C8.mp3'
+          A0: 'A0.mp3',
+          C1: 'C1.mp3',
+          'D#1': 'Ds1.mp3',
+          'F#1': 'Fs1.mp3',
+          A1: 'A1.mp3',
+          C2: 'C2.mp3',
+          'D#2': 'Ds2.mp3',
+          'F#2': 'Fs2.mp3',
+          A2: 'A2.mp3',
+          C3: 'C3.mp3',
+          'D#3': 'Ds3.mp3',
+          'F#3': 'Fs3.mp3',
+          A3: 'A3.mp3',
+          C4: 'C4.mp3',
+          'D#4': 'Ds4.mp3',
+          'F#4': 'Fs4.mp3',
+          A4: 'A4.mp3',
+          C5: 'C5.mp3',
+          'D#5': 'Ds5.mp3',
+          'F#5': 'Fs5.mp3',
+          A5: 'A5.mp3',
+          C6: 'C6.mp3',
+          'D#6': 'Ds6.mp3',
+          'F#6': 'Fs6.mp3',
+          A6: 'A6.mp3',
+          C7: 'C7.mp3',
+          'D#7': 'Ds7.mp3',
+          'F#7': 'Fs7.mp3',
+          A7: 'A7.mp3',
+          C8: 'C8.mp3',
         },
         release: 1,
         baseUrl: 'https://tonejs.github.io/audio/salamander/',
         onload: () => {
           console.log('Piano samples loaded')
           if (this.instruments.piano) {
-            this.instruments.piano.volume.value = Tone.gainToDb(this.volume / 100)
+            this.instruments.piano.volume.value = Tone.gainToDb(
+              this.volume / 100
+            )
           }
-        }
+        },
       }).toDestination()
 
       // Initialize guitar with nylon guitar samples
       console.log('Loading guitar...')
       this.instruments.guitar = new Tone.Sampler({
         urls: {
-          'E2': 'E2.mp3', 'F#2': 'Fs2.mp3', 'G#2': 'Gs2.mp3',
-          'A2': 'A2.mp3', 'B2': 'B2.mp3', 'D3': 'D3.mp3',
-          'E3': 'E3.mp3', 'F#3': 'Fs3.mp3', 'G3': 'G3.mp3',
-          'A3': 'A3.mp3', 'B3': 'B3.mp3', 'C#4': 'Cs4.mp3',
-          'D#4': 'Ds4.mp3', 'E4': 'E4.mp3', 'F#4': 'Fs4.mp3',
-          'G#4': 'Gs4.mp3'
+          E2: 'E2.mp3',
+          'F#2': 'Fs2.mp3',
+          'G#2': 'Gs2.mp3',
+          A2: 'A2.mp3',
+          B2: 'B2.mp3',
+          D3: 'D3.mp3',
+          E3: 'E3.mp3',
+          'F#3': 'Fs3.mp3',
+          G3: 'G3.mp3',
+          A3: 'A3.mp3',
+          B3: 'B3.mp3',
+          'C#4': 'Cs4.mp3',
+          'D#4': 'Ds4.mp3',
+          E4: 'E4.mp3',
+          'F#4': 'Fs4.mp3',
+          'G#4': 'Gs4.mp3',
         },
         release: 1.2,
         volume: -3,
-        baseUrl: 'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
+        baseUrl:
+          'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
         onload: () => {
           console.log('Guitar samples loaded')
           if (this.instruments.guitar) {
-            this.instruments.guitar.volume.value = Tone.gainToDb(this.volume / 100)
+            this.instruments.guitar.volume.value = Tone.gainToDb(
+              this.volume / 100
+            )
           }
-        }
+        },
       }).toDestination()
-
     } catch (err) {
       console.error('Failed to load sampled instruments:', err)
     }
@@ -261,7 +300,9 @@ export class AudioService {
     }
     const instrument = this.instruments[this.currentInstrument]
     if (!this.isInstrumentReady(this.currentInstrument)) {
-      console.warn(`Current instrument (${this.currentInstrument}) is not ready`)
+      console.warn(
+        `Current instrument (${this.currentInstrument}) is not ready`
+      )
       return null
     }
     return instrument
@@ -288,20 +329,27 @@ export class AudioService {
     this.currentPosition = startPosition
     this.savedPosition = startPosition
     this.onComplete = onComplete
-    
+
     // Start transport for all playback modes
     Tone.Transport.start()
-    
+
     this.playNextTriad(sequence, onNotesChange)
   }
 
-  private playNextTriad(sequence: Triad[], onNotesChange?: (notes: number[]) => void) {
+  private playNextTriad(
+    sequence: Triad[],
+    onNotesChange?: (notes: number[]) => void
+  ) {
     console.log('Playing next triad at position:', this.currentPosition)
-    
+
     if (this._shouldStop || this.currentPosition >= sequence.length) {
       console.log('Stopping sequence at position:', this.currentPosition)
       // If we're looping and not manually stopped, start from beginning
-      if (this._isLooping && !this._shouldStop && this.currentPosition >= sequence.length) {
+      if (
+        this._isLooping &&
+        !this._shouldStop &&
+        this.currentPosition >= sequence.length
+      ) {
         console.log('Looping back to start')
         this.currentPosition = 0
         this.savedPosition = 0
@@ -324,14 +372,14 @@ export class AudioService {
     const triad = sequence[this.currentPosition]
     console.log('Playing triad at position:', {
       position: this.currentPosition,
-      triad
+      triad,
     })
-    
+
     // Update visualization before playing
     this.savedPosition = this.currentPosition
     this.currentMidiNotes = triad.midiNotes
     onNotesChange?.(this.currentMidiNotes)
-    
+
     this.playTriad(triad.midiNotes, this.chordDuration, onNotesChange)
 
     this.playbackTimeout = setTimeout(() => {
@@ -388,13 +436,30 @@ export class AudioService {
   }
 
   private midiToNote(midi: number): string {
-    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+    const noteNames = [
+      'C',
+      'C#',
+      'D',
+      'D#',
+      'E',
+      'F',
+      'F#',
+      'G',
+      'G#',
+      'A',
+      'A#',
+      'B',
+    ]
     const octave = Math.floor(midi / 12) - 1
     const noteIndex = midi % 12
     return `${noteNames[noteIndex]}${octave}`
   }
 
-  async playTriad(midiNotes: number[], duration: number, onNotesChange?: (notes: number[]) => void): Promise<void> {
+  async playTriad(
+    midiNotes: number[],
+    duration: number,
+    onNotesChange?: (notes: number[]) => void
+  ): Promise<void> {
     console.log('playTriad called:', {
       midiNotes,
       duration,
@@ -427,8 +492,15 @@ export class AudioService {
 
       notes.forEach((note, i) => {
         const startTime = now + (i * noteDelay) / 1000
-        console.log(`Scheduling note ${note} at ${startTime} for ${noteDuration / 1000}s`)
-        instrument.triggerAttackRelease(note, noteDuration / 1000, startTime, 0.7)
+        console.log(
+          `Scheduling note ${note} at ${startTime} for ${noteDuration / 1000}s`
+        )
+        instrument.triggerAttackRelease(
+          note,
+          noteDuration / 1000,
+          startTime,
+          0.7
+        )
       })
 
       await new Promise(resolve => setTimeout(resolve, duration))
@@ -472,25 +544,32 @@ export class AudioService {
     onNotesChange?.([])
   }
 
-  generateGiantStepsSequence(voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState): Triad[] {
+  generateGiantStepsSequence(
+    voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState
+  ): Triad[] {
     const chords = giantStepsChords
     const midiRange: [number, number] = [40, 76] // From E2 to E5
     const triads = giantStepsTriads
 
     // Create a custom cost function based on which voices to optimize
-    const customVoiceLeadingCost = (currentNotes: number[], nextNotes: number[]): number => {
+    const customVoiceLeadingCost = (
+      currentNotes: number[],
+      nextNotes: number[]
+    ): number => {
       let totalCost = 0
-      let costs = {
+      const costs = {
         bass: Math.abs(currentNotes[0] - nextNotes[0]),
         middle: Math.abs(currentNotes[1] - nextNotes[1]),
-        high: Math.abs(currentNotes[2] - nextNotes[2])
+        high: Math.abs(currentNotes[2] - nextNotes[2]),
       }
-      
+
       // Calculate weights based on which voices are selected
-      const selectedCount = Object.values(voiceLeadingState).filter(v => v).length
+      const selectedCount = Object.values(voiceLeadingState).filter(
+        v => v
+      ).length
       const primaryWeight = selectedCount > 0 ? 1.0 : 0.333 // If no voices selected, weight all equally
       const secondaryWeight = 0.1 // Small weight for unselected voices
-      
+
       // Apply weights to each voice
       if (voiceLeadingState.bass) {
         totalCost += costs.bass * primaryWeight
@@ -515,9 +594,9 @@ export class AudioService {
         weights: {
           bass: voiceLeadingState.bass ? primaryWeight : secondaryWeight,
           middle: voiceLeadingState.middle ? primaryWeight : secondaryWeight,
-          high: voiceLeadingState.high ? primaryWeight : secondaryWeight
+          high: voiceLeadingState.high ? primaryWeight : secondaryWeight,
         },
-        totalCost
+        totalCost,
       })
 
       return totalCost
@@ -525,11 +604,18 @@ export class AudioService {
 
     // Build graph with custom cost function
     console.log('Building graph with voice leading state:', voiceLeadingState)
-    const graph = buildVoiceLeadingGraph(chords, midiRange, triads, customVoiceLeadingCost)
+    const graph = buildVoiceLeadingGraph(
+      chords,
+      midiRange,
+      triads,
+      customVoiceLeadingCost
+    )
 
     // Find optimal path
     const startNodes = graph.nodes.filter(node => node.position === 0)
-    const endNodes = graph.nodes.filter(node => node.position === chords.length - 1)
+    const endNodes = graph.nodes.filter(
+      node => node.position === chords.length - 1
+    )
 
     console.log('Finding optimal path...')
     const path = findOptimalVoiceLeading(graph, startNodes, endNodes)
@@ -545,11 +631,14 @@ export class AudioService {
     for (let i = 0; i < path.length - 1; i++) {
       const current = path[i]
       const next = path[i + 1]
-      console.log(`Voice movements from ${current.chordName} to ${next.chordName}:`, {
-        bass: Math.abs(current.midiNotes[0] - next.midiNotes[0]),
-        middle: Math.abs(current.midiNotes[1] - next.midiNotes[1]),
-        high: Math.abs(current.midiNotes[2] - next.midiNotes[2])
-      })
+      console.log(
+        `Voice movements from ${current.chordName} to ${next.chordName}:`,
+        {
+          bass: Math.abs(current.midiNotes[0] - next.midiNotes[0]),
+          middle: Math.abs(current.midiNotes[1] - next.midiNotes[1]),
+          high: Math.abs(current.midiNotes[2] - next.midiNotes[2]),
+        }
+      )
     }
 
     return path
