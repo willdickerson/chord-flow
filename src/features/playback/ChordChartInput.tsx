@@ -137,6 +137,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleEditDone = () => {
+    if (chords.length < 1) return;
     setIsEditing(false)
     setCurrentPosition(null)
   }
@@ -644,7 +645,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
             </div>
             <button
               onClick={handleEditDone}
-              className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
+              disabled={chords.length < 1}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}`}
             >
               Done
             </button>
