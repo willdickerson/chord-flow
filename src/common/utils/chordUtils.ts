@@ -16,7 +16,7 @@ export function parseChord(chord: string): {
     console.error('Invalid chord format:', chord)
     return { originalRoot: 'C', standardizedRoot: 'C', chordType: 'M' }
   }
-  
+
   const originalRoot = match[1]
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
   let chordType = match[2] || 'M' // Default to major if not specified
@@ -25,7 +25,7 @@ export function parseChord(chord: string): {
     chord,
     originalRoot,
     standardizedRoot,
-    initialChordType: chordType
+    initialChordType: chordType,
   })
 
   // Map extended chord qualities to their basic triad type

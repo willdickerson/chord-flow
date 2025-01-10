@@ -20,9 +20,7 @@ function App() {
             >
               <path d="M19.952 1.651a.75.75 0 0 1 .298.599V16.303a3 3 0 0 1-2.176 2.884l-1.32.377a2.553 2.553 0 1 1-1.403-4.909l2.311-.66a1.5 1.5 0 0 0 1.088-1.442V6.994l-9 2.572v9.737a3 3 0 0 1-2.176 2.884l-1.32.377a2.553 2.553 0 1 1-1.402-4.909l2.31-.66a1.5 1.5 0 0 0 1.088-1.442V5.25a.75.75 0 0 1 .544-.721l10.5-3a.75.75 0 0 1 .658.122Z" />
             </svg>
-            <span className="font-bold tracking-wide">
-              Chord Flow
-            </span>
+            <span className="font-bold tracking-wide">Chord Flow</span>
           </h1>
           <a
             href="https://github.com/willdickerson/chord-flow"
@@ -51,8 +49,7 @@ function App() {
 
         <div className="container mx-auto flex items-center justify-center p-4">
           <div className="relative w-full max-w-4xl mx-auto">
-            <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg">
-            </div>
+            <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg"></div>
             <main className="relative w-full p-8 bg-[#F5E6D3] rounded-lg">
               <div className="space-y-6">
                 <div className="space-y-6">

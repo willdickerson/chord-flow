@@ -53,7 +53,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const chartListRef = useRef<HTMLDivElement>(null)
 
   const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
-  const giantStepsIndex = charts.findIndex(chart => chart.title === 'Giant Steps')
+  const giantStepsIndex = charts.findIndex(
+    chart => chart.title === 'Giant Steps'
+  )
 
   const [currentChart, setCurrentChart] = useState(
     giantStepsIndex >= 0 ? charts[giantStepsIndex] : charts[0]
@@ -142,7 +144,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleEditDone = () => {
-    if (chords.length < 1) return;
+    if (chords.length < 1) return
     setIsEditing(false)
     setCurrentPosition(null)
   }
@@ -271,13 +273,10 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleChartKeyDown = (e: React.KeyboardEvent) => {
-    const filteredCharts = charts.filter(chart =>
-      chart.title
-        .toLowerCase()
-        .includes(chartSearchValue.toLowerCase()) ||
-      chart.composer
-        .toLowerCase()
-        .includes(chartSearchValue.toLowerCase())
+    const filteredCharts = charts.filter(
+      chart =>
+        chart.title.toLowerCase().includes(chartSearchValue.toLowerCase()) ||
+        chart.composer.toLowerCase().includes(chartSearchValue.toLowerCase())
     )
 
     switch (e.key) {
@@ -495,7 +494,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     ${isDragging ? 'pointer-events-none' : ''}
                   `}
                 >
-                  <span className="relative -top-[1px] text-xs leading-[0]">−</span>
+                  <span className="relative -top-[1px] text-xs leading-[0]">
+                    −
+                  </span>
                 </button>
               )}
               {value}
@@ -556,15 +557,19 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     ref={searchRef}
                     className="absolute left-0 z-10 mt-1 w-full bg-[#F5E6D3] rounded-md border border-[#846C5B]/20"
                   >
-                    <div className="max-h-48 overflow-y-auto chart-search-scrollbar" ref={chartListRef}>
+                    <div
+                      className="max-h-48 overflow-y-auto chart-search-scrollbar"
+                      ref={chartListRef}
+                    >
                       {charts
-                        .filter(chart =>
-                          chart.title
-                            .toLowerCase()
-                            .includes(chartSearchValue.toLowerCase()) ||
-                          chart.composer
-                            .toLowerCase()
-                            .includes(chartSearchValue.toLowerCase())
+                        .filter(
+                          chart =>
+                            chart.title
+                              .toLowerCase()
+                              .includes(chartSearchValue.toLowerCase()) ||
+                            chart.composer
+                              .toLowerCase()
+                              .includes(chartSearchValue.toLowerCase())
                         )
                         .map((chart, index) => (
                           <div
@@ -592,7 +597,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                               ${selectedChartIndex === index ? 'bg-[#A6B39C]/20' : ''}
                             `}
                           >
-                            <div className="font-medium text-[#2C1810]">{chart.title}</div>
+                            <div className="font-medium text-[#2C1810]">
+                              {chart.title}
+                            </div>
                             <div className="text-sm text-[#846C5B]">
                               {chart.composer}
                             </div>
@@ -636,7 +643,10 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   ref={suggestionRef}
                   className="absolute left-0 z-10 mt-1 w-full bg-[#F5E6D3] rounded-md border border-[#846C5B]/20"
                 >
-                  <div className="max-h-48 overflow-y-auto chart-search-scrollbar" ref={chordListRef}>
+                  <div
+                    className="max-h-48 overflow-y-auto chart-search-scrollbar"
+                    ref={chordListRef}
+                  >
                     {validChords
                       .filter(chord =>
                         chord.toLowerCase().includes(inputValue.toLowerCase())
@@ -650,7 +660,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                             ${selectedChordIndex === index ? 'bg-[#A6B39C]/20' : ''}
                           `}
                         >
-                          <div className="font-medium text-[#2C1810]">{chord}</div>
+                          <div className="font-medium text-[#2C1810]">
+                            {chord}
+                          </div>
                         </div>
                       ))}
                   </div>

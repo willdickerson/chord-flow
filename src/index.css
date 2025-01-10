@@ -3,8 +3,8 @@
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;
-  color: #846C5B;
-  background-color: #E3B448;
+  color: #846c5b;
+  background-color: #e3b448;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,13 +17,13 @@
 
 a {
   font-weight: 500;
-  color: #846C5B;
+  color: #846c5b;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 a:hover {
-  color: #A6B39C;
+  color: #a6b39c;
 }
 
 body {
@@ -37,18 +37,18 @@ h1 {
   font-size: 2.5em;
   line-height: 1.2;
   font-weight: 600;
-  color: #846C5B;
+  color: #846c5b;
 }
 
 button {
   border-radius: 4px;
-  border: 1px solid #846C5B;
+  border: 1px solid #846c5b;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #F5E6D3;
-  color: #846C5B;
+  background-color: #f5e6d3;
+  color: #846c5b;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -65,7 +65,7 @@ button:focus-visible {
 /* Custom Scrollbar */
 .chart-search-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: #846C5B #F5E6D3;
+  scrollbar-color: #846c5b #f5e6d3;
 }
 
 .chart-search-scrollbar::-webkit-scrollbar {
@@ -73,29 +73,29 @@ button:focus-visible {
 }
 
 .chart-search-scrollbar::-webkit-scrollbar-track {
-  background: #F5E6D3;
+  background: #f5e6d3;
   border-radius: 4px;
 }
 
 .chart-search-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #846C5B;
+  background-color: #846c5b;
   border-radius: 4px;
-  border: 2px solid #F5E6D3;
+  border: 2px solid #f5e6d3;
 }
 
 .chart-search-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #2C1810;
+  background-color: #2c1810;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #846C5B;
-    background-color: #E3B448;
+    color: #846c5b;
+    background-color: #e3b448;
   }
   a:hover {
-    color: #A6B39C;
+    color: #a6b39c;
   }
   button {
-    background-color: #F5E6D3;
+    background-color: #f5e6d3;
   }
 }

@@ -305,11 +305,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
               className={`min-w-8 h-8 flex items-center justify-center rounded-md
                 transition-colors outline-none
-                ${isEditing 
-                  ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50' 
-                  : isLooping 
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
-                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
+                ${
+                  isEditing
+                    ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
+                    : isLooping
+                      ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                      : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <Repeat className="w-3.5 h-3.5" />
@@ -323,11 +324,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               }
               className={`min-w-8 h-8 flex items-center justify-center rounded-md
                 transition-colors outline-none
-                ${isEditing 
-                  ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50' 
-                  : isArpeggiating 
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
-                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
+                ${
+                  isEditing
+                    ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
+                    : isArpeggiating
+                      ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                      : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <TrendingUp className="w-3.5 h-3.5" />

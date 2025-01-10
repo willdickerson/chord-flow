@@ -21,7 +21,9 @@ const defaultVoiceLeadingState: VoiceLeadingState = {
   high: true,
 }
 
-const defaultChordNames = CHORD_CHARTS.find(chart => chart.title === 'Giant Steps')?.chords
+const defaultChordNames = CHORD_CHARTS.find(
+  chart => chart.title === 'Giant Steps'
+)?.chords
 
 const defaultTriads = Object.fromEntries(
   defaultChordNames?.map(chord => [chord, generateTriads(chord, 'spread')])
