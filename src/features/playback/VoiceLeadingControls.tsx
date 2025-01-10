@@ -67,7 +67,7 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
-              ${!isEnabled ? 'cursor-not-allowed' : ''}`}
+              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
             title="Optimize Bass Voice"
           >
@@ -88,7 +88,7 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
-              ${!isEnabled ? 'cursor-not-allowed' : ''}`}
+              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
             title="Optimize Middle Voice"
           >
@@ -109,7 +109,7 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
-              ${!isEnabled ? 'cursor-not-allowed' : ''}`}
+              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
             title="Optimize High Voice"
           >
