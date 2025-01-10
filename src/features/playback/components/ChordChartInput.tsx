@@ -129,9 +129,10 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     if (previousChart) {
       setCurrentChart(previousChart);
       setChords(previousChart.chords);
+      onChordSequenceChange(previousChart.chords.map(c => c.value));
     }
     setIsEditing(false);
-    setCurrentPosition(null);
+    onPositionSelect(0);
   };
 
   const handleEditSave = () => {
