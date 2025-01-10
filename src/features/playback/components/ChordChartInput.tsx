@@ -414,8 +414,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   disabled={isPlaying}
                   className={`
                     px-1.5 py-1.5 rounded-md text-sm font-medium transition-colors
-                    ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}
-                    bg-gray-50 text-gray-600 border border-gray-100
+                    ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-100'}
+                    bg-green-50 text-green-700 border border-green-200
                   `}
                 >
                   New
@@ -425,8 +425,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   disabled={isPlaying}
                   className={`
                     px-1.5 py-1.5 rounded-md text-sm font-medium transition-colors
-                    ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}
-                    bg-gray-50 text-gray-600 border border-gray-100
+                    ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100'}
+                    bg-blue-50 text-blue-700 border border-blue-200
                   `}
                 >
                   Edit
@@ -439,12 +439,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                       setShowChartSearch(!showChartSearch);
                     }}
                     disabled={isPlaying}
-                    className={`
-                      px-1.5 py-1.5 rounded-md text-sm font-medium bg-gray-50 text-gray-600 border border-gray-100 
-                      ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}
+                    className={` 
+                      px-1.5 py-1.5 rounded-md text-sm font-medium
+                      ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-100'}
+                      bg-purple-50 text-purple-700 border border-purple-200
                     `}
                   >
-                    Switch Chart
+                    Switch
                   </button>
                   {showChartSearch && (
                     <div
@@ -622,7 +623,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 ? 'Add chords first' 
                 : chords.length === 1 
                 ? 'Add at least one more chord' 
-                : 'Save Changes'}
+                : 'Save'}
             </button>
             <button
               onClick={handleEditCancel}
