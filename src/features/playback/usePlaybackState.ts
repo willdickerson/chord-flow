@@ -48,10 +48,13 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     }
   }, [voiceLeadingState, onNotesChange])
 
-  const updateChordSequence = useCallback((chordNames: string[]) => {
-    audioService.setCurrentChordNames(chordNames)
-    generateSequence()
-  }, [generateSequence])
+  const updateChordSequence = useCallback(
+    (chordNames: string[]) => {
+      audioService.setCurrentChordNames(chordNames)
+      generateSequence()
+    },
+    [generateSequence]
+  )
 
   // Only generate sequence when needed, not on mount
   useEffect(() => {

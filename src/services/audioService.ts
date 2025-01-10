@@ -21,10 +21,38 @@ const defaultVoiceLeadingState: VoiceLeadingState = {
 }
 
 const defaultChordNames = [
-  'B', 'D', 'G', 'Bb', 'Eb', 'Eb', 'Am', 'D',
-  'G', 'Bb', 'Eb', 'F#', 'B', 'B', 'Fm', 'Bb',
-  'Eb', 'Eb', 'Am', 'D', 'G', 'G', 'C#m', 'F#',
-  'B', 'B', 'Fm', 'Bb', 'Eb', 'Eb', 'C#m', 'F#'
+  'B',
+  'D',
+  'G',
+  'Bb',
+  'Eb',
+  'Eb',
+  'Am',
+  'D',
+  'G',
+  'Bb',
+  'Eb',
+  'F#',
+  'B',
+  'B',
+  'Fm',
+  'Bb',
+  'Eb',
+  'Eb',
+  'Am',
+  'D',
+  'G',
+  'G',
+  'C#m',
+  'F#',
+  'B',
+  'B',
+  'Fm',
+  'Bb',
+  'Eb',
+  'Eb',
+  'C#m',
+  'F#',
 ]
 
 const defaultTriads = Object.fromEntries(

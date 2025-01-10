@@ -63,8 +63,8 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     ? 'bg-purple-100/50 text-purple-700/50'
                     : 'bg-gray-50/50 text-gray-500/50'
                   : selectedVoices.bass
-                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
               ${!isEnabled ? 'cursor-not-allowed' : ''}`}
@@ -84,8 +84,8 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     ? 'bg-purple-100/50 text-purple-700/50'
                     : 'bg-gray-50/50 text-gray-500/50'
                   : selectedVoices.middle
-                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
               ${!isEnabled ? 'cursor-not-allowed' : ''}`}
@@ -105,8 +105,8 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     ? 'bg-purple-100/50 text-purple-700/50'
                     : 'bg-gray-50/50 text-gray-500/50'
                   : selectedVoices.high
-                  ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-                  : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
+                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
               ${!isEnabled ? 'cursor-not-allowed' : ''}`}

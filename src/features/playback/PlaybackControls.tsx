@@ -172,38 +172,44 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   }
 
   const playChord = async (chord: string, index: number) => {
-    console.log('PlaybackControls: playChord called', { chord, index });
+    console.log('PlaybackControls: playChord called', { chord, index })
     try {
-      console.log('PlaybackControls: Starting Tone.js');
-      await Tone.start();
-      await audioService.initialize();
-      
+      console.log('PlaybackControls: Starting Tone.js')
+      await Tone.start()
+      await audioService.initialize()
+
       // Get the specific triad from the sequence
       if (!sequence || !sequence[index]) {
-        console.warn('PlaybackControls: No sequence or triad found at index', index);
-        return;
+        console.warn(
+          'PlaybackControls: No sequence or triad found at index',
+          index
+        )
+        return
       }
-      
-      const triad = sequence[index];
-      console.log('PlaybackControls: Using triad from sequence', triad);
-      
+
+      const triad = sequence[index]
+      console.log('PlaybackControls: Using triad from sequence', triad)
+
       // Immediately update the notes
-      onNotesChange(triad.midiNotes);
-      
-      console.log('PlaybackControls: Playing triad with MIDI notes', triad.midiNotes);
+      onNotesChange(triad.midiNotes)
+
+      console.log(
+        'PlaybackControls: Playing triad with MIDI notes',
+        triad.midiNotes
+      )
       await audioService.playTriad(
         triad.midiNotes,
         audioService.getChordDuration(),
-        (updatedNotes) => {
-          console.log('PlaybackControls: Notes changed', updatedNotes);
-          onNotesChange(updatedNotes);
+        updatedNotes => {
+          console.log('PlaybackControls: Notes changed', updatedNotes)
+          onNotesChange(updatedNotes)
         }
-      );
-      console.log('PlaybackControls: Finished playing triad');
+      )
+      console.log('PlaybackControls: Finished playing triad')
     } catch (err) {
-      console.error('Failed to play chord:', err);
+      console.error('Failed to play chord:', err)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -226,7 +232,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             <button
               onClick={handlePlayback}
               disabled={isGenerating || isEditing}
-              aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
+              aria-label={
+                isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'
+              }
               className={`min-w-12 h-12 flex items-center justify-center
                 transition-colors bg-transparent p-0 border-0
                 ${

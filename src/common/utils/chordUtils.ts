@@ -24,7 +24,11 @@ export function parseChord(chord: string): {
     chordType = 'aug'
   } else if (chordType.startsWith('m')) {
     chordType = 'm' // any minor chord -> minor triad
-  } else if (chordType.includes('maj') || chordType.includes('M') || chordType.includes('7')) {
+  } else if (
+    chordType.includes('maj') ||
+    chordType.includes('M') ||
+    chordType.includes('7')
+  ) {
     chordType = 'M' // any major or dominant chord -> major triad
   } else {
     chordType = 'M' // default to major

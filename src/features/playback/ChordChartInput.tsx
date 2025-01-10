@@ -1,19 +1,19 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Triad } from '../../common/types';
+import React, { useState, useRef, useEffect, useMemo } from 'react'
+import { Triad } from '../../common/types'
 
 export interface ChordChartInputProps {
-  sequence: Triad[] | null;
-  currentPosition: number;
-  onPositionSelect: (position: number) => void;
-  isEnabled: boolean;
-  initialChordNames?: string[];
-  isPlaying: boolean;
-  onNotesChange: (notes: number[]) => void;
-  audioService: any;
-  onChordSequenceChange: (chordSequence: string[]) => void;
-  onStop: () => void;
-  playChord: (chord: string, index: number) => void;
-  onEditingChange?: (isEditing: boolean) => void;
+  sequence: Triad[] | null
+  currentPosition: number
+  onPositionSelect: (position: number) => void
+  isEnabled: boolean
+  initialChordNames?: string[]
+  isPlaying: boolean
+  onNotesChange: (notes: number[]) => void
+  audioService: any
+  onChordSequenceChange: (chordSequence: string[]) => void
+  onStop: () => void
+  playChord: (chord: string, index: number) => void
+  onEditingChange?: (isEditing: boolean) => void
 }
 
 export const ChordChartInput: React.FC<ChordChartInputProps> = ({
@@ -30,163 +30,239 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   playChord,
   onEditingChange,
 }) => {
-  const [inputValue, setInputValue] = useState('');
-  const [chartSearchValue, setChartSearchValue] = useState('');
-  const [showChartSearch, setShowChartSearch] = useState(false);
-  const [selectedChartIndex, setSelectedChartIndex] = useState(0);
-  const [isEditing, setIsEditing] = useState(false);
-  const [draggedChord, setDraggedChord] = useState<{ id: string; value: string } | null>(null);
-  const [dropTarget, setDropTarget] = useState<number | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragOverlayRef = useRef<HTMLDivElement>(null);
-  const dragSourceRef = useRef(null);
-  const dragSourceIndexRef = useRef<number | null>(null);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const displayedNotesRef = useRef<number[]>([]);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionRef = useRef<HTMLDivElement>(null);
-  const [tempChords, setTempChords] = useState([]);
-  const [selectedChordIndex, setSelectedChordIndex] = useState(0);
-  const chordListRef = useRef<HTMLDivElement>(null);
-  const chartListRef = useRef<HTMLDivElement>(null);
-  const [hasStartedPlaying, setHasStartedPlaying] = useState(false);
+  const [inputValue, setInputValue] = useState('')
+  const [chartSearchValue, setChartSearchValue] = useState('')
+  const [showChartSearch, setShowChartSearch] = useState(false)
+  const [selectedChartIndex, setSelectedChartIndex] = useState(0)
+  const [isEditing, setIsEditing] = useState(false)
+  const [draggedChord, setDraggedChord] = useState<{
+    id: string
+    value: string
+  } | null>(null)
+  const [dropTarget, setDropTarget] = useState<number | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const dragOverlayRef = useRef<HTMLDivElement>(null)
+  const dragSourceRef = useRef(null)
+  const dragSourceIndexRef = useRef<number | null>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const displayedNotesRef = useRef<number[]>([])
+  const inputRef = useRef<HTMLInputElement>(null)
+  const suggestionRef = useRef<HTMLDivElement>(null)
+  const [tempChords, setTempChords] = useState([])
+  const [selectedChordIndex, setSelectedChordIndex] = useState(0)
+  const chordListRef = useRef<HTMLDivElement>(null)
+  const chartListRef = useRef<HTMLDivElement>(null)
+  const [hasStartedPlaying, setHasStartedPlaying] = useState(false)
 
   const charts = [
     {
-      title: "Giant Steps",
-      composer: "John Coltrane",
+      title: 'Giant Steps',
+      composer: 'John Coltrane',
       chords: [
-        'B', 'D', 'G', 'Bb', 'Eb', 'Eb', 'Am', 'D', 'G', 'Bb', 'Eb', 'F#',
-        'B', 'B', 'Fm', 'Bb', 'Eb', 'Eb', 'Am', 'D', 'G', 'Bb', 'Eb', 'F#',
-        'B', 'B', 'Fm', 'Bb', 'Eb', 'Eb', 'C#m', 'F#'
-      ].map(chord => ({ id: Math.random().toString(), value: chord }))
+        'B',
+        'D',
+        'G',
+        'Bb',
+        'Eb',
+        'Eb',
+        'Am',
+        'D',
+        'G',
+        'Bb',
+        'Eb',
+        'F#',
+        'B',
+        'B',
+        'Fm',
+        'Bb',
+        'Eb',
+        'Eb',
+        'Am',
+        'D',
+        'G',
+        'Bb',
+        'Eb',
+        'F#',
+        'B',
+        'B',
+        'Fm',
+        'Bb',
+        'Eb',
+        'Eb',
+        'C#m',
+        'F#',
+      ].map(chord => ({ id: Math.random().toString(), value: chord })),
     },
     {
-      title: "Autumn Leaves",
-      composer: "Joseph Kosma",
-      chords: ['Am7', 'D7', 'Gmaj7', 'Cmaj7', 'F#m7b5', 'B7', 'Em'].map(chord => ({ id: Math.random().toString(), value: chord }))
+      title: 'Autumn Leaves',
+      composer: 'Joseph Kosma',
+      chords: ['Am7', 'D7', 'Gmaj7', 'Cmaj7', 'F#m7b5', 'B7', 'Em'].map(
+        chord => ({ id: Math.random().toString(), value: chord })
+      ),
     },
     {
-      title: "All Blues",
-      composer: "Miles Davis",
-      chords: ['G7', 'G7', 'G7', 'G7', 'C7', 'C7', 'G7', 'G7', 'D7', 'C7', 'G7', 'D7'].map(chord => ({ id: Math.random().toString(), value: chord }))
+      title: 'All Blues',
+      composer: 'Miles Davis',
+      chords: [
+        'G7',
+        'G7',
+        'G7',
+        'G7',
+        'C7',
+        'C7',
+        'G7',
+        'G7',
+        'D7',
+        'C7',
+        'G7',
+        'D7',
+      ].map(chord => ({ id: Math.random().toString(), value: chord })),
     },
     {
-      title: "Take Five",
-      composer: "Paul Desmond",
-      chords: ['Ebm', 'Bbm', 'Ebm', 'Bbm', 'Ebm', 'Bbm', 'Ebm', 'Db7'].map(chord => ({ id: Math.random().toString(), value: chord }))
-    }
-  ];
+      title: 'Take Five',
+      composer: 'Paul Desmond',
+      chords: ['Ebm', 'Bbm', 'Ebm', 'Bbm', 'Ebm', 'Bbm', 'Ebm', 'Db7'].map(
+        chord => ({ id: Math.random().toString(), value: chord })
+      ),
+    },
+  ]
 
-  const [currentChart, setCurrentChart] = useState(charts[0]);
-  const [previousChart, setPreviousChart] = useState(charts[0]);
-  const [chords, setChords] = useState(sequence ? sequence.map(t => ({ id: Math.random().toString(), value: t.chordName })) : currentChart.chords);
+  const [currentChart, setCurrentChart] = useState(charts[0])
+  const [previousChart, setPreviousChart] = useState(charts[0])
+  const [chords, setChords] = useState(
+    sequence
+      ? sequence.map(t => ({
+          id: Math.random().toString(),
+          value: t.chordName,
+        }))
+      : currentChart.chords
+  )
 
   useEffect(() => {
     if (sequence) {
-      setChords(sequence.map(t => ({ id: Math.random().toString(), value: t.chordName })));
+      setChords(
+        sequence.map(t => ({
+          id: Math.random().toString(),
+          value: t.chordName,
+        }))
+      )
     }
-  }, [sequence]);
+  }, [sequence])
 
   useEffect(() => {
     if (currentChart && currentChart.chords.length > 0) {
-      setPreviousChart(currentChart);
+      setPreviousChart(currentChart)
     }
-  }, [currentChart]);
+  }, [currentChart])
 
   useEffect(() => {
     if (isEditing && onEditingChange) {
-      onEditingChange(true);
+      onEditingChange(true)
     } else if (!isEditing && onEditingChange) {
-      onEditingChange(false);
+      onEditingChange(false)
     }
-  }, [isEditing, onEditingChange]);
+  }, [isEditing, onEditingChange])
 
   const handleChordClick = async (chord: string, index: number) => {
-    console.log('ChordChartInput: handleChordClick called', { chord, index, isEditing });
-    if (isEditing) return;
+    console.log('ChordChartInput: handleChordClick called', {
+      chord,
+      index,
+      isEditing,
+    })
+    if (isEditing) return
 
     // Update position immediately
-    console.log('ChordChartInput: Updating position to', index);
-    onPositionSelect(index);
+    console.log('ChordChartInput: Updating position to', index)
+    onPositionSelect(index)
 
     // If playing, stop first
     if (isPlaying) {
-      console.log('ChordChartInput: Stopping playback');
-      onStop();
+      console.log('ChordChartInput: Stopping playback')
+      onStop()
     }
 
     // Play the clicked chord
-    console.log('ChordChartInput: Playing chord', chord);
-    await playChord(chord, index);
-  };
+    console.log('ChordChartInput: Playing chord', chord)
+    await playChord(chord, index)
+  }
 
   const handleChartChange = (newChords: typeof chords) => {
-    setChords(newChords);
+    setChords(newChords)
     if (!isPlaying) {
-      onChordSequenceChange(newChords.map(c => c.value));
+      onChordSequenceChange(newChords.map(c => c.value))
     }
-  };
+  }
 
   const handleEditStart = () => {
-    setPreviousChart({...currentChart, chords: [...chords]});
-    setIsEditing(true);
-    onNotesChange([]); // Clear keyboard lights
-  };
+    setPreviousChart({ ...currentChart, chords: [...chords] })
+    setIsEditing(true)
+    onNotesChange([]) // Clear keyboard lights
+  }
 
   const handleEditCancel = () => {
     if (previousChart) {
-      setCurrentChart(previousChart);
-      setChords(previousChart.chords);
-      onChordSequenceChange(previousChart.chords.map(c => c.value));
+      setCurrentChart(previousChart)
+      setChords(previousChart.chords)
+      onChordSequenceChange(previousChart.chords.map(c => c.value))
     }
-    setIsEditing(false);
-    onPositionSelect(0);
-  };
+    setIsEditing(false)
+    onPositionSelect(0)
+  }
 
   const handleEditSave = () => {
-    const updatedChart = { ...currentChart, chords };
+    const updatedChart = { ...currentChart, chords }
     // TODO: Save chart changes
-    setIsEditing(false);
-    setCurrentPosition(null);
-  };
+    setIsEditing(false)
+    setCurrentPosition(null)
+  }
 
   const handleNewChart = () => {
-    setPreviousChart({...currentChart, chords: [...chords]}); // Save current state before creating new
+    setPreviousChart({ ...currentChart, chords: [...chords] }) // Save current state before creating new
     const newChart = {
-      title: "Untitled Chart",
-      composer: "Unknown",
-      chords: []
-    };
-    setCurrentChart(newChart);
-    setChords([]);
-    onChordSequenceChange([]);
-    setIsEditing(true);
-    setInputValue('');
-  };
+      title: 'Untitled Chart',
+      composer: 'Unknown',
+      chords: [],
+    }
+    setCurrentChart(newChart)
+    setChords([])
+    onChordSequenceChange([])
+    setIsEditing(true)
+    setInputValue('')
+  }
 
   const handleDeleteChord = (index: number) => {
-    if (isPlaying) return;
-    const newChords = [...chords];
-    newChords.splice(index, 1);
-    handleChartChange(newChords);
-  };
+    if (isPlaying) return
+    const newChords = [...chords]
+    newChords.splice(index, 1)
+    handleChartChange(newChords)
+  }
 
   const generateValidChords = () => {
-    const notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    const modifiers = ['', '#', 'b'];
-    const types = ['', 'm', 'maj7', '7', '7b5', 'maj7b5', 'm7', 'm7b5', 'm7#5', 'maj7#5', 'dim', 'dim7'];
-    
-    return notes.flatMap(note => 
-      modifiers.flatMap(mod => 
-        types.map(type => note + mod + type)
-      )
-    );
-  };
+    const notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
+    const modifiers = ['', '#', 'b']
+    const types = [
+      '',
+      'm',
+      'maj7',
+      '7',
+      '7b5',
+      'maj7b5',
+      'm7',
+      'm7b5',
+      'm7#5',
+      'maj7#5',
+      'dim',
+      'dim7',
+    ]
 
-  const [validChords] = useState(generateValidChords());
-  const [showChordSuggestions, setShowChordSuggestions] = useState(false);
+    return notes.flatMap(note =>
+      modifiers.flatMap(mod => types.map(type => note + mod + type))
+    )
+  }
+
+  const [validChords] = useState(generateValidChords())
+  const [showChordSuggestions, setShowChordSuggestions] = useState(false)
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -196,7 +272,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         !suggestionRef.current.contains(event.target as Node) &&
         !inputRef.current?.contains(event.target as Node)
       ) {
-        setShowChordSuggestions(false);
+        setShowChordSuggestions(false)
       }
 
       // Handle switch chart dropdown
@@ -205,205 +281,221 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         !searchRef.current.contains(event.target as Node) &&
         !buttonRef.current?.contains(event.target as Node)
       ) {
-        setShowChartSearch(false);
+        setShowChartSearch(false)
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     if (chordListRef.current) {
-      const selectedElement = chordListRef.current.children[selectedChordIndex] as HTMLElement;
+      const selectedElement = chordListRef.current.children[
+        selectedChordIndex
+      ] as HTMLElement
       if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'nearest' });
+        selectedElement.scrollIntoView({ block: 'nearest' })
       }
     }
-  }, [selectedChordIndex]);
+  }, [selectedChordIndex])
 
   useEffect(() => {
     if (chartListRef.current) {
-      const selectedElement = chartListRef.current.children[selectedChartIndex] as HTMLElement;
+      const selectedElement = chartListRef.current.children[
+        selectedChartIndex
+      ] as HTMLElement
       if (selectedElement) {
-        selectedElement.scrollIntoView({ block: 'nearest' });
+        selectedElement.scrollIntoView({ block: 'nearest' })
       }
     }
-  }, [selectedChartIndex]);
+  }, [selectedChartIndex])
 
   const handleChordKeyDown = (e: React.KeyboardEvent) => {
-    const filteredChords = validChords.filter((chord) =>
+    const filteredChords = validChords.filter(chord =>
       chord.toLowerCase().includes(inputValue.toLowerCase())
-    );
+    )
 
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault();
-        setSelectedChordIndex((prev) => 
+        e.preventDefault()
+        setSelectedChordIndex(prev =>
           prev < filteredChords.length - 1 ? prev + 1 : prev
-        );
-        break;
+        )
+        break
       case 'ArrowUp':
-        e.preventDefault();
-        setSelectedChordIndex((prev) => prev > 0 ? prev - 1 : prev);
-        break;
+        e.preventDefault()
+        setSelectedChordIndex(prev => (prev > 0 ? prev - 1 : prev))
+        break
       case 'Enter':
-        e.preventDefault();
+        e.preventDefault()
         if (filteredChords.length > 0) {
-          handleAddChord(filteredChords[selectedChordIndex]);
+          handleAddChord(filteredChords[selectedChordIndex])
         }
-        break;
+        break
       case 'Escape':
-        e.preventDefault();
-        setShowChordSuggestions(false);
-        break;
+        e.preventDefault()
+        setShowChordSuggestions(false)
+        break
     }
-  };
+  }
 
   const handleChartKeyDown = (e: React.KeyboardEvent) => {
-    const filteredCharts = charts.filter((chart) =>
+    const filteredCharts = charts.filter(chart =>
       chart.title.toLowerCase().includes(chartSearchValue.toLowerCase())
-    );
+    )
 
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault();
-        setSelectedChartIndex((prev) => 
+        e.preventDefault()
+        setSelectedChartIndex(prev =>
           prev < filteredCharts.length - 1 ? prev + 1 : prev
-        );
-        break;
+        )
+        break
       case 'ArrowUp':
-        e.preventDefault();
-        setSelectedChartIndex((prev) => prev > 0 ? prev - 1 : prev);
-        break;
+        e.preventDefault()
+        setSelectedChartIndex(prev => (prev > 0 ? prev - 1 : prev))
+        break
       case 'Enter':
-        e.preventDefault();
+        e.preventDefault()
         if (filteredCharts.length > 0) {
-          const selectedChart = filteredCharts[selectedChartIndex];
-          setPreviousChart({...currentChart, chords: [...chords]});
-          setCurrentChart(selectedChart);
-          setChords(selectedChart.chords);
+          const selectedChart = filteredCharts[selectedChartIndex]
+          setPreviousChart({ ...currentChart, chords: [...chords] })
+          setCurrentChart(selectedChart)
+          setChords(selectedChart.chords)
           if (currentPosition > 0) {
-            onPositionSelect(0);
+            onPositionSelect(0)
           }
-          onNotesChange([]);
-          onChordSequenceChange(selectedChart.chords.map(chord => chord.value));
-          setShowChartSearch(false);
-          setSelectedChartIndex(0);
+          onNotesChange([])
+          onChordSequenceChange(selectedChart.chords.map(chord => chord.value))
+          setShowChartSearch(false)
+          setSelectedChartIndex(0)
         }
-        break;
+        break
       case 'Escape':
-        e.preventDefault();
-        setShowChartSearch(false);
-        break;
+        e.preventDefault()
+        setShowChartSearch(false)
+        break
     }
-  };
+  }
 
   const handleAddChord = (chord: string) => {
-    if (isPlaying) return;
-    const newChord = { id: Math.random().toString(), value: chord };
-    handleChartChange([...chords, newChord]);
-    setInputValue('');
-    setShowChordSuggestions(false);
-  };
+    if (isPlaying) return
+    const newChord = { id: Math.random().toString(), value: chord }
+    handleChartChange([...chords, newChord])
+    setInputValue('')
+    setShowChordSuggestions(false)
+  }
 
   const handleMouseDown = (e: React.MouseEvent, index: number) => {
-    if (e.button !== 0 || !isEditing) return;
-    
+    if (e.button !== 0 || !isEditing) return
+
     // Don't initiate drag if clicking the delete button
     if (e.target.closest('button')) {
-      return;
+      return
     }
 
-    e.preventDefault();
-    dragSourceRef.current = e.currentTarget;
-    dragSourceIndexRef.current = index;
-    
+    e.preventDefault()
+    dragSourceRef.current = e.currentTarget
+    dragSourceIndexRef.current = index
+
     // Create drag overlay
-    const overlay = document.createElement('div');
-    overlay.className = 'fixed pointer-events-none z-50 opacity-80';
-    overlay.style.width = `${e.currentTarget.offsetWidth}px`;
-    overlay.innerHTML = e.currentTarget.innerHTML;
-    overlay.style.transform = 'translate(-50%, -50%)';
-    overlay.style.background = 'rgb(237 233 254)'; // purple-50
-    overlay.style.padding = '0.375rem 0.75rem';
-    overlay.style.borderRadius = '0.375rem';
-    overlay.style.fontSize = '0.875rem';
-    overlay.style.lineHeight = '1.25rem';
-    overlay.style.textAlign = 'center';
-    overlay.style.fontWeight = '500';
-    document.body.appendChild(overlay);
-    dragOverlayRef.current = overlay;
+    const overlay = document.createElement('div')
+    overlay.className = 'fixed pointer-events-none z-50 opacity-80'
+    overlay.style.width = `${e.currentTarget.offsetWidth}px`
+    overlay.innerHTML = e.currentTarget.innerHTML
+    overlay.style.transform = 'translate(-50%, -50%)'
+    overlay.style.background = 'rgb(237 233 254)' // purple-50
+    overlay.style.padding = '0.375rem 0.75rem'
+    overlay.style.borderRadius = '0.375rem'
+    overlay.style.fontSize = '0.875rem'
+    overlay.style.lineHeight = '1.25rem'
+    overlay.style.textAlign = 'center'
+    overlay.style.fontWeight = '500'
+    document.body.appendChild(overlay)
+    dragOverlayRef.current = overlay
 
     // Position overlay at cursor
-    overlay.style.left = `${e.clientX}px`;
-    overlay.style.top = `${e.clientY}px`;
+    overlay.style.left = `${e.clientX}px`
+    overlay.style.top = `${e.clientY}px`
 
-    setIsDragging(true);
-  };
+    setIsDragging(true)
+  }
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || dragSourceIndexRef.current === null) return;
+    if (!isDragging || dragSourceIndexRef.current === null) return
 
     // Update overlay position
     if (dragOverlayRef.current) {
-      dragOverlayRef.current.style.left = `${e.clientX}px`;
-      dragOverlayRef.current.style.top = `${e.clientY}px`;
+      dragOverlayRef.current.style.left = `${e.clientX}px`
+      dragOverlayRef.current.style.top = `${e.clientY}px`
     }
 
-    const chordElements = Array.from(document.querySelectorAll('[data-chord-index]'));
-    const sourceIndex = dragSourceIndexRef.current;
+    const chordElements = Array.from(
+      document.querySelectorAll('[data-chord-index]')
+    )
+    const sourceIndex = dragSourceIndexRef.current
 
     // Find the chord element we're hovering over
     const targetElement = chordElements.find(element => {
-      const rect = element.getBoundingClientRect();
-      return e.clientX >= rect.left && e.clientX <= rect.right &&
-             e.clientY >= rect.top && e.clientY <= rect.bottom;
-    });
+      const rect = element.getBoundingClientRect()
+      return (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      )
+    })
 
     if (targetElement) {
-      const targetIndex = parseInt(targetElement.getAttribute('data-chord-index') || '-1');
+      const targetIndex = parseInt(
+        targetElement.getAttribute('data-chord-index') || '-1'
+      )
       if (targetIndex !== -1 && targetIndex !== sourceIndex) {
-        setDropTarget(targetIndex);
+        setDropTarget(targetIndex)
       }
     }
-  };
+  }
 
   const handleMouseUp = () => {
-    if (isDragging && dropTarget !== null && dragSourceIndexRef.current !== null) {
-      const sourceIndex = dragSourceIndexRef.current;
-      const newChords = [...chords];
-      const [movedChord] = newChords.splice(sourceIndex, 1);
-      newChords.splice(dropTarget, 0, movedChord);
-      handleChartChange(newChords);
+    if (
+      isDragging &&
+      dropTarget !== null &&
+      dragSourceIndexRef.current !== null
+    ) {
+      const sourceIndex = dragSourceIndexRef.current
+      const newChords = [...chords]
+      const [movedChord] = newChords.splice(sourceIndex, 1)
+      newChords.splice(dropTarget, 0, movedChord)
+      handleChartChange(newChords)
     }
 
     // Remove overlay
     if (dragOverlayRef.current) {
-      document.body.removeChild(dragOverlayRef.current);
-      dragOverlayRef.current = null;
+      document.body.removeChild(dragOverlayRef.current)
+      dragOverlayRef.current = null
     }
 
-    setIsDragging(false);
-    setDropTarget(null);
-    dragSourceRef.current = null;
-    dragSourceIndexRef.current = null;
-  };
+    setIsDragging(false)
+    setDropTarget(null)
+    dragSourceRef.current = null
+    dragSourceIndexRef.current = null
+  }
 
   useEffect(() => {
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mousemove', handleMouseMove)
     }
-    document.addEventListener('mouseup', handleMouseUp);
-    
+    document.addEventListener('mouseup', handleMouseUp)
+
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, dropTarget, chords]);
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, dropTarget, chords])
 
   return (
-    <div 
+    <div
       className={`space-y-4 max-w-full ${isDragging ? 'cursor-grabbing' : ''}`}
     >
       <div className="flex justify-center">
@@ -411,20 +503,22 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
           <div className="flex-1 relative">
             <button
               ref={buttonRef}
-              onClick={(e) => {
+              onClick={e => {
                 if (!isPlaying && !isEditing) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowChartSearch(!showChartSearch);
+                  e.preventDefault()
+                  e.stopPropagation()
+                  setShowChartSearch(!showChartSearch)
                 }
               }}
               disabled={isPlaying || isEditing}
               className={`text-left ${isPlaying || isEditing ? 'pointer-events-none' : 'cursor-pointer hover:text-purple-700'}`}
             >
               <h2 className="text-lg font-medium text-gray-900">
-                {currentChart.title === "Untitled Chart" ? "Chord Chart" : currentChart.title}
+                {currentChart.title === 'Untitled Chart'
+                  ? 'Chord Chart'
+                  : currentChart.title}
               </h2>
-              {currentChart.title !== "Untitled Chart" && (
+              {currentChart.title !== 'Untitled Chart' && (
                 <p className="text-sm text-gray-500">{currentChart.composer}</p>
               )}
             </button>
@@ -437,9 +531,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   <input
                     type="text"
                     value={chartSearchValue}
-                    onChange={(e) => {
-                      setChartSearchValue(e.target.value);
-                      setSelectedChartIndex(0);
+                    onChange={e => {
+                      setChartSearchValue(e.target.value)
+                      setSelectedChartIndex(0)
                     }}
                     onKeyDown={handleChartKeyDown}
                     placeholder="Search charts..."
@@ -448,23 +542,30 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 </div>
                 <div className="max-h-48 overflow-y-auto" ref={chartListRef}>
                   {charts
-                    .filter((chart) =>
-                      chart.title.toLowerCase().includes(chartSearchValue.toLowerCase())
+                    .filter(chart =>
+                      chart.title
+                        .toLowerCase()
+                        .includes(chartSearchValue.toLowerCase())
                     )
                     .map((chart, index) => (
                       <div
                         key={chart.title}
                         onClick={() => {
-                          setPreviousChart({...currentChart, chords: [...chords]});
-                          setCurrentChart(chart);
-                          setChords(chart.chords);
+                          setPreviousChart({
+                            ...currentChart,
+                            chords: [...chords],
+                          })
+                          setCurrentChart(chart)
+                          setChords(chart.chords)
                           if (currentPosition > 0) {
-                            onPositionSelect(0);
+                            onPositionSelect(0)
                           }
-                          onNotesChange([]);
-                          onChordSequenceChange(chart.chords.map(chord => chord.value));
-                          setShowChartSearch(false);
-                          setSelectedChartIndex(index);
+                          onNotesChange([])
+                          onChordSequenceChange(
+                            chart.chords.map(chord => chord.value)
+                          )
+                          setShowChartSearch(false)
+                          setSelectedChartIndex(index)
                         }}
                         className={`
                           px-3 py-2 cursor-pointer hover:bg-gray-50
@@ -472,7 +573,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                         `}
                       >
                         <div className="font-medium">{chart.title}</div>
-                        <div className="text-sm text-gray-500">{chart.composer}</div>
+                        <div className="text-sm text-gray-500">
+                          {chart.composer}
+                        </div>
                       </div>
                     ))}
                 </div>
@@ -516,14 +619,14 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
             <div
               key={id}
               data-chord-index={index}
-              onMouseDown={(e) => {
+              onMouseDown={e => {
                 if (isEditing) {
-                  handleMouseDown(e, index);
+                  handleMouseDown(e, index)
                 } else {
-                  handleChordClick(value, index);
+                  handleChordClick(value, index)
                 }
               }}
-              onMouseEnter={(e) => isEditing && handleMouseEnter(e, index)}
+              onMouseEnter={e => isEditing && handleMouseEnter(e, index)}
               className={`
                 w-[80px] px-3 py-1.5 rounded-md text-sm font-medium text-center transition-all duration-100 ease-in-out transform origin-center relative group
                 ${!isEditing && index === currentPosition ? 'bg-purple-100' : 'bg-gray-50'}
@@ -534,18 +637,18 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
             >
               {isEditing && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteChord(index);
+                  onClick={e => {
+                    e.stopPropagation()
+                    handleDeleteChord(index)
                   }}
                   onMouseEnter={() => {
                     if (isDragging && dragOverlayRef.current) {
-                      document.body.style.cursor = 'pointer';
+                      document.body.style.cursor = 'pointer'
                     }
                   }}
                   onMouseLeave={() => {
                     if (isDragging && dragOverlayRef.current) {
-                      document.body.style.cursor = 'grabbing';
+                      document.body.style.cursor = 'grabbing'
                     }
                   }}
                   className={`
@@ -562,7 +665,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
           ))}
         </div>
       </div>
-      
+
       <div className="flex gap-2">
         {isEditing && (
           <>
@@ -571,18 +674,18 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 ref={inputRef}
                 type="text"
                 value={inputValue}
-                onChange={(e) => {
-                  setInputValue(e.target.value);
-                  setSelectedChordIndex(0);
+                onChange={e => {
+                  setInputValue(e.target.value)
+                  setSelectedChordIndex(0)
                   if (e.target.value) {
-                    setShowChordSuggestions(true);
+                    setShowChordSuggestions(true)
                   } else {
-                    setShowChordSuggestions(false);
+                    setShowChordSuggestions(false)
                   }
                 }}
                 onFocus={() => {
                   if (inputValue) {
-                    setShowChordSuggestions(true);
+                    setShowChordSuggestions(true)
                   }
                 }}
                 onKeyDown={handleChordKeyDown}
@@ -594,10 +697,15 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   ref={suggestionRef}
                   className="absolute left-0 right-0 mt-1 bg-white rounded-md border border-gray-200 z-50"
                 >
-                  <div className="max-h-48 overflow-y-auto py-1" ref={chordListRef}>
+                  <div
+                    className="max-h-48 overflow-y-auto py-1"
+                    ref={chordListRef}
+                  >
                     {validChords
-                      .filter(chord => 
-                        !inputValue || chord.toLowerCase().includes(inputValue.toLowerCase())
+                      .filter(
+                        chord =>
+                          !inputValue ||
+                          chord.toLowerCase().includes(inputValue.toLowerCase())
                       )
                       .map((chord, index) => (
                         <div
@@ -620,16 +728,18 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               disabled={chords.length < 2}
               className={`
                 px-3 py-1.5 rounded-md text-sm font-medium
-                ${chords.length < 2
-                  ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                  : 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200'}
+                ${
+                  chords.length < 2
+                    ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
+                    : 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200'
+                }
               `}
             >
-              {chords.length === 0 
-                ? 'Add chords first' 
-                : chords.length === 1 
-                ? 'Add at least one more chord' 
-                : 'Save'}
+              {chords.length === 0
+                ? 'Add chords first'
+                : chords.length === 1
+                  ? 'Add at least one more chord'
+                  : 'Save'}
             </button>
             <button
               onClick={handleEditCancel}
@@ -641,5 +751,5 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
