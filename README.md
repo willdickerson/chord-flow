@@ -2,6 +2,8 @@
 
 A web app for exploring and playing chord progressions with optimized voice leading.
 
+![Chord Flow Screenshot](./docs/hangboard-timer.png)
+
 ## Try It Out
 
 Visit [Chord Flow](https://willdickerson.github.io/chord-flow/) to try the app.
