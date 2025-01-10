@@ -13,7 +13,23 @@ export function parseChord(chord: string): {
   const match = chord.match(/([A-G][#b]?)(.*)/)!
   const originalRoot = match[1]
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
-  const chordType = match[2] || 'M' // Default to major if not specified
+  let chordType = match[2] || 'M' // Default to major if not specified
+
+  // Map extended chord qualities to their basic triad type
+  if (chordType.includes('m7b5') || chordType.includes('ø')) {
+    chordType = 'dim' // half-diminished -> diminished triad
+  } else if (chordType.includes('dim') || chordType.includes('°')) {
+    chordType = 'dim'
+  } else if (chordType.includes('aug') || chordType.includes('+')) {
+    chordType = 'aug'
+  } else if (chordType.startsWith('m')) {
+    chordType = 'm' // any minor chord -> minor triad
+  } else if (chordType.includes('maj') || chordType.includes('M') || chordType.includes('7')) {
+    chordType = 'M' // any major or dominant chord -> major triad
+  } else {
+    chordType = 'M' // default to major
+  }
+
   return { originalRoot, standardizedRoot, chordType }
 }
 
