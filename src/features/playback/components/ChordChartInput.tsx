@@ -542,7 +542,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     }
                   }}
                   className={`
-                    absolute top-0 -right-1 text-gray-300 hover:text-gray-500 text-xs font-bold bg-transparent 
+                    absolute top-0 -right-1 text-gray-300 hover:bg-transparent text-xs font-bold bg-transparent 
                     w-3 h-3 flex items-center justify-center leading-none focus:outline-none
                     ${isDragging ? 'pointer-events-none' : ''}
                   `}
