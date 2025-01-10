@@ -232,7 +232,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               aria-label={
                 isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'
               }
-              className={`min-w-12 h-12 flex items-center justify-center rounded-md
+              className={`min-w-8 h-8 flex items-center justify-center rounded-md
                 transition-colors outline-none
                 ${
                   isGenerating || isEditing
@@ -245,22 +245,22 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               {isGenerating ? (
                 <div className="flex gap-1">
                   <div
-                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    className="w-1 h-1 bg-[#846C5B]/50 rounded-full animate-bounce"
                     style={{ animationDelay: '0ms' }}
                   ></div>
                   <div
-                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    className="w-1 h-1 bg-[#846C5B]/50 rounded-full animate-bounce"
                     style={{ animationDelay: '150ms' }}
                   ></div>
                   <div
-                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    className="w-1 h-1 bg-[#846C5B]/50 rounded-full animate-bounce"
                     style={{ animationDelay: '300ms' }}
                   ></div>
                 </div>
               ) : isPlaying ? (
-                <Pause className="w-4 h-4" />
+                <Pause className="w-3.5 h-3.5" />
               ) : (
-                <Play className="w-4 h-4" />
+                <Play className="w-3.5 h-3.5" />
               )}
             </button>
 
@@ -268,22 +268,22 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               onClick={handleRestart}
               disabled={isGenerating || !sequence || isEditing}
               aria-label="Restart"
-              className={`min-w-12 h-12 flex items-center justify-center rounded-md
+              className={`min-w-8 h-8 flex items-center justify-center rounded-md
                 transition-colors outline-none
                 ${
                   isGenerating || !sequence || isEditing
-                    ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
+                    ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50 hover:bg-[#F5E6D3]/50'
                     : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5" />
             </button>
 
             <button
               onClick={handleLoopToggle}
               disabled={isEditing}
               aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
-              className={`min-w-12 h-12 flex items-center justify-center rounded-md
+              className={`min-w-8 h-8 flex items-center justify-center rounded-md
                 transition-colors outline-none
                 ${isEditing 
                   ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50' 
@@ -292,7 +292,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
-              <Repeat className="w-4 h-4" />
+              <Repeat className="w-3.5 h-3.5" />
             </button>
 
             <button
@@ -301,7 +301,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               aria-label={
                 isArpeggiating ? 'Disable Arpeggiator' : 'Enable Arpeggiator'
               }
-              className={`min-w-11 h-11 flex items-center justify-center rounded-md
+              className={`min-w-8 h-8 flex items-center justify-center rounded-md
                 transition-colors outline-none
                 ${isEditing 
                   ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50' 
@@ -310,7 +310,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
-              <TrendingUp className="w-4 h-4" />
+              <TrendingUp className="w-3.5 h-3.5" />
             </button>
 
             <div className="flex items-center gap-5">
