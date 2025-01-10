@@ -337,7 +337,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" />
+                <Clock className="w-4 h-4 text-[#846C5B]" />
                 <input
                   type="range"
                   min="100"
