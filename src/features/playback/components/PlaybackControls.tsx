@@ -52,6 +52,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [chordDuration, setChordDuration] = useState(670)
   const [isLooping, setIsLooping] = useState(false)
   const [isArpeggiating, setIsArpeggiating] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     // Set initial volume and chord duration
@@ -225,17 +226,17 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           <div className="flex gap-3">
             <button
               onClick={handlePlayback}
-              disabled={isGenerating}
+              disabled={isGenerating || isEditing}
               aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
               className={`min-w-12 h-12 flex items-center justify-center
                 transition-colors bg-transparent p-0 border-0
                 ${
-                  isGenerating
+                  isGenerating || isEditing
                     ? 'text-gray-400'
                     : isPlaying
                       ? 'text-purple-700 hover:text-purple-800'
                       : 'text-gray-600 hover:text-gray-700'
-                }`}
+                } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               {isGenerating ? (
                 <div className="flex gap-1">
@@ -261,37 +262,41 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
             <button
               onClick={handleRestart}
-              disabled={isGenerating || !sequence}
+              disabled={isGenerating || !sequence || isEditing}
               aria-label="Restart"
               className={`min-w-12 h-12 flex items-center justify-center
                 transition-colors bg-transparent p-0 border-0
                 ${
-                  isGenerating || !sequence
+                  isGenerating || !sequence || isEditing
                     ? 'text-gray-400'
                     : 'text-gray-600 hover:text-gray-700 active:text-purple-700'
-                }`}
+                } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
 
             <button
               onClick={handleLoopToggle}
+              disabled={isEditing}
               aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
               className={`min-w-12 h-12 flex items-center justify-center
                 transition-colors bg-transparent p-0 border-0
-                ${isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
+                ${isEditing ? 'text-gray-400' : isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}
+                ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <Repeat className="w-4 h-4" />
             </button>
 
             <button
               onClick={handleArpeggiateToggle}
+              disabled={isEditing}
               aria-label={
                 isArpeggiating ? 'Disable Arpeggiator' : 'Enable Arpeggiator'
               }
               className={`min-w-11 h-11 flex items-center justify-center
                 transition-colors bg-transparent p-0 border-0
-                ${isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
+                ${isEditing ? 'text-gray-400' : isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}
+                ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <TrendingUp className="w-4 h-4" />
             </button>
@@ -349,6 +354,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             onChordSequenceChange={updateChordSequence}
             onStop={handleStop}
             playChord={playChord}
+            onEditingChange={setIsEditing}
           />
         </div>
       </div>

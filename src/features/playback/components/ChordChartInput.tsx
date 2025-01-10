@@ -13,6 +13,7 @@ export interface ChordChartInputProps {
   onChordSequenceChange: (chordSequence: string[]) => void;
   onStop: () => void;
   playChord: (chord: string, index: number) => void;
+  onEditingChange?: (isEditing: boolean) => void;
 }
 
 export const ChordChartInput: React.FC<ChordChartInputProps> = ({
@@ -27,6 +28,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   onChordSequenceChange,
   onStop,
   playChord,
+  onEditingChange,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [chartSearchValue, setChartSearchValue] = useState('');
@@ -92,6 +94,14 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       setPreviousChart(currentChart);
     }
   }, [currentChart]);
+
+  useEffect(() => {
+    if (isEditing && onEditingChange) {
+      onEditingChange(true);
+    } else if (!isEditing && onEditingChange) {
+      onEditingChange(false);
+    }
+  }, [isEditing, onEditingChange]);
 
   const handleChordClick = async (chord: string, index: number) => {
     console.log('ChordChartInput: handleChordClick called', { chord, index, isEditing });
