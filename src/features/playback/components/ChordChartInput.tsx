@@ -450,7 +450,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   {showChartSearch && (
                     <div
                       ref={searchRef}
-                      className="absolute right-0 z-10 mt-1 w-64 bg-white rounded-md shadow-lg border border-gray-200"
+                      className="absolute right-0 z-10 mt-1 w-64 bg-white rounded-md border border-gray-200"
                     >
                       <div className="p-2">
                         <input
@@ -586,7 +586,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               {showChordSuggestions && (
                 <div
                   ref={suggestionRef}
-                  className="absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+                  className="absolute left-0 right-0 mt-1 bg-white rounded-md border border-gray-200 z-50"
                 >
                   <div className="max-h-48 overflow-y-auto py-1" ref={chordListRef}>
                     {validChords
