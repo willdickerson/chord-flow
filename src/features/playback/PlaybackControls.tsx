@@ -12,6 +12,7 @@ import {
 import { usePlaybackState } from './usePlaybackState'
 import { ChordChartInput } from './ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
+import { TriadControls } from './TriadControls'
 import { audioService } from '../../services/audioService'
 import * as Tone from 'tone'
 
@@ -38,6 +39,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     handlePositionSelect,
     handleVoiceLeadingChange,
     updateChordSequence,
+    voiceLeadingState,
   } = usePlaybackState(onNotesChange)
 
   const initialChordNames = audioService.getInitialChordNames()
@@ -221,6 +223,24 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 handleStop()
               }
               handleVoiceLeadingChange(voices)
+            }}
+          />
+
+          {/* Triad Controls */}
+          <TriadControls
+            isEnabled={!isPlaying}
+            onTriadTypeChange={type => {
+              // Stop playback and reset state when triad type changes
+              if (isPlaying) {
+                handleStop()
+              }
+              audioService.setTriadType(type)
+              // Regenerate sequence with new triad type
+              handleVoiceLeadingChange({
+                bass: true,
+                middle: true,
+                high: true,
+              })
             }}
           />
 

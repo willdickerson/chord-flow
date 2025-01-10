@@ -51,6 +51,7 @@ export class AudioService {
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: Record<string, Triad> = defaultTriads
   private scheduledEvents: number[] = []
+  private triadType: 'spread' | 'close' = 'spread'
 
   get shouldStop(): boolean {
     return this._shouldStop
@@ -127,7 +128,7 @@ export class AudioService {
   setCurrentChordNames(chordNames: string[]): void {
     this.currentChordNames = chordNames
     this.currentTriads = Object.fromEntries(
-      chordNames.map(chord => [chord, generateTriads(chord, 'spread')])
+      chordNames.map(chord => [chord, generateTriads(chord, this.triadType)])
     )
   }
 
@@ -616,6 +617,18 @@ export class AudioService {
     }
 
     return path
+  }
+
+  setTriadType(type: 'spread' | 'close'): void {
+    this.triadType = type
+    // Regenerate triads with new type
+    this.currentTriads = Object.fromEntries(
+      this.currentChordNames.map(chord => [chord, generateTriads(chord, type)])
+    )
+  }
+
+  getTriadType(): 'spread' | 'close' {
+    return this.triadType
   }
 }
 
