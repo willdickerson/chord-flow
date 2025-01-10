@@ -53,9 +53,14 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const chartListRef = useRef<HTMLDivElement>(null)
 
   const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
+  const giantStepsIndex = charts.findIndex(chart => chart.title === 'Giant Steps')
 
-  const [currentChart, setCurrentChart] = useState(charts[0])
-  const [previousChart, setPreviousChart] = useState(charts[0])
+  const [currentChart, setCurrentChart] = useState(
+    giantStepsIndex >= 0 ? charts[giantStepsIndex] : charts[0]
+  )
+  const [previousChart, setPreviousChart] = useState(
+    giantStepsIndex >= 0 ? charts[giantStepsIndex] : charts[0]
+  )
   const [chords, setChords] = useState(
     sequence
       ? sequence.map(t => ({
