@@ -1,4 +1,4 @@
-import { KeyboardConfig, OctaveMap } from './types'
+import { KeyboardConfig, OctaveMap } from './index'
 
 export const KEYBOARD_CONFIG: KeyboardConfig = {
   midiStart: 24, // C1

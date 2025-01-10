@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Triad } from '../../../types';
+import { Triad } from '../../common/types';
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null;

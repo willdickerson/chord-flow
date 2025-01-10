@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { audioService } from '../../../services/audioService'
+import { audioService } from '../../services/audioService'
 
 export const useKeyboardState = () => {
   const [playedNotes, setPlayedNotes] = useState<Set<number>>(new Set())

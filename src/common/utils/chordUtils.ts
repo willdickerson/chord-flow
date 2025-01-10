@@ -3,7 +3,7 @@ import {
   SCALE_INTERVALS,
   ENHARMONIC_MAP,
   Inversion,
-} from '../types'
+} from '../../common/types'
 
 export function parseChord(chord: string): {
   originalRoot: string
@@ -42,7 +42,6 @@ export function generateTriads(
   const rootIndex = CHROMATIC_SCALE.indexOf(standardizedRoot)
   const intervals = SCALE_INTERVALS[chordType] || SCALE_INTERVALS['M']
 
-  // Generate triad notes following Python's approach with scale intervals
   const notes = [
     CHROMATIC_SCALE[rootIndex],
     CHROMATIC_SCALE[
@@ -53,7 +52,6 @@ export function generateTriads(
     ],
   ]
 
-  // Generate all permutations
   const triad_permutations = generatePermutations(notes)
 
   let triads: string[]
@@ -74,13 +72,11 @@ export function generateTriads(
     ]
   }
 
-  // Replace standardized root with original to maintain notation consistency
   return triads.map(triad =>
     triad.replace(new RegExp(standardizedRoot, 'g'), originalRoot)
   )
 }
 
-// Helper function to sum array slice
 function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b, 0)
 }
@@ -111,8 +107,6 @@ export function findAllTriadsInRange(
     note => NOTE_TO_MIDI_BASE[note] ?? NOTE_TO_MIDI_BASE[ENHARMONIC_MAP[note]]
   )
   const validMidis: number[][] = []
-
-  // Generate all possible octave combinations (-2 to +2)
   const octaves = [-2, -1, 0, 1, 2]
 
   // Generate all possible combinations of octaves

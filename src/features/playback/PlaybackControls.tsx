@@ -9,11 +9,10 @@ import {
   Repeat,
   TrendingUp,
 } from 'lucide-react'
-import { usePlaybackState } from '../hooks/usePlaybackState'
+import { usePlaybackState } from './usePlaybackState'
 import { ChordChartInput } from './ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
-import { audioService } from '../../../services/audioService'
-import { generateTriads, NOTE_TO_MIDI_BASE } from '../../../utils/chordUtils'
+import { audioService } from '../../services/audioService'
 import * as Tone from 'tone'
 
 interface PlaybackControlsProps {

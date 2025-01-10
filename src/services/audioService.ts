@@ -1,10 +1,10 @@
 import * as Tone from 'tone'
-import { Triad } from '../types'
+import { Triad } from '../common/types'
 import {
   buildVoiceLeadingGraph,
   findOptimalVoiceLeading,
-} from '../utils/graphUtils'
-import { generateTriads } from '../utils/chordUtils'
+} from '../common/utils/graphUtils'
+import { generateTriads } from '../common/utils/chordUtils'
 
 export type InstrumentType = 'piano' | 'synth' | 'guitar'
 

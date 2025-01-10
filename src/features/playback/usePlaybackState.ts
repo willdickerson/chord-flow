@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { audioService } from '../../../services/audioService'
-import { Triad } from '../../../types'
+import { audioService } from '../../services/audioService'
+import { Triad } from '../../common/types'
 
 interface VoiceLeadingState {
   bass: boolean

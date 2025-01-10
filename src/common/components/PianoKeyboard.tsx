@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { audioService } from '../services/audioService'
+import { audioService } from '../../services/audioService'
 
 interface PianoKeyboardProps {
   activeNotes: number[]

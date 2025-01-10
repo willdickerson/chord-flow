@@ -5,7 +5,7 @@ import {
   Triad,
   ChordName,
   Inversion,
-} from '../types'
+} from '../../common/types'
 import { findAllTriadsInRange } from './chordUtils'
 
 export function buildVoiceLeadingGraph(
