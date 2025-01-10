@@ -309,7 +309,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleVolumeToggle}
-                  className="text-gray-500 hover:text-gray-700 p-0 bg-white"
+                  className="text-[#846C5B] hover:text-[#846C5B]/80 p-0 bg-transparent hover:bg-transparent border-0"
                   aria-label={isMuted ? 'Unmute' : 'Mute'}
                 >
                   {isMuted ? (
@@ -321,11 +321,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 <input
                   type="range"
                   min="0"
-                  max="50"
+                  max="100"
                   value={volume}
                   onChange={handleVolumeChange}
-                  className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
-                  aria-label="Volume"
+                  className="w-20 h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448]"
                 />
               </div>
 
@@ -335,11 +334,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                   type="range"
                   min="100"
                   max="2000"
-                  step="100"
+                  step="10"
                   value={chordDuration}
                   onChange={handleDurationChange}
-                  className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
-                  aria-label="Chord Duration"
+                  className="w-20 h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448]"
                 />
               </div>
             </div>

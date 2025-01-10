@@ -7,11 +7,11 @@ function App() {
   const [activeNotes, setActiveNotes] = useState<number[]>([])
 
   return (
-    <div className="min-h-screen bg-white w-full">
+    <div className="min-h-screen w-full">
       {/* Header */}
-      <header className="w-full border-b border-gray-200">
+      <header className="w-full border-b border-[#846C5B]/20">
         <div className="container mx-auto px-4 h-14 flex items-center">
-          <h1 className="text-xl font-semibold text-gray-900">Chord Flow</h1>
+          <h1 className="text-xl font-semibold">Chord Flow</h1>
         </div>
       </header>
 
@@ -24,14 +24,18 @@ function App() {
 
       {/* Main Content */}
       <div className="container mx-auto flex items-center justify-center p-4">
-        <main className="w-full max-w-lg rounded-xl border border-gray-200 p-8">
-          <div className="space-y-6">
-            <div className="space-y-6">
-              <InstrumentSelector />
-              <PlaybackControls onNotesChange={setActiveNotes} />
-            </div>
+        <div className="relative w-full max-w-4xl mx-auto">
+          <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg">
           </div>
-        </main>
+          <main className="relative w-full p-8 bg-[#F5E6D3] rounded-lg">
+            <div className="space-y-6">
+              <div className="space-y-6">
+                <InstrumentSelector />
+                <PlaybackControls onNotesChange={setActiveNotes} />
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   )

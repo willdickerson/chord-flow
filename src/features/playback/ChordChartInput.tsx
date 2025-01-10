@@ -136,7 +136,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     onPositionSelect(0)
   }
 
-  const handleEditSave = () => {
+  const handleEditDone = () => {
     setIsEditing(false)
     setCurrentPosition(null)
   }
@@ -424,121 +424,21 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     >
       <div className="flex justify-center">
         <div className="w-[656px] flex items-center">
-          <div className="flex-1 relative">
-            <button
-              ref={buttonRef}
-              onClick={e => {
-                if (!isPlaying && !isEditing) {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  setShowChartSearch(!showChartSearch)
-                }
-              }}
-              disabled={isPlaying || isEditing}
-              className={`text-left ${isPlaying || isEditing ? 'pointer-events-none' : 'cursor-pointer hover:text-purple-700'}`}
-            >
-              <h2 className="text-lg font-medium text-gray-900">
-                {currentChart.title === 'Untitled Chart'
-                  ? 'Chord Chart'
-                  : currentChart.title}
-              </h2>
-              {currentChart.title !== 'Untitled Chart' && (
-                <p className="text-sm text-gray-500">{currentChart.composer}</p>
-              )}
-            </button>
-            {showChartSearch && (
-              <div
-                ref={searchRef}
-                className="absolute left-0 z-10 mt-1 w-64 bg-white rounded-md border border-gray-200"
-              >
-                <div className="p-2">
-                  <input
-                    type="text"
-                    value={chartSearchValue}
-                    onChange={e => {
-                      setChartSearchValue(e.target.value)
-                      setSelectedChartIndex(0)
-                    }}
-                    onKeyDown={handleChartKeyDown}
-                    placeholder="Search charts..."
-                    className="w-full px-3 py-1.5 rounded-md text-sm border border-gray-200 focus:outline-none focus:border-purple-300"
-                  />
-                </div>
-                <div className="max-h-48 overflow-y-auto" ref={chartListRef}>
-                  {charts
-                    .filter(chart =>
-                      chart.title
-                        .toLowerCase()
-                        .includes(chartSearchValue.toLowerCase())
-                    )
-                    .map((chart, index) => (
-                      <div
-                        key={chart.title}
-                        onClick={() => {
-                          setPreviousChart({
-                            ...currentChart,
-                            chords: [...chords],
-                          })
-                          setCurrentChart(chart)
-                          setChords(chart.chords)
-                          if (currentPosition > 0) {
-                            onPositionSelect(0)
-                          }
-                          onNotesChange([])
-                          onChordSequenceChange(
-                            chart.chords.map(chord => chord.value)
-                          )
-                          setShowChartSearch(false)
-                          setSelectedChartIndex(index)
-                        }}
-                        className={`
-                          px-3 py-2 cursor-pointer hover:bg-gray-50
-                          ${selectedChartIndex === index ? 'bg-purple-50' : ''}
-                        `}
-                      >
-                        <div className="font-medium">{chart.title}</div>
-                        <div className="text-sm text-gray-500">
-                          {chart.composer}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {!isEditing && (
-              <>
-                <button
-                  onClick={handleNewChart}
-                  disabled={isPlaying}
-                  className={`
-                    px-1.5 py-1.5 rounded-md text-sm font-medium transition-colors
-                    ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-100'}
-                    bg-green-50 text-green-700 border border-green-200
-                  `}
-                >
-                  New
-                </button>
-                <button
-                  onClick={handleEditStart}
-                  disabled={isPlaying}
-                  className={`
-                    px-1.5 py-1.5 rounded-md text-sm font-medium transition-colors
-                    ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-100'}
-                    bg-blue-50 text-blue-700 border border-blue-200
-                  `}
-                >
-                  Edit
-                </button>
-              </>
+          <div className="flex-1 relative text-center">
+            <h2 className="text-lg font-medium text-[#2C1810]">
+              {currentChart.title === 'Untitled Chart'
+                ? 'Chord Chart'
+                : currentChart.title}
+            </h2>
+            {currentChart.title !== 'Untitled Chart' && (
+              <p className="text-sm text-[#846C5B]">{currentChart.composer}</p>
             )}
           </div>
         </div>
       </div>
 
       <div className="flex justify-center">
-        <div className="flex flex-wrap gap-2 w-[656px]">
+        <div className="flex flex-wrap gap-2 w-[656px] p-4 border border-[#846C5B]/20 rounded-lg bg-[#F5E6D3]/50">
           {chords.map(({ id, value }, index) => (
             <div
               key={id}
@@ -553,10 +453,11 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               onMouseEnter={e => isEditing && handleMouseEnter(e, index)}
               className={`
                 w-[80px] px-3 py-1.5 rounded-md text-sm font-medium text-center transition-all duration-100 ease-in-out transform origin-center relative group
-                ${!isEditing && index === currentPosition ? 'bg-purple-100' : 'bg-gray-50'}
+                ${!isEditing && index === currentPosition ? 'bg-[#A6B39C]' : 'bg-[#F5E6D3]'}
                 ${isEditing ? 'cursor-grab active:cursor-grabbing' : sequence ? 'cursor-pointer' : ''}
-                ${dropTarget === index ? 'bg-blue-50 scale-105 translate-x-1' : ''}
-                ${isDragging && draggedChord?.id === id ? 'opacity-50 scale-95 bg-blue-100' : ''}
+                ${dropTarget === index ? 'bg-[#F5E6D3] scale-105 translate-x-1' : ''}
+                ${isDragging && draggedChord?.id === id ? 'opacity-50 scale-95 bg-[#F5E6D3]' : ''}
+                text-[#2C1810] border border-[#846C5B]/20
               `}
             >
               {isEditing && (
@@ -590,10 +491,110 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-2">
-        {isEditing && (
-          <>
-            <div className="relative flex-1">
+      {!isEditing && (
+        <div className="flex justify-center mt-4">
+          <div className="w-[656px] flex">
+            <div className="flex gap-2">
+              <button
+                onClick={handleNewChart}
+                disabled={isPlaying}
+                className={`
+                  px-1.5 py-1.5 rounded-md text-sm font-medium
+                  ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}
+                  bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20
+                `}
+              >
+                New
+              </button>
+              <button
+                onClick={handleEditStart}
+                disabled={isPlaying}
+                className={`
+                  px-1.5 py-1.5 rounded-md text-sm font-medium
+                  ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}
+                  bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20
+                `}
+              >
+                Edit
+              </button>
+              <div className="relative">
+                <input
+                  ref={buttonRef}
+                  type="text"
+                  value={chartSearchValue}
+                  onChange={e => {
+                    setChartSearchValue(e.target.value)
+                    setSelectedChartIndex(0)
+                    if (!showChartSearch) setShowChartSearch(true)
+                  }}
+                  onFocus={() => setShowChartSearch(true)}
+                  onKeyDown={handleChartKeyDown}
+                  placeholder="Search Charts"
+                  disabled={isPlaying || isEditing}
+                  className={`
+                    w-48 px-3 py-1.5 rounded-md text-sm font-medium
+                    ${isPlaying || isEditing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/10'}
+                    bg-[#F5E6D3] text-[#2C1810] border border-[#846C5B]/20
+                    focus:outline-none focus:border-[#A6B39C] placeholder-[#846C5B]/60
+                  `}
+                />
+                {showChartSearch && (
+                  <div
+                    ref={searchRef}
+                    className="absolute left-0 z-10 mt-1 w-full bg-[#F5E6D3] rounded-md border border-[#846C5B]/20"
+                  >
+                    <div className="max-h-48 overflow-y-auto" ref={chartListRef}>
+                      {charts
+                        .filter(chart =>
+                          chart.title
+                            .toLowerCase()
+                            .includes(chartSearchValue.toLowerCase())
+                        )
+                        .map((chart, index) => (
+                          <div
+                            key={chart.title}
+                            onClick={() => {
+                              setPreviousChart({
+                                ...currentChart,
+                                chords: [...chords],
+                              })
+                              setCurrentChart(chart)
+                              setChords(chart.chords)
+                              if (currentPosition > 0) {
+                                onPositionSelect(0)
+                              }
+                              onNotesChange([])
+                              onChordSequenceChange(
+                                chart.chords.map(chord => chord.value)
+                              )
+                              setShowChartSearch(false)
+                              setSelectedChartIndex(index)
+                              setChartSearchValue('')
+                            }}
+                            className={`
+                              px-3 py-2 cursor-pointer hover:bg-[#A6B39C]/10
+                              ${selectedChartIndex === index ? 'bg-[#A6B39C]/20' : ''}
+                            `}
+                          >
+                            <div className="font-medium text-[#2C1810]">{chart.title}</div>
+                            <div className="text-sm text-[#846C5B]">
+                              {chart.composer}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEditing && (
+        <div className="flex justify-center mt-4">
+          <div className="w-[656px] flex gap-2">
+            <div className="relative w-64">
               <input
                 ref={inputRef}
                 type="text"
@@ -601,10 +602,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 onChange={e => {
                   setInputValue(e.target.value)
                   setSelectedChordIndex(0)
-                  if (e.target.value) {
+                  if (e.target.value && !showChordSuggestions) {
                     setShowChordSuggestions(true)
-                  } else {
-                    setShowChordSuggestions(false)
                   }
                 }}
                 onFocus={() => {
@@ -613,34 +612,29 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   }
                 }}
                 onKeyDown={handleChordKeyDown}
-                placeholder="Add chord..."
-                className="w-full px-3 py-1.5 rounded-md text-sm border border-gray-200 focus:outline-none focus:border-purple-300"
+                placeholder="Type a chord (e.g., Am7)"
+                className="w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
               />
               {showChordSuggestions && (
                 <div
                   ref={suggestionRef}
-                  className="absolute left-0 right-0 mt-1 bg-white rounded-md border border-gray-200 z-50"
+                  className="absolute left-0 z-10 mt-1 w-full bg-[#F5E6D3] rounded-md border border-[#846C5B]/20"
                 >
-                  <div
-                    className="max-h-48 overflow-y-auto py-1"
-                    ref={chordListRef}
-                  >
+                  <div className="max-h-48 overflow-y-auto" ref={chordListRef}>
                     {validChords
-                      .filter(
-                        chord =>
-                          !inputValue ||
-                          chord.toLowerCase().includes(inputValue.toLowerCase())
+                      .filter(chord =>
+                        chord.toLowerCase().includes(inputValue.toLowerCase())
                       )
                       .map((chord, index) => (
                         <div
                           key={chord}
                           onClick={() => handleAddChord(chord)}
                           className={`
-                            px-3 py-1.5 cursor-pointer hover:bg-gray-50 text-sm
-                            ${selectedChordIndex === index ? 'bg-purple-50' : ''}
+                            px-3 py-2 cursor-pointer hover:bg-[#A6B39C]/10
+                            ${selectedChordIndex === index ? 'bg-[#A6B39C]/20' : ''}
                           `}
                         >
-                          {chord}
+                          <div className="font-medium text-[#2C1810]">{chord}</div>
                         </div>
                       ))}
                   </div>
@@ -648,32 +642,20 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               )}
             </div>
             <button
-              onClick={handleEditSave}
-              disabled={chords.length < 2}
-              className={`
-                px-3 py-1.5 rounded-md text-sm font-medium
-                ${
-                  chords.length < 2
-                    ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                    : 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200'
-                }
-              `}
+              onClick={handleEditDone}
+              className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
             >
-              {chords.length === 0
-                ? 'Add chords first'
-                : chords.length === 1
-                  ? 'Add at least one more chord'
-                  : 'Save'}
+              Done
             </button>
             <button
               onClick={handleEditCancel}
-              className="px-3 py-1.5 rounded-md text-sm font-medium bg-gray-50 text-gray-600 border border-gray-100 hover:bg-gray-100"
+              className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
             >
               Cancel
             </button>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

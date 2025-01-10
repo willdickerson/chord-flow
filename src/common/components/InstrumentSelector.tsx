@@ -18,8 +18,8 @@ export const InstrumentSelector = () => {
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
           transition-colors outline-none ${
             selectedInstrument === 'synth'
-              ? 'bg-purple-100 text-purple-700 hover:bg-purple-100 focus:bg-purple-100'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 focus:bg-gray-100'
+              ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+              : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
           }`}
       >
         <KeyboardMusic className="w-4 h-4" />
@@ -29,8 +29,8 @@ export const InstrumentSelector = () => {
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
           transition-colors outline-none ${
             selectedInstrument === 'piano'
-              ? 'bg-purple-100 text-purple-700 hover:bg-purple-100 focus:bg-purple-100'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 focus:bg-gray-100'
+              ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+              : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
           }`}
       >
         <Piano className="w-4 h-4" />
@@ -40,8 +40,8 @@ export const InstrumentSelector = () => {
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
           transition-colors outline-none ${
             selectedInstrument === 'guitar'
-              ? 'bg-purple-100 text-purple-700 hover:bg-purple-100 focus:bg-purple-100'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 focus:bg-gray-100'
+              ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+              : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
           }`}
       >
         <Guitar className="w-4 h-4" />
