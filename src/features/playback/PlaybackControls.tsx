@@ -232,14 +232,14 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               aria-label={
                 isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'
               }
-              className={`min-w-12 h-12 flex items-center justify-center
-                transition-colors bg-transparent p-0 border-0
+              className={`min-w-12 h-12 flex items-center justify-center rounded-md
+                transition-colors outline-none
                 ${
                   isGenerating || isEditing
-                    ? 'text-gray-400'
+                    ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                     : isPlaying
-                      ? 'text-purple-700 hover:text-purple-800'
-                      : 'text-gray-600 hover:text-gray-700'
+                      ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                      : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               {isGenerating ? (
@@ -268,12 +268,12 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               onClick={handleRestart}
               disabled={isGenerating || !sequence || isEditing}
               aria-label="Restart"
-              className={`min-w-12 h-12 flex items-center justify-center
-                transition-colors bg-transparent p-0 border-0
+              className={`min-w-12 h-12 flex items-center justify-center rounded-md
+                transition-colors outline-none
                 ${
                   isGenerating || !sequence || isEditing
-                    ? 'text-gray-400'
-                    : 'text-gray-600 hover:text-gray-700 active:text-purple-700'
+                    ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
                 } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <RotateCcw className="w-4 h-4" />
@@ -283,10 +283,14 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               onClick={handleLoopToggle}
               disabled={isEditing}
               aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
-              className={`min-w-12 h-12 flex items-center justify-center
-                transition-colors bg-transparent p-0 border-0
-                ${isEditing ? 'text-gray-400' : isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}
-                ${isEditing ? 'pointer-events-none' : ''}`}
+              className={`min-w-12 h-12 flex items-center justify-center rounded-md
+                transition-colors outline-none
+                ${isEditing 
+                  ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50' 
+                  : isLooping 
+                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
+                } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <Repeat className="w-4 h-4" />
             </button>
@@ -297,10 +301,14 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               aria-label={
                 isArpeggiating ? 'Disable Arpeggiator' : 'Enable Arpeggiator'
               }
-              className={`min-w-11 h-11 flex items-center justify-center
-                transition-colors bg-transparent p-0 border-0
-                ${isEditing ? 'text-gray-400' : isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}
-                ${isEditing ? 'pointer-events-none' : ''}`}
+              className={`min-w-11 h-11 flex items-center justify-center rounded-md
+                transition-colors outline-none
+                ${isEditing 
+                  ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50' 
+                  : isArpeggiating 
+                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20'
+                } ${isEditing ? 'pointer-events-none' : ''}`}
             >
               <TrendingUp className="w-4 h-4" />
             </button>
