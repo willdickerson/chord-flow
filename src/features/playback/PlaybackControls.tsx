@@ -26,20 +26,17 @@ interface PlaybackControlsProps {
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onNotesChange,
-  onVoiceLeadingChange,
 }) => {
   const {
     sequence,
     currentPosition,
     isGenerating,
     isPlaying,
-    error,
     handlePlayback,
     handleStop,
     handleRestart,
     handlePositionSelect,
     handleVoiceLeadingChange,
-    generateSequence,
     updateChordSequence,
   } = usePlaybackState(onNotesChange)
 

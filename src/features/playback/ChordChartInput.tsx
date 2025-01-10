@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Triad } from '../../common/types'
 
 export interface ChordChartInputProps {
@@ -9,6 +9,8 @@ export interface ChordChartInputProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   audioService: any
   onChordSequenceChange: (chordSequence: string[]) => void
   onStop: () => void
@@ -20,11 +22,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   sequence,
   currentPosition,
   onPositionSelect,
-  isEnabled,
-  initialChordNames = [],
   isPlaying,
   onNotesChange,
-  audioService,
   onChordSequenceChange,
   onStop,
   playChord,
@@ -35,7 +34,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [showChartSearch, setShowChartSearch] = useState(false)
   const [selectedChartIndex, setSelectedChartIndex] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
-  const [draggedChord, setDraggedChord] = useState<{
+  const [draggedChord] = useState<{
     id: string
     value: string
   } | null>(null)
@@ -46,14 +45,11 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const dragSourceIndexRef = useRef<number | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
-  const displayedNotesRef = useRef<number[]>([])
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionRef = useRef<HTMLDivElement>(null)
-  const [tempChords, setTempChords] = useState([])
   const [selectedChordIndex, setSelectedChordIndex] = useState(0)
   const chordListRef = useRef<HTMLDivElement>(null)
   const chartListRef = useRef<HTMLDivElement>(null)
-  const [hasStartedPlaying, setHasStartedPlaying] = useState(false)
 
   const charts = [
     {
@@ -211,8 +207,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleEditSave = () => {
-    const updatedChart = { ...currentChart, chords }
-    // TODO: Save chart changes
     setIsEditing(false)
     setCurrentPosition(null)
   }
