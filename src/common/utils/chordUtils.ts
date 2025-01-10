@@ -10,8 +10,13 @@ export function parseChord(chord: string): {
   standardizedRoot: string
   chordType: string
 } {
-  // Updated regex to better handle chord types
-  const match = chord.match(/^([A-G][#b]?)([a-zA-Z0-9+°ø]*)$/)!
+  // Updated regex to handle extended chord qualities with alterations
+  const match = chord.match(/^([A-G][#b]?)(.*)$/)
+  if (!match) {
+    console.error('Invalid chord format:', chord)
+    return { originalRoot: 'C', standardizedRoot: 'C', chordType: 'M' }
+  }
+  
   const originalRoot = match[1]
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
   let chordType = match[2] || 'M' // Default to major if not specified
