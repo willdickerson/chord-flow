@@ -305,6 +305,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
           onChordSequenceChange(selectedChart.chords.map(chord => chord.value))
           setShowChartSearch(false)
           setSelectedChartIndex(0)
+          setChartSearchValue('')
         }
         break
       case 'Escape':
