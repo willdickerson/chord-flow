@@ -10,10 +10,18 @@ export function parseChord(chord: string): {
   standardizedRoot: string
   chordType: string
 } {
-  const match = chord.match(/([A-G][#b]?)(.*)/)!
+  // Updated regex to better handle chord types
+  const match = chord.match(/^([A-G][#b]?)([a-zA-Z0-9+°ø]*)$/)!
   const originalRoot = match[1]
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
   let chordType = match[2] || 'M' // Default to major if not specified
+
+  console.log('Parsing chord:', {
+    chord,
+    originalRoot,
+    standardizedRoot,
+    initialChordType: chordType
+  })
 
   // Map extended chord qualities to their basic triad type
   if (chordType.includes('m7b5') || chordType.includes('ø')) {
@@ -22,17 +30,19 @@ export function parseChord(chord: string): {
     chordType = 'dim'
   } else if (chordType.includes('aug') || chordType.includes('+')) {
     chordType = 'aug'
+  } else if (chordType.includes('maj7') || chordType.includes('maj')) {
+    chordType = 'M' // major 7th chord -> major triad
   } else if (chordType.startsWith('m')) {
     chordType = 'm' // any minor chord -> minor triad
-  } else if (
-    chordType.includes('maj') ||
-    chordType.includes('M') ||
-    chordType.includes('7')
-  ) {
-    chordType = 'M' // any major or dominant chord -> major triad
+  } else if (chordType.includes('7')) {
+    chordType = 'M' // dominant 7th chord -> major triad
+  } else if (chordType.includes('M')) {
+    chordType = 'M' // explicitly marked major chord
   } else {
     chordType = 'M' // default to major
   }
+
+  console.log('Final chord type:', chordType)
 
   return { originalRoot, standardizedRoot, chordType }
 }
