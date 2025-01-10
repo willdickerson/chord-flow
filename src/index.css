@@ -62,6 +62,31 @@ button:focus-visible {
   background-color: #ffffff;
 }
 
+/* Custom Scrollbar */
+.chart-search-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #846C5B #F5E6D3;
+}
+
+.chart-search-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chart-search-scrollbar::-webkit-scrollbar-track {
+  background: #F5E6D3;
+  border-radius: 4px;
+}
+
+.chart-search-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #846C5B;
+  border-radius: 4px;
+  border: 2px solid #F5E6D3;
+}
+
+.chart-search-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #2C1810;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #846C5B;

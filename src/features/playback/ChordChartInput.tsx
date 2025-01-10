@@ -267,7 +267,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
   const handleChartKeyDown = (e: React.KeyboardEvent) => {
     const filteredCharts = charts.filter(chart =>
-      chart.title.toLowerCase().includes(chartSearchValue.toLowerCase())
+      chart.title
+        .toLowerCase()
+        .includes(chartSearchValue.toLowerCase()) ||
+      chart.composer
+        .toLowerCase()
+        .includes(chartSearchValue.toLowerCase())
     )
 
     switch (e.key) {
@@ -545,10 +550,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     ref={searchRef}
                     className="absolute left-0 z-10 mt-1 w-full bg-[#F5E6D3] rounded-md border border-[#846C5B]/20"
                   >
-                    <div className="max-h-48 overflow-y-auto" ref={chartListRef}>
+                    <div className="max-h-48 overflow-y-auto chart-search-scrollbar" ref={chartListRef}>
                       {charts
                         .filter(chart =>
                           chart.title
+                            .toLowerCase()
+                            .includes(chartSearchValue.toLowerCase()) ||
+                          chart.composer
                             .toLowerCase()
                             .includes(chartSearchValue.toLowerCase())
                         )
@@ -622,7 +630,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   ref={suggestionRef}
                   className="absolute left-0 z-10 mt-1 w-full bg-[#F5E6D3] rounded-md border border-[#846C5B]/20"
                 >
-                  <div className="max-h-48 overflow-y-auto" ref={chordListRef}>
+                  <div className="max-h-48 overflow-y-auto chart-search-scrollbar" ref={chordListRef}>
                     {validChords
                       .filter(chord =>
                         chord.toLowerCase().includes(inputValue.toLowerCase())
