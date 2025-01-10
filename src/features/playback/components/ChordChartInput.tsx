@@ -408,12 +408,75 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     >
       <div className="flex justify-center">
         <div className="w-[656px] flex items-center">
-          <div className="flex-1">
-            <h2 className="text-lg font-medium text-gray-900">
-              {currentChart.title === "Untitled Chart" ? "Chord Chart" : currentChart.title}
-            </h2>
-            {currentChart.title !== "Untitled Chart" && (
-              <p className="text-sm text-gray-500">{currentChart.composer}</p>
+          <div className="flex-1 relative">
+            <button
+              ref={buttonRef}
+              onClick={(e) => {
+                if (!isPlaying && !isEditing) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowChartSearch(!showChartSearch);
+                }
+              }}
+              disabled={isPlaying || isEditing}
+              className={`text-left ${isPlaying || isEditing ? 'pointer-events-none' : 'cursor-pointer hover:text-purple-700'}`}
+            >
+              <h2 className="text-lg font-medium text-gray-900">
+                {currentChart.title === "Untitled Chart" ? "Chord Chart" : currentChart.title}
+              </h2>
+              {currentChart.title !== "Untitled Chart" && (
+                <p className="text-sm text-gray-500">{currentChart.composer}</p>
+              )}
+            </button>
+            {showChartSearch && (
+              <div
+                ref={searchRef}
+                className="absolute left-0 z-10 mt-1 w-64 bg-white rounded-md border border-gray-200"
+              >
+                <div className="p-2">
+                  <input
+                    type="text"
+                    value={chartSearchValue}
+                    onChange={(e) => {
+                      setChartSearchValue(e.target.value);
+                      setSelectedChartIndex(0);
+                    }}
+                    onKeyDown={handleChartKeyDown}
+                    placeholder="Search charts..."
+                    className="w-full px-3 py-1.5 rounded-md text-sm border border-gray-200 focus:outline-none focus:border-purple-300"
+                  />
+                </div>
+                <div className="max-h-48 overflow-y-auto" ref={chartListRef}>
+                  {charts
+                    .filter((chart) =>
+                      chart.title.toLowerCase().includes(chartSearchValue.toLowerCase())
+                    )
+                    .map((chart, index) => (
+                      <div
+                        key={chart.title}
+                        onClick={() => {
+                          setPreviousChart({...currentChart, chords: [...chords]});
+                          setCurrentChart(chart);
+                          setChords(chart.chords);
+                          if (currentPosition > 0) {
+                            onPositionSelect(0);
+                          }
+                          onNotesChange([]);
+                          onChordSequenceChange(chart.chords.map(chord => chord.value));
+                          setShowChartSearch(false);
+                          setSelectedChartIndex(index);
+                        }}
+                        className={`
+                          px-3 py-2 cursor-pointer hover:bg-gray-50
+                          ${selectedChartIndex === index ? 'bg-purple-50' : ''}
+                        `}
+                      >
+                        <div className="font-medium">{chart.title}</div>
+                        <div className="text-sm text-gray-500">{chart.composer}</div>
+                      </div>
+                    ))}
+                </div>
+              </div>
             )}
           </div>
           <div className="flex gap-2">
@@ -441,73 +504,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 >
                   Edit
                 </button>
-                <div className="relative">
-                  <button
-                    ref={buttonRef}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowChartSearch(!showChartSearch);
-                    }}
-                    disabled={isPlaying}
-                    className={` 
-                      px-1.5 py-1.5 rounded-md text-sm font-medium
-                      ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-100'}
-                      bg-purple-50 text-purple-700 border border-purple-200
-                    `}
-                  >
-                    Switch
-                  </button>
-                  {showChartSearch && (
-                    <div
-                      ref={searchRef}
-                      className="absolute right-0 z-10 mt-1 w-64 bg-white rounded-md border border-gray-200"
-                    >
-                      <div className="p-2">
-                        <input
-                          type="text"
-                          value={chartSearchValue}
-                          onChange={(e) => {
-                            setChartSearchValue(e.target.value);
-                            setSelectedChartIndex(0);
-                          }}
-                          onKeyDown={handleChartKeyDown}
-                          placeholder="Search charts..."
-                          className="w-full px-3 py-1.5 rounded-md text-sm border border-gray-200 focus:outline-none focus:border-purple-300"
-                        />
-                      </div>
-                      <div className="max-h-48 overflow-y-auto" ref={chartListRef}>
-                        {charts
-                          .filter((chart) =>
-                            chart.title.toLowerCase().includes(chartSearchValue.toLowerCase())
-                          )
-                          .map((chart, index) => (
-                            <div
-                              key={chart.title}
-                              onClick={() => {
-                                setPreviousChart({...currentChart, chords: [...chords]});
-                                setCurrentChart(chart);
-                                setChords(chart.chords);
-                                if (currentPosition > 0) {
-                                  onPositionSelect(0);
-                                }
-                                onNotesChange([]);
-                                onChordSequenceChange(chart.chords.map(chord => chord.value));
-                                setShowChartSearch(false);
-                                setSelectedChartIndex(index);
-                              }}
-                              className={`
-                                px-3 py-2 cursor-pointer hover:bg-gray-50
-                                ${selectedChartIndex === index ? 'bg-purple-50' : ''}
-                              `}
-                            >
-                              <div className="font-medium">{chart.title}</div>
-                              <div className="text-sm text-gray-500">{chart.composer}</div>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
               </>
             )}
           </div>
