@@ -477,12 +477,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     }
                   }}
                   className={`
-                    absolute top-0 -right-1 text-gray-300 hover:bg-transparent text-xs font-bold bg-transparent 
-                    w-3 h-3 flex items-center justify-center leading-none focus:outline-none
+                    absolute -top-2.5 -right-2.5 w-5 h-5 flex items-center justify-center
+                    bg-[#A6B39C] hover:bg-[#95A18C] text-[#F5E6D3] border border-[#F5E6D3] rounded-[50%]
+                    leading-[0] p-0 overflow-hidden transition-colors
                     ${isDragging ? 'pointer-events-none' : ''}
                   `}
                 >
-                  ×
+                  <span className="relative -top-[1px] text-xs leading-[0]">−</span>
                 </button>
               )}
               {value}

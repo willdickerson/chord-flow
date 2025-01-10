@@ -43,13 +43,13 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
 
   return (
     <details className="w-full group">
-      <summary className="cursor-pointer p-2 border border-gray-200 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
-        <span className="text-gray-700 group-hover/summary:text-gray-900 transition-colors">
+      <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
+        <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
           Voice Leading Options
         </span>
       </summary>
-      <div className="flex flex-col items-stretch gap-3 p-3 border-b border-x border-gray-200 rounded-b-md">
-        <p className="text-sm text-gray-600">
+      <div className="flex flex-col items-stretch gap-3 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
+        <p className="text-sm text-[#846C5B]">
           Select which voices to optimize for minimal movement between chords.
         </p>
         <div className="grid grid-cols-3 w-full gap-2">
@@ -60,13 +60,13 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
               ${
                 !isEnabled
                   ? selectedVoices.bass
-                    ? 'bg-purple-100/50 text-purple-700/50'
-                    : 'bg-gray-50/50 text-gray-500/50'
+                    ? 'bg-[#A6B39C]/30 text-[#2C1810]/50'
+                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedVoices.bass
-                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-[#A6B39C] text-[#F5E6D3] hover:bg-[#95A18C] focus:bg-[#95A18C]'
+                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#A6B39C]/10 focus:bg-[#A6B39C]/10'
               }
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6B39C]/50
               ${!isEnabled ? 'cursor-not-allowed' : ''}`}
             disabled={!isEnabled}
             title="Optimize Bass Voice"
@@ -81,13 +81,13 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
               ${
                 !isEnabled
                   ? selectedVoices.middle
-                    ? 'bg-purple-100/50 text-purple-700/50'
-                    : 'bg-gray-50/50 text-gray-500/50'
+                    ? 'bg-[#A6B39C]/30 text-[#2C1810]/50'
+                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedVoices.middle
-                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-[#A6B39C] text-[#F5E6D3] hover:bg-[#95A18C] focus:bg-[#95A18C]'
+                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#A6B39C]/10 focus:bg-[#A6B39C]/10'
               }
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6B39C]/50
               ${!isEnabled ? 'cursor-not-allowed' : ''}`}
             disabled={!isEnabled}
             title="Optimize Middle Voice"
@@ -102,13 +102,13 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
               ${
                 !isEnabled
                   ? selectedVoices.high
-                    ? 'bg-purple-100/50 text-purple-700/50'
-                    : 'bg-gray-50/50 text-gray-500/50'
+                    ? 'bg-[#A6B39C]/30 text-[#2C1810]/50'
+                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedVoices.high
-                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-100'
-                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    ? 'bg-[#A6B39C] text-[#F5E6D3] hover:bg-[#95A18C] focus:bg-[#95A18C]'
+                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#A6B39C]/10 focus:bg-[#A6B39C]/10'
               }
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-200
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A6B39C]/50
               ${!isEnabled ? 'cursor-not-allowed' : ''}`}
             disabled={!isEnabled}
             title="Optimize High Voice"
