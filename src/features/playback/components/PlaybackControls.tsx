@@ -209,19 +209,19 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="space-y-4">
-          <ChordChartInput
-            sequence={sequence}
-            currentPosition={currentPosition}
-            onPositionSelect={handlePositionSelect}
-            isEnabled={!isGenerating}
-            initialChordNames={initialChordNames}
-            isPlaying={isPlaying}
-            onNotesChange={handleNotesChange}
-            audioService={audioService}
-            onChordSequenceChange={updateChordSequence}
-            onStop={handleStop}
-            playChord={playChord}
+          {/* Voice Leading Controls */}
+          <VoiceLeadingControls
+            isEnabled={!isPlaying}
+            onVoiceLeadingChange={voices => {
+              // Stop playback and reset state when voice leading changes
+              if (isPlaying) {
+                handleStop()
+              }
+              handleVoiceLeadingChange(voices)
+            }}
           />
+
+          {/* Playback Controls */}
           <div className="flex gap-3">
             <button
               onClick={handlePlayback}
@@ -336,16 +336,19 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             </div>
           </div>
 
-          {/* Voice Leading Controls */}
-          <VoiceLeadingControls
-            isEnabled={!isPlaying}
-            onVoiceLeadingChange={voices => {
-              // Stop playback and reset state when voice leading changes
-              if (isPlaying) {
-                handleStop()
-              }
-              handleVoiceLeadingChange(voices)
-            }}
+          {/* Chord Chart */}
+          <ChordChartInput
+            sequence={sequence}
+            currentPosition={currentPosition}
+            onPositionSelect={handlePositionSelect}
+            isEnabled={!isGenerating}
+            initialChordNames={initialChordNames}
+            isPlaying={isPlaying}
+            onNotesChange={handleNotesChange}
+            audioService={audioService}
+            onChordSequenceChange={updateChordSequence}
+            onStop={handleStop}
+            playChord={playChord}
           />
         </div>
       </div>
