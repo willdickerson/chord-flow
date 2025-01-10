@@ -10,9 +10,10 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { usePlaybackState } from '../hooks/usePlaybackState'
-import { ChordChart } from './ChordChart'
+import { ChordChartInput } from './ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
 import { audioService } from '../../../services/audioService'
+import { generateTriads, NOTE_TO_MIDI_BASE } from '../../../utils/chordUtils'
 import * as Tone from 'tone'
 
 interface PlaybackControlsProps {
@@ -40,6 +41,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     handlePositionSelect,
     handleVoiceLeadingChange,
     generateSequence,
+    updateChordSequence,
   } = usePlaybackState(onNotesChange)
 
   const initialChordNames = audioService.getInitialChordNames()
@@ -169,146 +171,184 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     audioService.setChordDuration(newDuration)
   }
 
+  const playChord = async (chord: string, index: number) => {
+    console.log('PlaybackControls: playChord called', { chord, index });
+    try {
+      console.log('PlaybackControls: Starting Tone.js');
+      await Tone.start();
+      await audioService.initialize();
+      
+      // Get the specific triad from the sequence
+      if (!sequence || !sequence[index]) {
+        console.warn('PlaybackControls: No sequence or triad found at index', index);
+        return;
+      }
+      
+      const triad = sequence[index];
+      console.log('PlaybackControls: Using triad from sequence', triad);
+      
+      // Immediately update the notes
+      onNotesChange(triad.midiNotes);
+      
+      console.log('PlaybackControls: Playing triad with MIDI notes', triad.midiNotes);
+      await audioService.playTriad(
+        triad.midiNotes,
+        audioService.getChordDuration(),
+        (updatedNotes) => {
+          console.log('PlaybackControls: Notes changed', updatedNotes);
+          onNotesChange(updatedNotes);
+        }
+      );
+      console.log('PlaybackControls: Finished playing triad');
+    } catch (err) {
+      console.error('Failed to play chord:', err);
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      {error && <div className="text-red-500 text-sm">{error}</div>}
-
-      <div className="flex gap-3">
-        <button
-          onClick={handlePlayback}
-          disabled={isGenerating}
-          aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
-          className={`min-w-12 h-12 flex items-center justify-center
-            transition-colors bg-transparent p-0 border-0
-            ${
-              isGenerating
-                ? 'text-gray-400'
-                : isPlaying
-                  ? 'text-purple-700 hover:text-purple-800'
-                  : 'text-gray-600 hover:text-gray-700'
-            }`}
-        >
-          {isGenerating ? (
-            <div className="flex gap-1">
-              <div
-                className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: '0ms' }}
-              ></div>
-              <div
-                className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: '150ms' }}
-              ></div>
-              <div
-                className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                style={{ animationDelay: '300ms' }}
-              ></div>
-            </div>
-          ) : isPlaying ? (
-            <Pause className="w-4 h-4" />
-          ) : (
-            <Play className="w-4 h-4" />
-          )}
-        </button>
-
-        <button
-          onClick={handleRestart}
-          disabled={isGenerating || !sequence}
-          aria-label="Restart"
-          className={`min-w-12 h-12 flex items-center justify-center
-            transition-colors bg-transparent p-0 border-0
-            ${
-              isGenerating || !sequence
-                ? 'text-gray-400'
-                : 'text-gray-600 hover:text-gray-700 active:text-purple-700'
-            }`}
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={handleLoopToggle}
-          aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
-          className={`min-w-12 h-12 flex items-center justify-center
-            transition-colors bg-transparent p-0 border-0
-            ${isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
-        >
-          <Repeat className="w-4 h-4" />
-        </button>
-
-        <button
-          onClick={handleArpeggiateToggle}
-          aria-label={
-            isArpeggiating ? 'Disable Arpeggiator' : 'Enable Arpeggiator'
-          }
-          className={`min-w-11 h-11 flex items-center justify-center
-            transition-colors bg-transparent p-0 border-0
-            ${isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
-        >
-          <TrendingUp className="w-4 h-4" />
-        </button>
-
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <div className="space-y-4">
+          <ChordChartInput
+            sequence={sequence}
+            currentPosition={currentPosition}
+            onPositionSelect={handlePositionSelect}
+            isEnabled={!isGenerating}
+            initialChordNames={initialChordNames}
+            isPlaying={isPlaying}
+            onNotesChange={handleNotesChange}
+            audioService={audioService}
+            onChordSequenceChange={updateChordSequence}
+            onStop={handleStop}
+            playChord={playChord}
+          />
+          <div className="flex gap-3">
             <button
-              onClick={handleVolumeToggle}
-              className="text-gray-500 hover:text-gray-700 p-0 bg-white"
-              aria-label={isMuted ? 'Unmute' : 'Mute'}
+              onClick={handlePlayback}
+              disabled={isGenerating}
+              aria-label={isGenerating ? 'Loading' : isPlaying ? 'Pause' : 'Play'}
+              className={`min-w-12 h-12 flex items-center justify-center
+                transition-colors bg-transparent p-0 border-0
+                ${
+                  isGenerating
+                    ? 'text-gray-400'
+                    : isPlaying
+                      ? 'text-purple-700 hover:text-purple-800'
+                      : 'text-gray-600 hover:text-gray-700'
+                }`}
             >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4" />
+              {isGenerating ? (
+                <div className="flex gap-1">
+                  <div
+                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  ></div>
+                  <div
+                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  ></div>
+                  <div
+                    className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  ></div>
+                </div>
+              ) : isPlaying ? (
+                <Pause className="w-4 h-4" />
               ) : (
-                <Volume2 className="w-4 h-4" />
+                <Play className="w-4 h-4" />
               )}
             </button>
-            <input
-              type="range"
-              min="0"
-              max="50"
-              value={volume}
-              onChange={handleVolumeChange}
-              className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
-              aria-label="Volume"
-            />
+
+            <button
+              onClick={handleRestart}
+              disabled={isGenerating || !sequence}
+              aria-label="Restart"
+              className={`min-w-12 h-12 flex items-center justify-center
+                transition-colors bg-transparent p-0 border-0
+                ${
+                  isGenerating || !sequence
+                    ? 'text-gray-400'
+                    : 'text-gray-600 hover:text-gray-700 active:text-purple-700'
+                }`}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleLoopToggle}
+              aria-label={isLooping ? 'Disable Loop' : 'Enable Loop'}
+              className={`min-w-12 h-12 flex items-center justify-center
+                transition-colors bg-transparent p-0 border-0
+                ${isLooping ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
+            >
+              <Repeat className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={handleArpeggiateToggle}
+              aria-label={
+                isArpeggiating ? 'Disable Arpeggiator' : 'Enable Arpeggiator'
+              }
+              className={`min-w-11 h-11 flex items-center justify-center
+                transition-colors bg-transparent p-0 border-0
+                ${isArpeggiating ? 'text-purple-700' : 'text-gray-600 hover:text-gray-700'}`}
+            >
+              <TrendingUp className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleVolumeToggle}
+                  className="text-gray-500 hover:text-gray-700 p-0 bg-white"
+                  aria-label={isMuted ? 'Unmute' : 'Mute'}
+                >
+                  {isMuted ? (
+                    <VolumeX className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
+                <input
+                  type="range"
+                  min="0"
+                  max="50"
+                  value={volume}
+                  onChange={handleVolumeChange}
+                  className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
+                  aria-label="Volume"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <input
+                  type="range"
+                  min="100"
+                  max="2000"
+                  step="100"
+                  value={chordDuration}
+                  onChange={handleDurationChange}
+                  className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
+                  aria-label="Chord Duration"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-gray-500" />
-            <input
-              type="range"
-              min="100"
-              max="2000"
-              step="100"
-              value={chordDuration}
-              onChange={handleDurationChange}
-              className="w-16 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gray-600 hover:[&::-webkit-slider-thumb]:bg-gray-700"
-              aria-label="Chord Duration"
-            />
-          </div>
+          {/* Voice Leading Controls */}
+          <VoiceLeadingControls
+            isEnabled={!isPlaying}
+            onVoiceLeadingChange={voices => {
+              // Stop playback and reset state when voice leading changes
+              if (isPlaying) {
+                handleStop()
+              }
+              handleVoiceLeadingChange(voices)
+            }}
+          />
         </div>
       </div>
-
-      {/* Voice Leading Controls */}
-      <VoiceLeadingControls
-        isEnabled={!isPlaying}
-        onVoiceLeadingChange={voices => {
-          // Stop playback and reset state when voice leading changes
-          if (isPlaying) {
-            handleStop()
-          }
-          handleVoiceLeadingChange(voices)
-        }}
-      />
-
-      <ChordChart
-        sequence={sequence}
-        currentPosition={currentPosition}
-        onPositionSelect={handlePositionSelect}
-        isEnabled={!isGenerating && !error}
-        initialChordNames={initialChordNames}
-        isPlaying={isPlaying}
-        onNotesChange={handleNotesChange}
-        audioService={audioService}
-      />
     </div>
   )
 }

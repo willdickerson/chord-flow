@@ -20,43 +20,15 @@ const defaultVoiceLeadingState: VoiceLeadingState = {
   high: true,
 }
 
-const giantStepsChords = [
-  'B',
-  'D',
-  'G',
-  'Bb',
-  'Eb',
-  'Eb',
-  'Am',
-  'D',
-  'G',
-  'Bb',
-  'Eb',
-  'F#',
-  'B',
-  'B',
-  'Fm',
-  'Bb',
-  'Eb',
-  'Eb',
-  'Am',
-  'D',
-  'G',
-  'G',
-  'C#m',
-  'F#',
-  'B',
-  'B',
-  'Fm',
-  'Bb',
-  'Eb',
-  'Eb',
-  'C#m',
-  'F#',
+const defaultChordNames = [
+  'B', 'D', 'G', 'Bb', 'Eb', 'Eb', 'Am', 'D',
+  'G', 'Bb', 'Eb', 'F#', 'B', 'B', 'Fm', 'Bb',
+  'Eb', 'Eb', 'Am', 'D', 'G', 'G', 'C#m', 'F#',
+  'B', 'B', 'Fm', 'Bb', 'Eb', 'Eb', 'C#m', 'F#'
 ]
 
-const giantStepsTriads = Object.fromEntries(
-  giantStepsChords.map(chord => [chord, generateTriads(chord, 'spread')])
+const defaultTriads = Object.fromEntries(
+  defaultChordNames.map(chord => [chord, generateTriads(chord, 'spread')])
 )
 
 export class AudioService {
@@ -80,6 +52,9 @@ export class AudioService {
   private onComplete: (() => void) | null = null
   private chordDuration = 670
   private currentMidiNotes: number[] = [] // Track current notes for visualization
+  private currentChordNames: string[] = defaultChordNames
+  private currentTriads: Record<string, Triad> = defaultTriads
+  private scheduledEvents: number[] = []
 
   get shouldStop(): boolean {
     return this._shouldStop
@@ -150,7 +125,14 @@ export class AudioService {
   }
 
   getInitialChordNames(): string[] {
-    return giantStepsChords
+    return this.currentChordNames
+  }
+
+  setCurrentChordNames(chordNames: string[]): void {
+    this.currentChordNames = chordNames
+    this.currentTriads = Object.fromEntries(
+      chordNames.map(chord => [chord, generateTriads(chord, 'spread')])
+    )
   }
 
   getInitialChordDuration(): number {
@@ -442,6 +424,13 @@ export class AudioService {
     return `${noteNames[noteIndex]}${octave}`
   }
 
+  private cancelScheduledEvents(): void {
+    const instrument = this.getCurrentInstrument()
+    if (instrument) {
+      instrument.releaseAll()
+    }
+  }
+
   async playTriad(
     midiNotes: number[],
     duration: number,
@@ -453,6 +442,9 @@ export class AudioService {
     if (!instrument) {
       throw new Error('No instrument loaded')
     }
+
+    // Cancel any previously playing notes
+    this.cancelScheduledEvents()
 
     // Update current notes for visualization
     this.currentMidiNotes = midiNotes
@@ -507,10 +499,10 @@ export class AudioService {
     if (!instrument) {
       throw new Error('No instrument loaded')
     }
-    
+
     const note = this.midiToNote(midiNote)
     instrument.triggerAttack(note)
-    
+
     // Update current notes for visualization
     this.currentMidiNotes = [midiNote]
   }
@@ -520,10 +512,10 @@ export class AudioService {
     if (!instrument) {
       return
     }
-    
+
     const note = this.midiToNote(midiNote)
     instrument.triggerRelease(note)
-    
+
     // Remove the note from current notes
     this.currentMidiNotes = this.currentMidiNotes.filter(n => n !== midiNote)
   }
@@ -540,9 +532,9 @@ export class AudioService {
   generateGiantStepsSequence(
     voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState
   ): Triad[] {
-    const chords = giantStepsChords
+    const chords = this.currentChordNames
     const midiRange: [number, number] = [40, 76] // From E2 to E5
-    const triads = giantStepsTriads
+    const triads = this.currentTriads
 
     // Create a custom cost function based on which voices to optimize
     const customVoiceLeadingCost = (
