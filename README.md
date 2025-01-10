@@ -2,7 +2,7 @@
 
 A web app for exploring and playing chord progressions with optimized voice leading.
 
-![Chord Flow Screenshot](./docs/hangboard-timer.png)
+![Chord Flow Screenshot](./docs/chord-flow.png)
 
 ## Try It Out
 
@@ -27,3 +27,7 @@ npm run build
 - Choose between spread and close voicings
 - Select which voices to optimize (bass, middle, high)
 - Built with React, TypeScript, and Vite
+
+## License
+
+[MIT](LICENSE) Will Dickerson
