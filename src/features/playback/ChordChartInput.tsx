@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Triad } from '../../common/types'
+import { CHORD_CHARTS, convertChartToInputFormat } from './charts'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -51,78 +52,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const chordListRef = useRef<HTMLDivElement>(null)
   const chartListRef = useRef<HTMLDivElement>(null)
 
-  const charts = [
-    {
-      title: 'Giant Steps',
-      composer: 'John Coltrane',
-      chords: [
-        'B',
-        'D',
-        'G',
-        'Bb',
-        'Eb',
-        'Eb',
-        'Am',
-        'D',
-        'G',
-        'Bb',
-        'Eb',
-        'F#',
-        'B',
-        'B',
-        'Fm',
-        'Bb',
-        'Eb',
-        'Eb',
-        'Am',
-        'D',
-        'G',
-        'Bb',
-        'Eb',
-        'F#',
-        'B',
-        'B',
-        'Fm',
-        'Bb',
-        'Eb',
-        'Eb',
-        'C#m',
-        'F#',
-      ].map(chord => ({ id: Math.random().toString(), value: chord })),
-    },
-    {
-      title: 'Autumn Leaves',
-      composer: 'Joseph Kosma',
-      chords: ['Am7', 'D7', 'Gmaj7', 'Cmaj7', 'F#m7b5', 'B7', 'Em'].map(
-        chord => ({ id: Math.random().toString(), value: chord })
-      ),
-    },
-    {
-      title: 'All Blues',
-      composer: 'Miles Davis',
-      chords: [
-        'G7',
-        'G7',
-        'G7',
-        'G7',
-        'C7',
-        'C7',
-        'G7',
-        'G7',
-        'D7',
-        'C7',
-        'G7',
-        'D7',
-      ].map(chord => ({ id: Math.random().toString(), value: chord })),
-    },
-    {
-      title: 'Take Five',
-      composer: 'Paul Desmond',
-      chords: ['Ebm', 'Bbm', 'Ebm', 'Bbm', 'Ebm', 'Bbm', 'Ebm', 'Db7'].map(
-        chord => ({ id: Math.random().toString(), value: chord })
-      ),
-    },
-  ]
+  const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
 
   const [currentChart, setCurrentChart] = useState(charts[0])
   const [previousChart, setPreviousChart] = useState(charts[0])
