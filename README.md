@@ -4,7 +4,7 @@ A web app for exploring and playing chord progressions with optimized voice lead
 
 ![Chord Flow Screenshot](./docs/chord-flow.png)
 
-**Try it here:** [Chord Flow](https://willdickerson.github.io/chord-flow/) to try the app.
+**Try it here:** [Chord Flow](https://willdickerson.github.io/chord-flow/)
 
 ## Development
 
