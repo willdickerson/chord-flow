@@ -4,9 +4,7 @@ A web app for exploring and playing chord progressions with optimized voice lead
 
 ![Chord Flow Screenshot](./docs/chord-flow.png)
 
-## Try It Out
-
-Visit [Chord Flow](https://willdickerson.github.io/chord-flow/) to try the app.
+**Try it here:** [Chord Flow](https://willdickerson.github.io/chord-flow/) to try the app.
 
 ## Development
 
@@ -30,4 +28,4 @@ npm run build
 
 ## License
 
-[MIT](LICENSE) Will Dickerson
+This project is open-source under the [MIT License](LICENSE).
