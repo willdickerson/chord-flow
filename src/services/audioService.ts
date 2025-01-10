@@ -5,6 +5,7 @@ import {
   findOptimalVoiceLeading,
 } from '../common/utils/graphUtils'
 import { generateTriads } from '../common/utils/chordUtils'
+import { CHORD_CHARTS } from '../features/playback/charts'
 
 export type InstrumentType = 'piano' | 'synth' | 'guitar'
 
@@ -20,43 +21,10 @@ const defaultVoiceLeadingState: VoiceLeadingState = {
   high: true,
 }
 
-const defaultChordNames = [
-  'B',
-  'D',
-  'G',
-  'Bb',
-  'Eb',
-  'Eb',
-  'Am',
-  'D',
-  'G',
-  'Bb',
-  'Eb',
-  'F#',
-  'B',
-  'B',
-  'Fm',
-  'Bb',
-  'Eb',
-  'Eb',
-  'Am',
-  'D',
-  'G',
-  'G',
-  'C#m',
-  'F#',
-  'B',
-  'B',
-  'Fm',
-  'Bb',
-  'Eb',
-  'Eb',
-  'C#m',
-  'F#',
-]
+const defaultChordNames = CHORD_CHARTS.find(chart => chart.title === 'Giant Steps')?.chords
 
 const defaultTriads = Object.fromEntries(
-  defaultChordNames.map(chord => [chord, generateTriads(chord, 'spread')])
+  defaultChordNames?.map(chord => [chord, generateTriads(chord, 'spread')])
 )
 
 export class AudioService {
