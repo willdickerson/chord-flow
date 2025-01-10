@@ -16,10 +16,10 @@ export const InstrumentSelector = () => {
       <button
         onClick={() => handleSelect('synth')}
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
-          transition-colors ${
+          transition-colors outline-none ${
             selectedInstrument === 'synth'
-              ? 'bg-purple-100 text-purple-700'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              ? 'bg-purple-100 text-purple-700 hover:bg-purple-100 focus:bg-purple-100'
+              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 focus:bg-gray-100'
           }`}
       >
         <KeyboardMusic className="w-4 h-4" />
@@ -27,10 +27,10 @@ export const InstrumentSelector = () => {
       <button
         onClick={() => handleSelect('piano')}
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
-          transition-colors ${
+          transition-colors outline-none ${
             selectedInstrument === 'piano'
-              ? 'bg-purple-100 text-purple-700'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              ? 'bg-purple-100 text-purple-700 hover:bg-purple-100 focus:bg-purple-100'
+              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 focus:bg-gray-100'
           }`}
       >
         <Piano className="w-4 h-4" />
@@ -38,10 +38,10 @@ export const InstrumentSelector = () => {
       <button
         onClick={() => handleSelect('guitar')}
         className={`min-w-8 h-8 flex items-center justify-center rounded-md
-          transition-colors ${
+          transition-colors outline-none ${
             selectedInstrument === 'guitar'
-              ? 'bg-purple-100 text-purple-700'
-              : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+              ? 'bg-purple-100 text-purple-700 hover:bg-purple-100 focus:bg-purple-100'
+              : 'bg-gray-50 text-gray-500 hover:bg-gray-100 focus:bg-gray-100'
           }`}
       >
         <Guitar className="w-4 h-4" />
