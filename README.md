@@ -9,14 +9,17 @@ A web app for exploring and playing chord progressions with optimized voice lead
 ## Development
 
 ```bash
+# Clone repository
+git clone https://github.com/willdickerson/chord-flow.git
+
+# Change directory
+cd chord-flow
+
 # Install dependencies
 npm install
 
 # Start development server
 npm run dev
-
-# Build for production
-npm run build
 ```
 
 ## Features
