@@ -29,15 +29,8 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
 
     // Ensure at least one voice is always selected
     if (Object.values(newVoices).some(v => v)) {
-      console.log('Voice selection changed:', {
-        voice,
-        oldState: selectedVoices,
-        newState: newVoices,
-      })
       setSelectedVoices(newVoices)
       onVoiceLeadingChange(newVoices)
-    } else {
-      console.log('Prevented deselecting all voices')
     }
   }
 

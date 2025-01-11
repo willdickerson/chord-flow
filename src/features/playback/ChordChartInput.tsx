@@ -98,25 +98,17 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }, [isEditing, onEditingChange])
 
   const handleChordClick = async (chord: string, index: number) => {
-    console.log('ChordChartInput: handleChordClick called', {
-      chord,
-      index,
-      isEditing,
-    })
     if (isEditing) return
 
     // Update position immediately
-    console.log('ChordChartInput: Updating position to', index)
     onPositionSelect(index)
 
     // If playing, stop first
     if (isPlaying) {
-      console.log('ChordChartInput: Stopping playback')
       onStop()
     }
 
     // Play the clicked chord
-    console.log('ChordChartInput: Playing chord', chord)
     await playChord(chord, index)
   }
 

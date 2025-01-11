@@ -30,10 +30,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
 
       const newSequence =
         audioService.generateGiantStepsSequence(voiceLeadingState)
-      console.log('Generated new sequence with voice leading settings:', {
-        voices: voiceLeadingState,
-        sequence: newSequence,
-      })
       setSequence(newSequence)
       setCurrentPosition(0)
       displayedNotesRef.current = []
@@ -56,11 +52,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     [generateSequence]
   )
 
-  // Only generate sequence when needed, not on mount
-  useEffect(() => {
-    console.log('Initializing playback state')
-  }, [])
-
   const handlePlayback = async () => {
     if (isGenerating) return
 
@@ -71,7 +62,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
       if (!isPlaying) {
         // Check if we have a sequence
         if (!sequence || sequence.length === 0) {
-          console.log('No sequence available, generating one...')
           const newSequence = await generateSequence()
           if (!newSequence) {
             console.error('Failed to generate sequence')
@@ -81,7 +71,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
           setSequence(newSequence)
         }
 
-        console.log('Starting sequence from position:', currentPosition)
         // Set playing state before starting playback
         setIsPlaying(true)
 
@@ -155,7 +144,6 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
 
   const handleVoiceLeadingChange = useCallback(
     (voices: VoiceLeadingState) => {
-      console.log('Updating voice leading state:', voices)
       setVoiceLeadingState(voices)
       // Stop any current playback and reset position
       if (isPlaying) {

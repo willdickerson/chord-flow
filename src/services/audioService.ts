@@ -148,17 +148,13 @@ export class AudioService {
 
   async initialize() {
     if (this.isInitialized) {
-      console.log('Audio service already initialized')
       return
     }
 
-    console.log('Initializing audio service...')
     try {
       await Tone.start()
-      console.log('Tone.js started')
 
       // Initialize synth first for immediate playback
-      console.log('Loading synth...')
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'triangle' },
         envelope: {
@@ -176,7 +172,6 @@ export class AudioService {
 
       // Mark as initialized once synth is ready
       this.isInitialized = true
-      console.log('Synth initialized, starting sample loading...')
 
       // Load sampled instruments in the background
       this.loadSampledInstruments()
@@ -189,7 +184,6 @@ export class AudioService {
   private async loadSampledInstruments() {
     try {
       // Initialize piano with Salamander samples
-      console.log('Loading piano...')
       this.instruments.piano = new Tone.Sampler({
         urls: {
           A0: 'A0.mp3',
@@ -226,7 +220,6 @@ export class AudioService {
         release: 1,
         baseUrl: 'https://tonejs.github.io/audio/salamander/',
         onload: () => {
-          console.log('Piano samples loaded')
           if (this.instruments.piano) {
             this.instruments.piano.volume.value = Tone.gainToDb(
               this.volume / 100
@@ -236,7 +229,6 @@ export class AudioService {
       }).toDestination()
 
       // Initialize guitar with nylon guitar samples
-      console.log('Loading guitar...')
       this.instruments.guitar = new Tone.Sampler({
         urls: {
           E2: 'E2.mp3',
@@ -261,7 +253,6 @@ export class AudioService {
         baseUrl:
           'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
         onload: () => {
-          console.log('Guitar samples loaded')
           if (this.instruments.guitar) {
             this.instruments.guitar.volume.value = Tone.gainToDb(
               this.volume / 100
@@ -317,14 +308,12 @@ export class AudioService {
     onNotesChange?: (notes: number[]) => void
   ) {
     if (this._shouldStop || this.currentPosition >= sequence.length) {
-      console.log('Stopping sequence at position:', this.currentPosition)
       // If we're looping and not manually stopped, start from beginning
       if (
         this._isLooping &&
         !this._shouldStop &&
         this.currentPosition >= sequence.length
       ) {
-        console.log('Reached end, looping back to start')
         this.currentPosition = 0
         this.savedPosition = 0
         this.playNextTriad(sequence, onNotesChange)
@@ -378,7 +367,6 @@ export class AudioService {
   }
 
   stopPlayback(): void {
-    console.log('Stopping playback at position:', this.currentPosition)
     this._shouldStop = true
     const instrument = this.getCurrentInstrument()
     if (instrument) {
@@ -571,16 +559,10 @@ export class AudioService {
         totalCost += costs.high * secondaryWeight
       }
 
-      console.log('Voice movement costs:', {
-        totalCost,
-        individualCosts: costs,
-      })
-
       return totalCost
     }
 
     // Build graph with custom cost function
-    console.log('Building graph with voice leading state:', voiceLeadingState)
     const graph = buildVoiceLeadingGraph(
       chords,
       midiRange,
@@ -594,28 +576,11 @@ export class AudioService {
       node => node.position === chords.length - 1
     )
 
-    console.log('Finding optimal path...')
     const path = findOptimalVoiceLeading(graph, startNodes, endNodes)
 
     if (!path.length) {
       console.error('No valid path found')
       return []
-    }
-
-    console.log('Found optimal path with length:', path.length)
-
-    // Log voice movements between consecutive chords
-    for (let i = 0; i < path.length - 1; i++) {
-      const current = path[i]
-      const next = path[i + 1]
-      console.log(
-        `Voice movements from ${current.chordName} to ${next.chordName}:`,
-        {
-          bass: Math.abs(current.midiNotes[0] - next.midiNotes[0]),
-          middle: Math.abs(current.midiNotes[1] - next.midiNotes[1]),
-          high: Math.abs(current.midiNotes[2] - next.midiNotes[2]),
-        }
-      )
     }
 
     return path

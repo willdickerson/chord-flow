@@ -21,13 +21,6 @@ export function parseChord(chord: string): {
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
   let chordType = match[2] || 'M' // Default to major if not specified
 
-  console.log('Parsing chord:', {
-    chord,
-    originalRoot,
-    standardizedRoot,
-    initialChordType: chordType,
-  })
-
   // Map extended chord qualities to their basic triad type
   if (chordType.includes('m7b5') || chordType.includes('ø')) {
     chordType = 'dim' // half-diminished -> diminished triad
@@ -46,8 +39,6 @@ export function parseChord(chord: string): {
   } else {
     chordType = 'M' // default to major
   }
-
-  console.log('Final chord type:', chordType)
 
   return { originalRoot, standardizedRoot, chordType }
 }

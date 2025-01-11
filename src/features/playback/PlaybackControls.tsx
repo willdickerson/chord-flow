@@ -96,11 +96,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             notes.useArpeggiator !== undefined
               ? notes.useArpeggiator
               : audioService.isArpeggiating
-          console.log('Playing with settings:', {
-            isArpeggiating,
-            isLooping,
-            currentInstrument: audioService.getCurrentInstrument(),
-          })
 
           // Always update visual state
           onNotesChange(notes.notes)
@@ -171,9 +166,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   }
 
   const playChord = async (chord: string, index: number) => {
-    console.log('PlaybackControls: playChord called', { chord, index })
     try {
-      console.log('PlaybackControls: Starting Tone.js')
       await Tone.start()
       await audioService.initialize()
 
@@ -187,24 +180,17 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       }
 
       const triad = sequence[index]
-      console.log('PlaybackControls: Using triad from sequence', triad)
 
       // Immediately update the notes
       onNotesChange(triad.midiNotes)
 
-      console.log(
-        'PlaybackControls: Playing triad with MIDI notes',
-        triad.midiNotes
-      )
       await audioService.playTriad(
         triad.midiNotes,
         audioService.getChordDuration(),
         updatedNotes => {
-          console.log('PlaybackControls: Notes changed', updatedNotes)
           onNotesChange(updatedNotes)
         }
       )
-      console.log('PlaybackControls: Finished playing triad')
     } catch (err) {
       console.error('Failed to play chord:', err)
     }
