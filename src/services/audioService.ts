@@ -44,7 +44,7 @@ export class AudioService {
   private volume = -12
   private _isArpeggiating = false
   private _isLooping = false
-  private playbackTimeout: NodeJS.Timeout | null = null
+  private playbackTimeout: ReturnType<typeof setTimeout> | null = null
   private currentPosition = 0
   private savedPosition = 0
   private onComplete: (() => void) | null = null
