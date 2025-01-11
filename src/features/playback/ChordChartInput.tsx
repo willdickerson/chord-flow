@@ -418,7 +418,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       document.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [isDragging, dropTarget, chords])
+  })
 
   return (
     <div

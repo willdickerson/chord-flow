@@ -39,7 +39,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     handlePositionSelect,
     handleVoiceLeadingChange,
     updateChordSequence,
-    voiceLeadingState,
   } = usePlaybackState(onNotesChange)
 
   const initialChordNames = audioService.getInitialChordNames()
