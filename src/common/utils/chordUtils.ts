@@ -10,7 +10,6 @@ export function parseChord(chord: string): {
   standardizedRoot: string
   chordType: string
 } {
-  // Updated regex to handle extended chord qualities with alterations
   const match = chord.match(/^([A-G][#b]?)(.*)$/)
   if (!match) {
     console.error('Invalid chord format:', chord)

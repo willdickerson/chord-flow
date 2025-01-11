@@ -9,8 +9,7 @@ interface PianoKeyboardProps {
 const MIDI_START = 24 // C1
 const MIDI_END = 108 // C8
 
-// Calculate key width based on viewport width
-const KEY_WIDTH = 14 // Making keys smaller to fit all 88 keys
+const KEY_WIDTH = 14
 const WHITE_KEY_HEIGHT = 100
 const BLACK_KEY_HEIGHT = 65
 

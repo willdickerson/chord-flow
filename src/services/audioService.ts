@@ -49,7 +49,7 @@ export class AudioService {
   private savedPosition = 0
   private onComplete: (() => void) | null = null
   private chordDuration = 670
-  private currentMidiNotes: number[] = [] // Track current notes for visualization
+  private currentMidiNotes: number[] = []
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: Record<string, Triad> = defaultTriads
   private scheduledEvents: number[] = []
@@ -111,7 +111,7 @@ export class AudioService {
 
   setVolume(value: number): void {
     this.volume = value
-    const normalizedVolume = value / 100 // Convert 0-100 to 0-1
+    const normalizedVolume = value / 100
     Object.values(this.instruments).forEach(instrument => {
       if (instrument) {
         instrument.volume.value = Tone.gainToDb(normalizedVolume)
@@ -372,7 +372,6 @@ export class AudioService {
     if (instrument) {
       instrument.releaseAll()
     }
-    // Don't clear currentMidiNotes here to maintain visualization
   }
 
   restart(): void {

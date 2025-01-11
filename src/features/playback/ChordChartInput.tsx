@@ -10,7 +10,6 @@ export interface ChordChartInputProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   audioService: any
   onChordSequenceChange: (chordSequence: string[]) => void
@@ -332,7 +331,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     overlay.style.width = `${e.currentTarget.offsetWidth}px`
     overlay.innerHTML = e.currentTarget.innerHTML
     overlay.style.transform = 'translate(-50%, -50%)'
-    overlay.style.background = 'rgb(237 233 254)' // purple-50
+    overlay.style.background = 'rgb(237 233 254)'
     overlay.style.padding = '0.375rem 0.75rem'
     overlay.style.borderRadius = '0.375rem'
     overlay.style.fontSize = '0.875rem'
