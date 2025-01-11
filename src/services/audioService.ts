@@ -518,53 +518,28 @@ export class AudioService {
     onNotesChange?.([])
   }
 
-  generateGiantStepsSequence(
+  generateOptimalSequence(
     voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState
   ): Triad[] {
     const chords = this.currentChordNames
     const midiRange: [number, number] = [40, 76] // From E2 to E5
     const triads = this.currentTriads
 
-    // Create a custom cost function based on which voices to optimize
     const customVoiceLeadingCost = (
       currentNotes: number[],
       nextNotes: number[]
     ): number => {
       let totalCost = 0
-      const costs = {
-        bass: Math.abs(currentNotes[0] - nextNotes[0]),
-        middle: Math.abs(currentNotes[1] - nextNotes[1]),
-        high: Math.abs(currentNotes[2] - nextNotes[2]),
-      }
-
-      // Calculate weights based on which voices are selected
-      const selectedCount = Object.values(voiceLeadingState).filter(
-        v => v
-      ).length
-      const primaryWeight = selectedCount > 0 ? 1.0 : 0.333 // If no voices selected, weight all equally
-      const secondaryWeight = 0.1 // Small weight for unselected voices
-
-      // Apply weights to each voice
-      if (voiceLeadingState.bass) {
-        totalCost += costs.bass * primaryWeight
-      } else {
-        totalCost += costs.bass * secondaryWeight
-      }
-      if (voiceLeadingState.middle) {
-        totalCost += costs.middle * primaryWeight
-      } else {
-        totalCost += costs.middle * secondaryWeight
-      }
-      if (voiceLeadingState.high) {
-        totalCost += costs.high * primaryWeight
-      } else {
-        totalCost += costs.high * secondaryWeight
-      }
-
+    
+      const getWeight = (isSelected: boolean) => isSelected ? 1.0 : 0.1
+    
+      totalCost += Math.abs(currentNotes[0] - nextNotes[0]) * getWeight(voiceLeadingState.bass)
+      totalCost += Math.abs(currentNotes[1] - nextNotes[1]) * getWeight(voiceLeadingState.middle)  
+      totalCost += Math.abs(currentNotes[2] - nextNotes[2]) * getWeight(voiceLeadingState.high)
+    
       return totalCost
     }
 
-    // Build graph with custom cost function
     const graph = buildVoiceLeadingGraph(
       chords,
       midiRange,
@@ -572,7 +547,6 @@ export class AudioService {
       customVoiceLeadingCost
     )
 
-    // Find optimal path
     const startNodes = graph.nodes.filter(node => node.position === 0)
     const endNodes = graph.nodes.filter(
       node => node.position === chords.length - 1
@@ -590,7 +564,6 @@ export class AudioService {
 
   setTriadType(type: 'spread' | 'close'): void {
     this.triadType = type
-    // Regenerate triads with new type
     this.currentTriads = Object.fromEntries(
       this.currentChordNames.map(chord => [chord, generateTriads(chord, type)])
     )

@@ -29,7 +29,7 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
       setError(null)
 
       const newSequence =
-        audioService.generateGiantStepsSequence(voiceLeadingState)
+        audioService.generateOptimalSequence(voiceLeadingState)
       setSequence(newSequence)
       setCurrentPosition(0)
       displayedNotesRef.current = []
