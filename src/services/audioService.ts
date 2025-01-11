@@ -1,5 +1,5 @@
 import * as Tone from 'tone'
-import { Triad } from '../common/types'
+import { Inversion, Triad } from '../common/types'
 import {
   buildVoiceLeadingGraph,
   findOptimalVoiceLeading,
@@ -23,10 +23,10 @@ const defaultVoiceLeadingState: VoiceLeadingState = {
 
 const defaultChordNames = CHORD_CHARTS.find(
   chart => chart.title === 'Giant Steps'
-)?.chords
+)!.chords
 
 const defaultTriads = Object.fromEntries(
-  defaultChordNames?.map(chord => [chord, generateTriads(chord, 'spread')])
+  defaultChordNames!.map(chord => [chord, generateTriads(chord, 'spread')])
 )
 
 export class AudioService {
@@ -51,8 +51,7 @@ export class AudioService {
   private chordDuration = 670
   private currentMidiNotes: number[] = []
   private currentChordNames: string[] = defaultChordNames
-  private currentTriads: Record<string, Triad> = defaultTriads
-  private scheduledEvents: number[] = []
+  private currentTriads: { [key: string]: Inversion[] } = defaultTriads
   private triadType: 'spread' | 'close' = 'spread'
 
   get shouldStop(): boolean {
@@ -368,6 +367,10 @@ export class AudioService {
 
   stopPlayback(): void {
     this._shouldStop = true
+    if (this.playbackTimeout) {
+      clearTimeout(this.playbackTimeout)
+      this.playbackTimeout = null
+    }
     const instrument = this.getCurrentInstrument()
     if (instrument) {
       instrument.releaseAll()

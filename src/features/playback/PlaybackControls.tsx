@@ -164,7 +164,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     audioService.setChordDuration(newDuration)
   }
 
-  const playChord = async (chord: string, index: number) => {
+  const playChord = async (_chord: string, index: number) => {
     try {
       await Tone.start()
       await audioService.initialize()

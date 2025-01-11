@@ -40,11 +40,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   } | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const dragOverlayRef = useRef<HTMLDivElement>(null)
-  const dragSourceRef = useRef(null)
+  const dragOverlayRef = useRef<HTMLDivElement | null>(null)
+  const dragSourceRef = useRef<Element | null>(null)
   const dragSourceIndexRef = useRef<number | null>(null)
   const searchRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionRef = useRef<HTMLDivElement>(null)
   const [selectedChordIndex, setSelectedChordIndex] = useState(0)
@@ -137,7 +138,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const handleEditDone = () => {
     if (chords.length < 1) return
     setIsEditing(false)
-    setCurrentPosition(null)
   }
 
   const handleNewChart = () => {
@@ -313,11 +313,16 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     setShowChordSuggestions(false)
   }
 
-  const handleMouseDown = (e: React.MouseEvent, index: number) => {
+  const handleMouseDown = (
+    e: React.MouseEvent<HTMLDivElement>,
+    index: number
+  ) => {
     if (e.button !== 0 || !isEditing) return
 
+    const target = e.target as Element
+
     // Don't initiate drag if clicking the delete button
-    if (e.target.closest('button')) {
+    if (target.closest('button')) {
       return
     }
 
@@ -452,7 +457,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   handleChordClick(value, index)
                 }
               }}
-              onMouseEnter={e => isEditing && handleMouseEnter(e, index)}
               className={`
                 w-[80px] px-3 py-1.5 rounded-md text-sm font-medium text-center transition-all duration-100 ease-in-out transform origin-center relative group
                 ${!isEditing && index === currentPosition ? 'bg-[#A6B39C]' : 'bg-[#F5E6D3]'}
@@ -524,7 +528,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               </button>
               <div className="relative">
                 <input
-                  ref={buttonRef}
+                  ref={searchInputRef}
                   type="text"
                   value={chartSearchValue}
                   onChange={e => {
