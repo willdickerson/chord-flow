@@ -20,6 +20,9 @@ export function buildVoiceLeadingGraph(
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
 
+  const COST_THRESHOLD = 0.0001
+  const SAME_CHORD_PENALTY = 0.001
+
   // Build nodes for each position
   for (let i = 0; i < chords.length; i++) {
     const chord = chords[i]
@@ -42,51 +45,61 @@ export function buildVoiceLeadingGraph(
   for (let i = 0; i < chords.length - 1; i++) {
     const currentNodes = nodes.filter(node => node.position === i)
     const nextNodes = nodes.filter(node => node.position === i + 1)
+    const isSameChord = chords[i] === chords[i + 1]
 
     for (const currentNode of currentNodes) {
-      const possibleConnections: { node: GraphNode; cost: number }[] = []
+      // Calculate and store all possible connections with their costs
+      const possibleConnections = nextNodes.map(nextNode => ({
+        node: nextNode,
+        cost: costFunction(currentNode.midiNotes, nextNode.midiNotes),
+      }))
 
-      for (const nextNode of nextNodes) {
-        const cost = costFunction(currentNode.midiNotes, nextNode.midiNotes)
-        possibleConnections.push({ node: nextNode, cost })
-      }
-
-      // Handle same chord connections differently
-      if (chords[i] === chords[i + 1]) {
-        // Sort by cost
-        possibleConnections.sort((a, b) => a.cost - b.cost)
-
-        // Find the smallest non-zero cost connection
-        const nonZeroConnections = possibleConnections.filter(
-          conn => conn.cost > 0
-        )
-
-        if (nonZeroConnections.length > 0) {
-          // Use the smallest non-zero cost connection
-          const bestConn = nonZeroConnections[0]
-          edges.push({
-            from: currentNode,
-            to: bestConn.node,
-            weight: bestConn.cost,
-          })
+      for (const conn of possibleConnections) {
+        if (isSameChord) {
+          // For same chords: only add edges if there's some movement (cost > threshold)
+          // and add a small penalty to prefer movement when possible
+          if (conn.cost > COST_THRESHOLD) {
+            edges.push({
+              from: currentNode,
+              to: conn.node,
+              weight: conn.cost + SAME_CHORD_PENALTY,
+            })
+          } else {
+            // If cost is near zero (same voicing), only add if there are no better options
+            const hasMovementOptions = possibleConnections.some(
+              other => other.cost > COST_THRESHOLD
+            )
+            if (!hasMovementOptions) {
+              edges.push({
+                from: currentNode,
+                to: conn.node,
+                weight: COST_THRESHOLD,
+              })
+            }
+          }
         } else {
-          // If all costs are zero, use the first connection
-          const bestConn = possibleConnections[0]
-          edges.push({
-            from: currentNode,
-            to: bestConn.node,
-            weight: bestConn.cost,
-          })
-        }
-      } else {
-        // For different chords, add all possible connections
-        for (const conn of possibleConnections) {
+          // For different chords: add all reasonable connections
           edges.push({
             from: currentNode,
             to: conn.node,
             weight: conn.cost,
           })
         }
+      }
+
+      // Safety check: ensure every node has at least one outgoing edge
+      const hasOutgoingEdge = edges.some(edge => edge.from === currentNode)
+      if (!hasOutgoingEdge && possibleConnections.length > 0) {
+        // If no edges were added, add the lowest cost connection
+        const bestConn = possibleConnections.reduce(
+          (min, curr) => (curr.cost < min.cost ? curr : min),
+          possibleConnections[0]
+        )
+        edges.push({
+          from: currentNode,
+          to: bestConn.node,
+          weight: bestConn.cost,
+        })
       }
     }
   }

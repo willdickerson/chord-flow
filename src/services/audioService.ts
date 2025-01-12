@@ -530,8 +530,13 @@ export class AudioService {
       nextNotes: number[]
     ): number => {
       let totalCost = 0
+      let activeVoices = 0
 
-      const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.1)
+      const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.001)
+
+      if (voiceLeadingState.bass) activeVoices++
+      if (voiceLeadingState.middle) activeVoices++
+      if (voiceLeadingState.high) activeVoices++
 
       totalCost +=
         Math.abs(currentNotes[0] - nextNotes[0]) *
@@ -543,7 +548,7 @@ export class AudioService {
         Math.abs(currentNotes[2] - nextNotes[2]) *
         getWeight(voiceLeadingState.high)
 
-      return totalCost
+      return activeVoices > 0 ? totalCost / activeVoices : totalCost
     }
 
     const graph = buildVoiceLeadingGraph(
