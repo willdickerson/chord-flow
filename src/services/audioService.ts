@@ -42,7 +42,7 @@ export class AudioService {
   private isInitialized = false
   private _shouldStop = false
   private volume = -12
-  private _isArpeggiating = false
+  private _isArpeggiating = true
   private _isLooping = false
   private playbackTimeout: ReturnType<typeof setTimeout> | null = null
   private currentPosition = 0
@@ -530,13 +530,19 @@ export class AudioService {
       nextNotes: number[]
     ): number => {
       let totalCost = 0
-    
-      const getWeight = (isSelected: boolean) => isSelected ? 1.0 : 0.1
-    
-      totalCost += Math.abs(currentNotes[0] - nextNotes[0]) * getWeight(voiceLeadingState.bass)
-      totalCost += Math.abs(currentNotes[1] - nextNotes[1]) * getWeight(voiceLeadingState.middle)  
-      totalCost += Math.abs(currentNotes[2] - nextNotes[2]) * getWeight(voiceLeadingState.high)
-    
+
+      const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.1)
+
+      totalCost +=
+        Math.abs(currentNotes[0] - nextNotes[0]) *
+        getWeight(voiceLeadingState.bass)
+      totalCost +=
+        Math.abs(currentNotes[1] - nextNotes[1]) *
+        getWeight(voiceLeadingState.middle)
+      totalCost +=
+        Math.abs(currentNotes[2] - nextNotes[2]) *
+        getWeight(voiceLeadingState.high)
+
       return totalCost
     }
 
