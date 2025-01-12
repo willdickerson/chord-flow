@@ -60813,7 +60813,6 @@ export const CHORD_CHARTS: ChordChart[] = [
   },
 ].sort((a, b) => a.title.localeCompare(b.title))
 
-// Helper function to convert a chart to the format expected by ChordChartInput
 export function convertChartToInputFormat(chart: ChordChart) {
   return {
     title: chart.title,
