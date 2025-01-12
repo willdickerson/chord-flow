@@ -34,10 +34,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [showChartSearch, setShowChartSearch] = useState(false)
   const [selectedChartIndex, setSelectedChartIndex] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
-  const [draggedChord] = useState<{
-    id: string
-    value: string
-  } | null>(null)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const dragOverlayRef = useRef<HTMLDivElement | null>(null)
@@ -320,33 +316,28 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     if (e.button !== 0 || !isEditing) return
 
     const target = e.target as Element
-
-    // Don't initiate drag if clicking the delete button
-    if (target.closest('button')) {
-      return
-    }
+    if (target.closest('button')) return
 
     e.preventDefault()
     dragSourceRef.current = e.currentTarget
     dragSourceIndexRef.current = index
 
-    // Create drag overlay
     const overlay = document.createElement('div')
-    overlay.className = 'fixed pointer-events-none z-50 opacity-80'
+    overlay.className = 'fixed pointer-events-none z-50 text-[#2C1810]'
     overlay.style.width = `${e.currentTarget.offsetWidth}px`
     overlay.innerHTML = e.currentTarget.innerHTML
     overlay.style.transform = 'translate(-50%, -50%)'
-    overlay.style.background = 'rgb(237 233 254)'
+    overlay.style.background = '#F5E6D3'
     overlay.style.padding = '0.375rem 0.75rem'
     overlay.style.borderRadius = '0.375rem'
     overlay.style.fontSize = '0.875rem'
     overlay.style.lineHeight = '1.25rem'
     overlay.style.textAlign = 'center'
     overlay.style.fontWeight = '500'
+    overlay.style.border = '1px solid rgba(132, 108, 91, 0.2)'
     document.body.appendChild(overlay)
     dragOverlayRef.current = overlay
 
-    // Position overlay at cursor
     overlay.style.left = `${e.clientX}px`
     overlay.style.top = `${e.clientY}px`
 
@@ -383,7 +374,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         targetElement.getAttribute('data-chord-index') || '-1'
       )
       if (targetIndex !== -1 && targetIndex !== sourceIndex) {
+        const newChords = [...chords]
+        const [movedChord] = newChords.splice(sourceIndex, 1)
+        newChords.splice(targetIndex, 0, movedChord)
+        handleChartChange(newChords)
         setDropTarget(targetIndex)
+        dragSourceIndexRef.current = targetIndex
       }
     }
   }
@@ -461,8 +457,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 w-[80px] px-3 py-1.5 rounded-md text-sm font-medium text-center transition-all duration-100 ease-in-out transform origin-center relative group
                 ${!isEditing && index === currentPosition ? 'bg-[#A6B39C]' : 'bg-[#F5E6D3]'}
                 ${isEditing ? 'cursor-grab active:cursor-grabbing' : sequence ? 'cursor-pointer' : ''}
-                ${dropTarget === index ? 'bg-[#F5E6D3] scale-105 translate-x-1' : ''}
-                ${isDragging && draggedChord?.id === id ? 'opacity-50 scale-95 bg-[#F5E6D3]' : ''}
+                ${dragSourceIndexRef.current === index ? 'invisible' : ''}
                 text-[#2C1810] border border-[#846C5B]/20
               `}
             >
