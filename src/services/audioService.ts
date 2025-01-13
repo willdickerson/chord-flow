@@ -44,10 +44,6 @@ export class AudioService {
   private volume = -12
   private _isArpeggiating = true
   private _isLooping = false
-  private hasUserGesture = false
-  private isIOS =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   private playbackTimeout: ReturnType<typeof setTimeout> | null = null
   private currentPosition = 0
   private savedPosition = 0
@@ -155,15 +151,6 @@ export class AudioService {
     }
 
     try {
-      if (this.isIOS && !this.hasUserGesture) {
-        this.isInitialized = true
-        return
-      }
-
-      if (Tone.context.state === 'suspended') {
-        await Tone.context.resume()
-      }
-
       await Tone.start()
 
       // Initialize synth first for immediate playback
@@ -184,7 +171,6 @@ export class AudioService {
 
       // Mark as initialized once synth is ready
       this.isInitialized = true
-      this.hasUserGesture = true
 
       // Load sampled instruments in the background
       this.loadSampledInstruments()
@@ -194,72 +180,87 @@ export class AudioService {
     }
   }
 
-  async ensureAudioInitialized() {
-    if (!this.isInitialized || (this.isIOS && !this.hasUserGesture)) {
-      this.hasUserGesture = true
-      await this.initialize()
-    }
-  }
-
-  async playNote(midiNote: number) {
+  private async loadSampledInstruments() {
     try {
-      await this.ensureAudioInitialized()
-      const instrument = this.getCurrentInstrument()
-      if (!instrument) return
+      // Initialize piano with Salamander samples
+      this.instruments.piano = new Tone.Sampler({
+        urls: {
+          A0: 'A0.mp3',
+          C1: 'C1.mp3',
+          'D#1': 'Ds1.mp3',
+          'F#1': 'Fs1.mp3',
+          A1: 'A1.mp3',
+          C2: 'C2.mp3',
+          'D#2': 'Ds2.mp3',
+          'F#2': 'Fs2.mp3',
+          A2: 'A2.mp3',
+          C3: 'C3.mp3',
+          'D#3': 'Ds3.mp3',
+          'F#3': 'Fs3.mp3',
+          A3: 'A3.mp3',
+          C4: 'C4.mp3',
+          'D#4': 'Ds4.mp3',
+          'F#4': 'Fs4.mp3',
+          A4: 'A4.mp3',
+          C5: 'C5.mp3',
+          'D#5': 'Ds5.mp3',
+          'F#5': 'Fs5.mp3',
+          A5: 'A5.mp3',
+          C6: 'C6.mp3',
+          'D#6': 'Ds6.mp3',
+          'F#6': 'Fs6.mp3',
+          A6: 'A6.mp3',
+          C7: 'C7.mp3',
+          'D#7': 'Ds7.mp3',
+          'F#7': 'Fs7.mp3',
+          A7: 'A7.mp3',
+          C8: 'C8.mp3',
+        },
+        release: 1,
+        baseUrl: 'https://tonejs.github.io/audio/salamander/',
+        onload: () => {
+          if (this.instruments.piano) {
+            this.instruments.piano.volume.value = Tone.gainToDb(
+              this.volume / 100
+            )
+          }
+        },
+      }).toDestination()
 
-      const note = this.midiToNote(midiNote)
-      instrument.triggerAttackRelease(note, '8n')
-      this.currentMidiNotes = [...this.currentMidiNotes, midiNote]
+      // Initialize guitar with nylon guitar samples
+      this.instruments.guitar = new Tone.Sampler({
+        urls: {
+          E2: 'E2.mp3',
+          'F#2': 'Fs2.mp3',
+          'G#2': 'Gs2.mp3',
+          A2: 'A2.mp3',
+          B2: 'B2.mp3',
+          D3: 'D3.mp3',
+          E3: 'E3.mp3',
+          'F#3': 'Fs3.mp3',
+          G3: 'G3.mp3',
+          A3: 'A3.mp3',
+          B3: 'B3.mp3',
+          'C#4': 'Cs4.mp3',
+          'D#4': 'Ds4.mp3',
+          E4: 'E4.mp3',
+          'F#4': 'Fs4.mp3',
+          'G#4': 'Gs4.mp3',
+        },
+        release: 1.2,
+        volume: -3,
+        baseUrl:
+          'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
+        onload: () => {
+          if (this.instruments.guitar) {
+            this.instruments.guitar.volume.value = Tone.gainToDb(
+              this.volume / 100
+            )
+          }
+        },
+      }).toDestination()
     } catch (err) {
-      console.error('Error playing note:', err)
-    }
-  }
-
-  async playTriad(
-    midiNotes: number[],
-    duration: number,
-    onNotesChange?: (notes: number[]) => void
-  ): Promise<void> {
-    try {
-      await this.ensureAudioInitialized()
-
-      if (midiNotes.length === 0) return
-
-      const instrument = this.getCurrentInstrument()
-      if (!instrument) {
-        throw new Error('No instrument loaded')
-      }
-
-      // Clear any currently playing notes
-      this.clearCurrentNotes(onNotesChange)
-
-      // Cancel any previously playing notes
-      this.cancelScheduledEvents()
-
-      // Update current notes for visualization
-      this.currentMidiNotes = midiNotes
-      onNotesChange?.(this.currentMidiNotes)
-
-      if (this._isArpeggiating) {
-        const noteDelay = duration / midiNotes.length
-        const noteDuration = noteDelay * 0.95 // Slightly shorter than delay to prevent overlap
-        const now = Tone.now()
-
-        midiNotes.forEach((note, i) => {
-          const startTime = now + (i * noteDelay) / 1000
-          instrument.triggerAttackRelease(
-            this.midiToNote(note),
-            noteDuration / 1000,
-            startTime
-          )
-        })
-      } else {
-        // Play all notes simultaneously
-        const notes = midiNotes.map(midi => this.midiToNote(midi))
-        instrument.triggerAttackRelease(notes, duration / 1000)
-      }
-    } catch (error) {
-      console.error('Error playing triad:', error)
+      console.error('Failed to load sampled instruments:', err)
     }
   }
 
@@ -419,6 +420,82 @@ export class AudioService {
     }
   }
 
+  async playTriad(
+    midiNotes: number[],
+    duration: number,
+    onNotesChange?: (notes: number[]) => void
+  ): Promise<void> {
+    if (midiNotes.length === 0) return
+
+    const instrument = this.getCurrentInstrument()
+    if (!instrument) {
+      throw new Error('No instrument loaded')
+    }
+
+    // Cancel any previously playing notes
+    this.cancelScheduledEvents()
+
+    // Update current notes for visualization
+    this.currentMidiNotes = midiNotes
+    onNotesChange?.(this.currentMidiNotes)
+
+    if (this._isArpeggiating) {
+      const noteDelay = duration / midiNotes.length
+      const noteDuration = noteDelay * 0.95 // Slightly shorter than delay to prevent overlap
+      const now = Tone.now()
+
+      midiNotes.forEach((note, i) => {
+        const startTime = now + (i * noteDelay) / 1000
+        instrument.triggerAttackRelease(
+          this.midiToNote(note),
+          noteDuration / 1000,
+          startTime,
+          0.7
+        )
+      })
+
+      await new Promise(resolve => setTimeout(resolve, duration))
+    } else {
+      instrument.triggerAttack(midiNotes.map(note => this.midiToNote(note)))
+
+      try {
+        await new Promise(resolve => {
+          const timeout = setTimeout(() => {
+            if (!this._shouldStop) {
+              resolve('completed')
+            }
+          }, duration)
+          const checkInterval = setInterval(() => {
+            if (this._shouldStop) {
+              clearTimeout(timeout)
+              clearInterval(checkInterval)
+              resolve('stopped')
+            }
+          }, 100)
+        })
+
+        instrument.triggerRelease(midiNotes.map(note => this.midiToNote(note)))
+      } catch (err) {
+        console.error('Error playing notes:', err)
+        instrument.triggerRelease(midiNotes.map(note => this.midiToNote(note)))
+        throw err
+      }
+    }
+  }
+
+  playNote(midiNote: number): void {
+    const instrument = this.getCurrentInstrument()
+    if (!instrument) {
+      throw new Error('No instrument loaded')
+    }
+
+    const note = this.midiToNote(midiNote)
+    instrument.triggerAttack(note)
+
+    // Update current notes for visualization
+    this.currentMidiNotes = [midiNote]
+  }
+
   stopNote(midiNote: number): void {
     const instrument = this.getCurrentInstrument()
     if (!instrument) {
@@ -506,90 +583,6 @@ export class AudioService {
 
   getTriadType(): 'spread' | 'close' {
     return this.triadType
-  }
-
-  private async loadSampledInstruments() {
-    try {
-      // Initialize piano with Salamander samples
-      this.instruments.piano = new Tone.Sampler({
-        urls: {
-          A0: 'A0.mp3',
-          C1: 'C1.mp3',
-          'D#1': 'Ds1.mp3',
-          'F#1': 'Fs1.mp3',
-          A1: 'A1.mp3',
-          C2: 'C2.mp3',
-          'D#2': 'Ds2.mp3',
-          'F#2': 'Fs2.mp3',
-          A2: 'A2.mp3',
-          C3: 'C3.mp3',
-          'D#3': 'Ds3.mp3',
-          'F#3': 'Fs3.mp3',
-          A3: 'A3.mp3',
-          C4: 'C4.mp3',
-          'D#4': 'Ds4.mp3',
-          'F#4': 'Fs4.mp3',
-          A4: 'A4.mp3',
-          C5: 'C5.mp3',
-          'D#5': 'Ds5.mp3',
-          'F#5': 'Fs5.mp3',
-          A5: 'A5.mp3',
-          C6: 'C6.mp3',
-          'D#6': 'Ds6.mp3',
-          'F#6': 'Fs6.mp3',
-          A6: 'A6.mp3',
-          C7: 'C7.mp3',
-          'D#7': 'Ds7.mp3',
-          'F#7': 'Fs7.mp3',
-          A7: 'A7.mp3',
-          C8: 'C8.mp3',
-        },
-        release: 1,
-        baseUrl: 'https://tonejs.github.io/audio/salamander/',
-        onload: () => {
-          if (this.instruments.piano) {
-            this.instruments.piano.volume.value = Tone.gainToDb(
-              this.volume / 100
-            )
-          }
-        },
-      }).toDestination()
-
-      // Initialize guitar with nylon guitar samples
-      this.instruments.guitar = new Tone.Sampler({
-        urls: {
-          E2: 'E2.mp3',
-          'F#2': 'Fs2.mp3',
-          'G#2': 'Gs2.mp3',
-          A2: 'A2.mp3',
-          B2: 'B2.mp3',
-          D3: 'D3.mp3',
-          E3: 'E3.mp3',
-          'F#3': 'Fs3.mp3',
-          G3: 'G3.mp3',
-          A3: 'A3.mp3',
-          B3: 'B3.mp3',
-          'C#4': 'Cs4.mp3',
-          'D#4': 'Ds4.mp3',
-          E4: 'E4.mp3',
-          'F#4': 'Fs4.mp3',
-          'G#4': 'Gs4.mp3',
-        },
-        release: 1.2,
-        volume: -3,
-        baseUrl:
-          'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
-        onload: () => {
-          if (this.instruments.guitar) {
-            this.instruments.guitar.volume.value = Tone.gainToDb(
-              this.volume / 100
-            )
-          }
-        },
-      }).toDestination()
-    } catch (err) {
-      console.error('Failed to load sampled instruments:', err)
-    }
   }
 }
 

@@ -6,14 +6,7 @@ export const useKeyboardState = () => {
   const [isMouseDown, setIsMouseDown] = useState(false)
 
   useEffect(() => {
-    const initAudio = async () => {
-      try {
-        await audioService.initialize()
-      } catch (err) {
-        console.error('Error initializing audio:', err)
-      }
-    }
-    initAudio()
+    audioService.initialize()
     const handleGlobalMouseUp = () => setIsMouseDown(false)
     window.addEventListener('mouseup', handleGlobalMouseUp)
     return () => window.removeEventListener('mouseup', handleGlobalMouseUp)
@@ -24,7 +17,8 @@ export const useKeyboardState = () => {
       if (playedNotes.has(midiNote)) return
 
       try {
-        await audioService.playNote(midiNote)
+        await audioService.initialize()
+        audioService.playNote(midiNote)
         setPlayedNotes(prev => new Set([...prev, midiNote]))
       } catch (err) {
         console.error('Error playing note:', err)

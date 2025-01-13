@@ -52,62 +52,71 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     [generateSequence]
   )
 
-  const handlePlayback = useCallback(async () => {
-    if (!sequence) return
-
-    if (isPlaying) {
-      audioService.stopPlayback()
-      setIsPlaying(false)
-      return
-    }
+  const handlePlayback = async () => {
+    if (isGenerating) return
 
     try {
-      setIsPlaying(true)
-      await audioService.startPlayback(
-        sequence,
-        currentPosition,
-        () => {
-          setIsPlaying(false)
-          setCurrentPosition(0)
-        },
-        onNotesChange
-      )
-    } catch (err) {
-      console.error('Error during playback:', err)
-      setIsPlaying(false)
-    }
-  }, [sequence, isPlaying, currentPosition, onNotesChange])
+      // Initialize audio before starting playback
+      await audioService.initialize()
 
-  const handleStop = useCallback(async () => {
-    try {
-      audioService.stopPlayback()
-      setIsPlaying(false)
-      setCurrentPosition(0)
-    } catch (err) {
-      console.error('Error stopping playback:', err)
-    }
-  }, [])
+      if (!isPlaying) {
+        // Check if we have a sequence
+        if (!sequence || sequence.length === 0) {
+          const newSequence = await generateSequence()
+          if (!newSequence) {
+            console.error('Failed to generate sequence')
+            setError('Failed to generate sequence')
+            return
+          }
+          setSequence(newSequence)
+        }
 
-  const handleRestart = useCallback(async () => {
-    try {
-      if (sequence) {
-        audioService.stopPlayback()
+        // Set playing state before starting playback
         setIsPlaying(true)
-        await audioService.startPlayback(
-          sequence,
-          0,
+
+        // Use the current sequence value
+        const currentSequence = sequence || (await generateSequence())
+        if (!currentSequence) return
+
+        audioService.startPlayback(
+          currentSequence,
+          currentPosition,
           () => {
             setIsPlaying(false)
-            setCurrentPosition(0)
+            if (!audioService.shouldStop) {
+              setCurrentPosition(0)
+              displayedNotesRef.current = []
+              onNotesChange([])
+            }
           },
-          onNotesChange
+          notes => {
+            displayedNotesRef.current = notes
+            onNotesChange(notes)
+            setCurrentPosition(audioService.getCurrentPosition())
+          }
         )
+      } else {
+        audioService.stopPlayback()
+        setIsPlaying(false)
       }
-    } catch (err) {
-      console.error('Error restarting playback:', err)
+    } catch (error) {
+      console.error('Playback error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Generation failed'
+      setError(errorMessage)
       setIsPlaying(false)
     }
-  }, [sequence, onNotesChange])
+  }
+
+  const handleRestart = useCallback(() => {
+    if (isGenerating || !sequence) return
+
+    audioService.restart()
+    setIsPlaying(false)
+    setCurrentPosition(0)
+    displayedNotesRef.current = []
+    onNotesChange([])
+  }, [isGenerating, sequence, onNotesChange])
 
   const handlePositionSelect = useCallback(
     (position: number) => {
@@ -147,6 +156,12 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     },
     [isPlaying, generateSequence]
   )
+
+  const handleStop = useCallback(() => {
+    audioService.stopPlayback()
+    setIsPlaying(false)
+    onNotesChange([])
+  }, [onNotesChange])
 
   return {
     sequence,
