@@ -372,7 +372,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               isEnabled={!isPlaying}
             />
             <ArpeggioControls
-              onArpeggioTypeChange={(type) => {
+              onArpeggioTypeChange={type => {
                 audioService.setArpeggioType(type)
               }}
               isEnabled={isArpeggiating}

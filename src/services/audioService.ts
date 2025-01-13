@@ -485,10 +485,7 @@ export class AudioService {
     }
   }
 
-  async playArpeggio(
-    midiNotes: number[],
-    duration: number,
-  ) {
+  async playArpeggio(midiNotes: number[], duration: number) {
     const notesToPlay = [...midiNotes]
     if (this.arpeggioType === 'descending') {
       notesToPlay.reverse()
@@ -504,15 +501,27 @@ export class AudioService {
     for (let i = 0; i < notesToPlay.length; i++) {
       const note = notesToPlay[i]
       const noteFreq = Tone.Frequency(note, 'midi').toFrequency()
-      
+
       if (this.currentInstrument === 'synth' && this.instruments.synth) {
-        this.instruments.synth.triggerAttackRelease(noteFreq, noteDuration / 1000)
+        this.instruments.synth.triggerAttackRelease(
+          noteFreq,
+          noteDuration / 1000
+        )
       } else if (this.currentInstrument === 'piano' && this.instruments.piano) {
-        this.instruments.piano.triggerAttackRelease(noteFreq, noteDuration / 1000)
-      } else if (this.currentInstrument === 'guitar' && this.instruments.guitar) {
-        this.instruments.guitar.triggerAttackRelease(noteFreq, noteDuration / 1000)
+        this.instruments.piano.triggerAttackRelease(
+          noteFreq,
+          noteDuration / 1000
+        )
+      } else if (
+        this.currentInstrument === 'guitar' &&
+        this.instruments.guitar
+      ) {
+        this.instruments.guitar.triggerAttackRelease(
+          noteFreq,
+          noteDuration / 1000
+        )
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, noteDuration))
     }
   }

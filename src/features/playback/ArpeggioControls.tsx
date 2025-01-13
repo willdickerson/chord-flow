@@ -11,7 +11,8 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
   onArpeggioTypeChange,
   isEnabled,
 }) => {
-  const [selectedType, setSelectedType] = React.useState<ArpeggioType>('ascending')
+  const [selectedType, setSelectedType] =
+    React.useState<ArpeggioType>('ascending')
 
   const handleTypeToggle = (type: ArpeggioType) => {
     if (!isEnabled) return
@@ -37,8 +38,8 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
               selectedType === 'ascending' && isEnabled
                 ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448] cursor-pointer'
                 : isEnabled
-                ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
-                : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
+                  ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
+                  : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
           >
             Ascending
@@ -49,8 +50,8 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
               selectedType === 'descending' && isEnabled
                 ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448] cursor-pointer'
                 : isEnabled
-                ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
-                : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
+                  ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
+                  : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
           >
             Descending
@@ -61,8 +62,8 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
               selectedType === 'alternating' && isEnabled
                 ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448] cursor-pointer'
                 : isEnabled
-                ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
-                : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
+                  ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
+                  : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
           >
             Alternating
