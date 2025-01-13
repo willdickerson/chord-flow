@@ -357,7 +357,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 <Clock className="w-4 h-4 text-[#846C5B]" />
                 <input
                   type="range"
-                  min="100"
+                  min="300"
                   max="2000"
                   step="10"
                   value={chordDuration}

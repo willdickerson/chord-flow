@@ -48,7 +48,7 @@ export class AudioService {
   private currentPosition = 0
   private savedPosition = 0
   private onComplete: (() => void) | null = null
-  private chordDuration = 670
+  private chordDuration = 500
   private currentMidiNotes: number[] = []
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
