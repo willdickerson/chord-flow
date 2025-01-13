@@ -38,12 +38,12 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
     <details className="w-full group">
       <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
         <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
-          Voice Leading Options
+          Voice Leading
         </span>
       </summary>
       <div className="flex flex-col items-stretch gap-3 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
         <p className="text-sm text-[#846C5B]">
-          Select which voices to optimize for minimal movement between chords.
+          Select which voices to consider when generating voice leading.
         </p>
         <div className="grid grid-cols-3 w-full gap-2">
           {/* Bass Voice */}

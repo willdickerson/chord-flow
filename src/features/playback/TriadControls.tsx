@@ -23,7 +23,7 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
     <details className="w-full group">
       <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
         <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
-          Triad Options
+          Triad Style
         </span>
       </summary>
       <div className="flex flex-col items-stretch gap-3 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">

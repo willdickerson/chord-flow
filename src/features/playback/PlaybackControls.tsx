@@ -345,6 +345,16 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
           {/* Voice Leading Controls */}
           <div className="flex flex-col gap-3">
+            <VoiceLeadingControls
+              isEnabled={!isPlaying}
+              onVoiceLeadingChange={voices => {
+                // Stop playback and reset state when voice leading changes
+                if (isPlaying) {
+                  handleStop()
+                }
+                handleVoiceLeadingChange(voices)
+              }}
+            />
             <TriadControls
               onTriadTypeChange={type => {
                 // Stop playback and reset state when triad type changes
@@ -366,16 +376,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 audioService.setArpeggioType(type)
               }}
               isEnabled={isArpeggiating}
-            />
-            <VoiceLeadingControls
-              isEnabled={!isPlaying}
-              onVoiceLeadingChange={voices => {
-                // Stop playback and reset state when voice leading changes
-                if (isPlaying) {
-                  handleStop()
-                }
-                handleVoiceLeadingChange(voices)
-              }}
             />
           </div>
 
