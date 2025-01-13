@@ -23,6 +23,23 @@ export function buildVoiceLeadingGraph(
   const COST_THRESHOLD = 0.0001
   const SAME_CHORD_PENALTY = 0.001
 
+  const lastChord = chords[chords.length - 1]
+  const phantomNodes: GraphNode[] = []
+
+  for (const inversion of triads[lastChord]) {
+    const notes = inversion.split(' ')
+    const midiCombinations = findAllTriadsInRange(notes, midiRange)
+
+    for (const midiNotes of midiCombinations) {
+      phantomNodes.push({
+        position: -1, // Phantom position
+        chordName: lastChord,
+        inversion,
+        midiNotes,
+      })
+    }
+  }
+
   // Build nodes for each position
   for (let i = 0; i < chords.length; i++) {
     const chord = chords[i]
@@ -38,6 +55,19 @@ export function buildVoiceLeadingGraph(
           midiNotes,
         })
       }
+    }
+  }
+
+  // Add edges from phantom nodes to first position
+  const firstNodes = nodes.filter(node => node.position === 0)
+  for (const phantomNode of phantomNodes) {
+    for (const firstNode of firstNodes) {
+      const cost = costFunction(phantomNode.midiNotes, firstNode.midiNotes)
+      edges.push({
+        from: phantomNode,
+        to: firstNode,
+        weight: cost,
+      })
     }
   }
 
@@ -104,7 +134,7 @@ export function buildVoiceLeadingGraph(
     }
   }
 
-  return { nodes, edges }
+  return { nodes: [...phantomNodes, ...nodes], edges }
 }
 
 function calculateVoiceLeadingCost(
@@ -133,8 +163,15 @@ export function findOptimalVoiceLeading(
     distances.set(node, Infinity)
   }
 
-  // Set start nodes' distances to 0 and add to queue
+  // Find phantom nodes (position -1) and use them as start nodes
+  const phantomNodes = graph.nodes.filter(node => node.position === -1)
   const queue: GraphNode[] = []
+
+  for (const phantomNode of phantomNodes) {
+    distances.set(phantomNode, 0)
+    queue.push(phantomNode)
+  }
+
   for (const startNode of startNodes) {
     distances.set(startNode, 0)
     queue.push(startNode)
@@ -189,11 +226,14 @@ export function findOptimalVoiceLeading(
   let current: GraphNode | undefined = bestEndNode
 
   while (current) {
-    path.unshift({
-      chordName: current.chordName,
-      inversion: current.inversion,
-      midiNotes: current.midiNotes,
-    })
+    if (current.position >= 0) {
+      // Skip phantom nodes in the output
+      path.unshift({
+        chordName: current.chordName,
+        inversion: current.inversion,
+        midiNotes: current.midiNotes,
+      })
+    }
     current = previous.get(current)
   }
 

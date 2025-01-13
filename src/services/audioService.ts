@@ -558,12 +558,13 @@ export class AudioService {
       customVoiceLeadingCost
     )
 
-    const startNodes = graph.nodes.filter(node => node.position === 0)
+    // Use phantom nodes as start nodes and actual end nodes
+    const phantomNodes = graph.nodes.filter(node => node.position === -1)
     const endNodes = graph.nodes.filter(
       node => node.position === chords.length - 1
     )
 
-    const path = findOptimalVoiceLeading(graph, startNodes, endNodes)
+    const path = findOptimalVoiceLeading(graph, phantomNodes, endNodes)
 
     if (!path.length) {
       console.error('No valid path found')
