@@ -209,36 +209,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="space-y-4">
-          {/* Voice Leading Controls */}
-          <VoiceLeadingControls
-            isEnabled={!isPlaying}
-            onVoiceLeadingChange={voices => {
-              // Stop playback and reset state when voice leading changes
-              if (isPlaying) {
-                handleStop()
-              }
-              handleVoiceLeadingChange(voices)
-            }}
-          />
-
-          {/* Triad Controls */}
-          <TriadControls
-            isEnabled={!isPlaying}
-            onTriadTypeChange={type => {
-              // Stop playback and reset state when triad type changes
-              if (isPlaying) {
-                handleStop()
-              }
-              audioService.setTriadType(type)
-              // Regenerate sequence with new triad type
-              handleVoiceLeadingChange({
-                bass: true,
-                middle: true,
-                high: true,
-              })
-            }}
-          />
-
           {/* Playback Controls */}
           <div className="flex gap-3">
             <button
@@ -339,9 +309,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     aria-label={isMuted ? 'Unmute' : 'Mute'}
                   >
                     {isMuted ? (
-                      <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <VolumeX className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                     ) : (
-                      <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <Volume2 className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
                     )}
                   </button>
                   <input
@@ -350,13 +320,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     max="100"
                     value={volume}
                     onChange={handleVolumeChange}
-                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
+                    className="w-[3rem] sm:w-[5rem] h-1.5 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
                     style={{ minWidth: 0 }}
                   />
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0">
-                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-[#846C5B] flex-shrink-0" />
+                  <Clock className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#846C5B] flex-shrink-0" />
                   <input
                     type="range"
                     min="300"
@@ -364,13 +334,43 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     step="10"
                     value={chordDuration}
                     onChange={handleDurationChange}
-                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
+                    className="w-[3rem] sm:w-[5rem] h-1.5 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
                     style={{ minWidth: 0 }}
                   />
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Voice Leading Controls */}
+          <VoiceLeadingControls
+            isEnabled={!isPlaying}
+            onVoiceLeadingChange={voices => {
+              // Stop playback and reset state when voice leading changes
+              if (isPlaying) {
+                handleStop()
+              }
+              handleVoiceLeadingChange(voices)
+            }}
+          />
+
+          {/* Triad Controls */}
+          <TriadControls
+            isEnabled={!isPlaying}
+            onTriadTypeChange={type => {
+              // Stop playback and reset state when triad type changes
+              if (isPlaying) {
+                handleStop()
+              }
+              audioService.setTriadType(type)
+              // Regenerate sequence with new triad type
+              handleVoiceLeadingChange({
+                bass: true,
+                middle: true,
+                high: true,
+              })
+            }}
+          />
 
           {/* Chord Chart */}
           <ChordChartInput
