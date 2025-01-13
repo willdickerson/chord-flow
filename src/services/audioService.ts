@@ -29,6 +29,14 @@ const defaultTriads = Object.fromEntries(
   defaultChordNames!.map(chord => [chord, generateTriads(chord, 'spread')])
 )
 
+// Mobile keyboard range (2 octaves)
+const MOBILE_MIDI_START = 60 // C4
+const MOBILE_MIDI_END = 84 // C7
+
+// Desktop range for sequence generation
+const DESKTOP_MIDI_START = 40 // E2
+const DESKTOP_MIDI_END = 76 // E5
+
 export class AudioService {
   private instruments: Record<
     InstrumentType,
@@ -53,6 +61,13 @@ export class AudioService {
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
   private triadType: 'spread' | 'close' = 'spread'
+  private isMobile = window.innerWidth <= 768
+
+  constructor() {
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth <= 768
+    })
+  }
 
   get shouldStop(): boolean {
     return this._shouldStop
@@ -522,7 +537,9 @@ export class AudioService {
     voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState
   ): Triad[] {
     const chords = this.currentChordNames
-    const midiRange: [number, number] = [40, 76] // From E2 to E5
+    const midiRange: [number, number] = this.isMobile
+      ? [MOBILE_MIDI_START, MOBILE_MIDI_END] // Mobile range: C4 to C7
+      : [DESKTOP_MIDI_START, DESKTOP_MIDI_END] // Desktop range: E2 to E5
     const triads = this.currentTriads
 
     const customVoiceLeadingCost = (

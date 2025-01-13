@@ -13,6 +13,14 @@ const KEY_WIDTH = 14
 const WHITE_KEY_HEIGHT = 100
 const BLACK_KEY_HEIGHT = 65
 
+const MOBILE_KEY_WIDTH = 20
+const MOBILE_WHITE_KEY_HEIGHT = 120
+const MOBILE_BLACK_KEY_HEIGHT = 75
+
+// Mobile keyboard range (2 octaves)
+const MOBILE_MIDI_START = 60 // C4
+const MOBILE_MIDI_END = 84 // C7
+
 // Map of note numbers within an octave (0 = C)
 const OCTAVE_MAP = {
   white: [0, 2, 4, 5, 7, 9, 11, 12], // C, D, E, F, G, A, B, C
@@ -24,13 +32,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 }) => {
   const [playedNotes, setPlayedNotes] = useState<Set<number>>(new Set())
   const [isMouseDown, setIsMouseDown] = useState(false)
-  const totalOctaves = Math.floor((MIDI_END - MIDI_START) / 12)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
 
-  // Convert MIDI note to octave and note within octave
-  const isNoteActive = (midiNote: number) =>
-    activeNotes.includes(midiNote) || playedNotes.has(midiNote)
-
-  // Initialize audio on mount
   useEffect(() => {
     audioService.initialize()
 
@@ -43,6 +46,28 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       window.removeEventListener('mouseup', handleGlobalMouseUp)
     }
   }, [])
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Use mobile dimensions if on mobile
+  const effectiveKeyWidth = isMobile ? MOBILE_KEY_WIDTH : KEY_WIDTH
+  const effectiveWhiteKeyHeight = isMobile ? MOBILE_WHITE_KEY_HEIGHT : WHITE_KEY_HEIGHT
+  const effectiveBlackKeyHeight = isMobile ? MOBILE_BLACK_KEY_HEIGHT : BLACK_KEY_HEIGHT
+
+  // Adjust range based on screen size
+  const effectiveMidiStart = isMobile ? MOBILE_MIDI_START : MIDI_START
+  const effectiveMidiEnd = isMobile ? MOBILE_MIDI_END : MIDI_END
+  const totalOctaves = Math.floor((effectiveMidiEnd - effectiveMidiStart) / 12)
+
+  // Convert MIDI note to octave and note within octave
+  const isNoteActive = (midiNote: number) =>
+    activeNotes.includes(midiNote) || playedNotes.has(midiNote)
 
   const playNote = useCallback(
     async (midiNote: number) => {
@@ -90,31 +115,31 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   // Calculate total width needed
   const totalWhiteKeys = totalOctaves * 7 + 1 // 7 white keys per octave plus final C
-  const totalWidth = totalWhiteKeys * KEY_WIDTH
+  const totalWidth = totalOctaves * 7 * effectiveKeyWidth + effectiveKeyWidth
 
   return (
-    <div className="w-full py-2">
+    <div className="w-full overflow-x-auto">
       <div className="max-w-[900px] mx-auto">
         <svg
           width={totalWidth}
-          height={WHITE_KEY_HEIGHT}
-          className="select-none mx-auto"
-          viewBox={`0 0 ${totalWidth} ${WHITE_KEY_HEIGHT}`}
+          height={effectiveWhiteKeyHeight}
+          className="mx-auto"
+          viewBox={`0 0 ${totalWidth} ${effectiveWhiteKeyHeight}`}
           preserveAspectRatio="xMidYMid meet"
         >
           {/* Generate white keys */}
           {Array.from({ length: totalOctaves }).map((_, octave) => (
             <React.Fragment key={`octave-${octave}`}>
               {OCTAVE_MAP.white.slice(0, -1).map((noteInOctave, i) => {
-                const midiNote = MIDI_START + octave * 12 + noteInOctave
-                if (midiNote > MIDI_END) return null
+                const midiNote = effectiveMidiStart + octave * 12 + noteInOctave
+                if (midiNote > effectiveMidiEnd) return null
                 return (
                   <rect
                     key={`white-${midiNote}`}
-                    x={(octave * 7 + i) * KEY_WIDTH}
+                    x={(octave * 7 + i) * effectiveKeyWidth}
                     y={0}
-                    width={KEY_WIDTH - 1}
-                    height={WHITE_KEY_HEIGHT}
+                    width={effectiveKeyWidth - 1}
+                    height={effectiveWhiteKeyHeight}
                     fill={isNoteActive(midiNote) ? '#A6B39C' : '#F5E6D3'}
                     stroke="#846C5B"
                     strokeWidth="1"
@@ -133,31 +158,31 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
           {/* Add the final C */}
           <rect
             key={`white-final-c`}
-            x={totalWhiteKeys * KEY_WIDTH - KEY_WIDTH}
+            x={totalWhiteKeys * effectiveKeyWidth - effectiveKeyWidth}
             y={0}
-            width={KEY_WIDTH - 1}
-            height={WHITE_KEY_HEIGHT}
-            fill={isNoteActive(MIDI_END) ? '#A6B39C' : '#F5E6D3'}
+            width={effectiveKeyWidth - 1}
+            height={effectiveWhiteKeyHeight}
+            fill={isNoteActive(effectiveMidiEnd) ? '#A6B39C' : '#F5E6D3'}
             stroke="#846C5B"
             strokeWidth="1"
             rx="2"
             className="transition-colors duration-100 cursor-pointer"
-            onMouseDown={() => handleMouseDown(MIDI_END)}
-            onMouseUp={() => handleMouseUp(MIDI_END)}
-            onMouseEnter={() => handleMouseEnter(MIDI_END)}
-            onMouseLeave={() => handleMouseLeave(MIDI_END)}
+            onMouseDown={() => handleMouseDown(effectiveMidiEnd)}
+            onMouseUp={() => handleMouseUp(effectiveMidiEnd)}
+            onMouseEnter={() => handleMouseEnter(effectiveMidiEnd)}
+            onMouseLeave={() => handleMouseLeave(effectiveMidiEnd)}
           />
 
           {/* Generate black keys */}
           {Array.from({ length: totalOctaves }).map((_, octave) => (
             <React.Fragment key={`octave-black-${octave}`}>
               {OCTAVE_MAP.black.map((noteInOctave, i) => {
-                const midiNote = MIDI_START + octave * 12 + noteInOctave
-                if (midiNote > MIDI_END) return null
+                const midiNote = effectiveMidiStart + octave * 12 + noteInOctave
+                if (midiNote > effectiveMidiEnd) return null
 
                 // Calculate x position based on white key positions
-                const octaveOffset = octave * 7 * KEY_WIDTH
-                const blackKeyOffset = KEY_WIDTH - (KEY_WIDTH * 0.7) / 2
+                const octaveOffset = octave * 7 * effectiveKeyWidth
+                const blackKeyOffset = effectiveKeyWidth - (effectiveKeyWidth * 0.7) / 2
 
                 // Position black keys relative to white keys
                 let whiteKeyIndex
@@ -169,11 +194,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   <rect
                     key={`black-${midiNote}`}
                     x={
-                      octaveOffset + whiteKeyIndex * KEY_WIDTH + blackKeyOffset
+                      octaveOffset + whiteKeyIndex * effectiveKeyWidth + blackKeyOffset
                     }
                     y={0}
-                    width={KEY_WIDTH * 0.7}
-                    height={BLACK_KEY_HEIGHT}
+                    width={effectiveKeyWidth * 0.7}
+                    height={effectiveBlackKeyHeight}
                     fill={isNoteActive(midiNote) ? '#A6B39C' : '#2C1810'}
                     stroke="#2C1810"
                     strokeWidth="1"
