@@ -57,8 +57,12 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   // Use mobile dimensions if on mobile
   const effectiveKeyWidth = isMobile ? MOBILE_KEY_WIDTH : KEY_WIDTH
-  const effectiveWhiteKeyHeight = isMobile ? MOBILE_WHITE_KEY_HEIGHT : WHITE_KEY_HEIGHT
-  const effectiveBlackKeyHeight = isMobile ? MOBILE_BLACK_KEY_HEIGHT : BLACK_KEY_HEIGHT
+  const effectiveWhiteKeyHeight = isMobile
+    ? MOBILE_WHITE_KEY_HEIGHT
+    : WHITE_KEY_HEIGHT
+  const effectiveBlackKeyHeight = isMobile
+    ? MOBILE_BLACK_KEY_HEIGHT
+    : BLACK_KEY_HEIGHT
 
   // Adjust range based on screen size
   const effectiveMidiStart = isMobile ? MOBILE_MIDI_START : MIDI_START
@@ -182,7 +186,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
                 // Calculate x position based on white key positions
                 const octaveOffset = octave * 7 * effectiveKeyWidth
-                const blackKeyOffset = effectiveKeyWidth - (effectiveKeyWidth * 0.7) / 2
+                const blackKeyOffset =
+                  effectiveKeyWidth - (effectiveKeyWidth * 0.7) / 2
 
                 // Position black keys relative to white keys
                 let whiteKeyIndex
@@ -194,7 +199,9 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   <rect
                     key={`black-${midiNote}`}
                     x={
-                      octaveOffset + whiteKeyIndex * effectiveKeyWidth + blackKeyOffset
+                      octaveOffset +
+                      whiteKeyIndex * effectiveKeyWidth +
+                      blackKeyOffset
                     }
                     y={0}
                     width={effectiveKeyWidth * 0.7}
