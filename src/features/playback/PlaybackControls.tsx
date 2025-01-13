@@ -350,7 +350,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     max="100"
                     value={volume}
                     onChange={handleVolumeChange}
-                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
+                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
                     style={{ minWidth: 0 }}
                   />
                 </div>
@@ -364,7 +364,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     step="10"
                     value={chordDuration}
                     onChange={handleDurationChange}
-                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
+                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
                     style={{ minWidth: 0 }}
                   />
                 </div>
