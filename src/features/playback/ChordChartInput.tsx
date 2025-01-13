@@ -441,7 +441,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       </div>
 
       <div className="flex justify-center">
-        <div className="flex flex-wrap gap-2 w-[656px] p-4 border border-[#846C5B]/20 rounded-lg bg-[#F5E6D3]/50">
+        <div className="grid grid-cols-4 gap-2 w-[656px] p-4 border border-[#846C5B]/20 rounded-lg bg-[#F5E6D3]/50">
           {chords.map(({ id, value }, index) => (
             <div
               key={id}
@@ -454,7 +454,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 }
               }}
               className={`
-                w-[80px] px-3 py-1.5 rounded-md text-sm font-medium text-center transition-all duration-100 ease-in-out transform origin-center relative group
+                px-3 py-1.5 rounded-md text-sm font-medium text-center transition-all duration-100 ease-in-out transform origin-center relative group
                 ${!isEditing && index === currentPosition ? 'bg-[#A6B39C]' : 'bg-[#F5E6D3]'}
                 ${isEditing ? 'cursor-grab active:cursor-grabbing' : sequence ? 'cursor-pointer' : ''}
                 ${dragSourceIndexRef.current === index ? 'invisible' : ''}
