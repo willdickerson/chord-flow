@@ -509,6 +509,8 @@ export class AudioService {
         this.instruments.synth.triggerAttackRelease(noteFreq, noteDuration / 1000)
       } else if (this.currentInstrument === 'piano' && this.instruments.piano) {
         this.instruments.piano.triggerAttackRelease(noteFreq, noteDuration / 1000)
+      } else if (this.currentInstrument === 'guitar' && this.instruments.guitar) {
+        this.instruments.guitar.triggerAttackRelease(noteFreq, noteDuration / 1000)
       }
       
       await new Promise(resolve => setTimeout(resolve, noteDuration))
