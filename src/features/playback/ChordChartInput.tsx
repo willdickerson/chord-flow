@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Triad } from '../../common/types'
 import { CHORD_CHARTS, convertChartToInputFormat } from './charts'
+import { audioService } from '../../services/audioService'
+import * as Tone from 'tone'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -47,6 +49,19 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [selectedChordIndex, setSelectedChordIndex] = useState(0)
   const chordListRef = useRef<HTMLDivElement>(null)
   const chartListRef = useRef<HTMLDivElement>(null)
+  const [isAudioInitialized, setIsAudioInitialized] = useState(false)
+
+  const initializeAudio = async () => {
+    if (!isAudioInitialized) {
+      try {
+        await Tone.start()
+        await audioService.initialize()
+        setIsAudioInitialized(true)
+      } catch (err) {
+        console.error('Failed to initialize audio:', err)
+      }
+    }
+  }
 
   const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
   const giantStepsIndex = charts.findIndex(
@@ -95,6 +110,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
   const handleChordClick = async (chord: string, index: number) => {
     if (isEditing) return
+
+    await initializeAudio()
 
     // Update position immediately
     onPositionSelect(index)

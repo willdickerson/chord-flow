@@ -1,3 +1,4 @@
+import * as Tone from 'tone'
 import { useState, useRef, useCallback } from 'react'
 import { audioService } from '../../services/audioService'
 import { Triad } from '../../common/types'
@@ -57,6 +58,7 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
 
     try {
       // Initialize audio before starting playback
+      await Tone.start()
       await audioService.initialize()
 
       if (!isPlaying) {

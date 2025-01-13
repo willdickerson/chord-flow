@@ -53,6 +53,7 @@ export class AudioService {
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
   private triadType: 'spread' | 'close' = 'spread'
+  private isAudioContextStarted = false
 
   get shouldStop(): boolean {
     return this._shouldStop
@@ -76,9 +77,7 @@ export class AudioService {
     this._isArpeggiating = value
     if (value) {
       Tone.Transport.start()
-      Tone.Transport.scheduleRepeat(() => {
-        // Arpeggiator logic here
-      }, '8n')
+      Tone.Transport.scheduleRepeat(() => {}, '8n')
     } else {
       Tone.Transport.cancel()
       Tone.Transport.stop()
@@ -151,8 +150,6 @@ export class AudioService {
     }
 
     try {
-      await Tone.start()
-
       // Initialize synth first for immediate playback
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'triangle' },
@@ -164,11 +161,6 @@ export class AudioService {
         },
       }).toDestination()
 
-      // Set initial volume for synth
-      if (this.instruments.synth) {
-        this.instruments.synth.volume.value = Tone.gainToDb(this.volume / 100)
-      }
-
       // Mark as initialized once synth is ready
       this.isInitialized = true
 
@@ -176,6 +168,23 @@ export class AudioService {
       this.loadSampledInstruments()
     } catch (err) {
       console.error('Failed to initialize audio service:', err)
+      throw err
+    }
+  }
+
+  async startAudioContext() {
+    if (this.isAudioContextStarted) return
+
+    try {
+      await Tone.start()
+      if (this.instruments.synth) {
+        this.instruments.synth.toDestination()
+        const normalizedVolume = this.volume / 100
+        this.instruments.synth.volume.value = Tone.gainToDb(normalizedVolume)
+      }
+      this.isAudioContextStarted = true
+    } catch (err) {
+      console.error('Failed to start audio context:', err)
       throw err
     }
   }
@@ -279,12 +288,16 @@ export class AudioService {
     return instrument
   }
 
-  startPlayback(
+  async startPlayback(
     sequence: Triad[],
     startPosition: number,
     onComplete: () => void,
     onNotesChange?: (notes: number[]) => void
   ) {
+    if (!this.isAudioContextStarted) {
+      await this.startAudioContext()
+    }
+
     if (!sequence || sequence.length === 0) {
       console.error('Cannot start playback: no sequence provided')
       onComplete()
@@ -426,6 +439,8 @@ export class AudioService {
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
     if (midiNotes.length === 0) return
+
+    await this.startAudioContext()
 
     const instrument = this.getCurrentInstrument()
     if (!instrument) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { audioService } from '../../services/audioService'
+import * as Tone from 'tone'
 
 interface PianoKeyboardProps {
   activeNotes: number[]
@@ -24,6 +25,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 }) => {
   const [playedNotes, setPlayedNotes] = useState<Set<number>>(new Set())
   const [isMouseDown, setIsMouseDown] = useState(false)
+  const [isAudioInitialized, setIsAudioInitialized] = useState(false)
   const totalOctaves = Math.floor((MIDI_END - MIDI_START) / 12)
 
   // Convert MIDI note to octave and note within octave
@@ -32,7 +34,15 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   // Initialize audio on mount
   useEffect(() => {
-    audioService.initialize()
+    const initAudioService = async () => {
+      try {
+        await audioService.initialize()
+      } catch (err) {
+        console.error('Failed to initialize audio service:', err)
+      }
+    }
+
+    initAudioService()
 
     // Add global mouse up handler
     const handleGlobalMouseUp = () => {
@@ -46,17 +56,26 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   const playNote = useCallback(
     async (midiNote: number) => {
-      if (playedNotes.has(midiNote)) return // Don't play if already playing
+      if (playedNotes.has(midiNote)) return
 
       try {
-        await audioService.initialize()
+        if (!isAudioInitialized) {
+          try {
+            await Tone.start()
+            setIsAudioInitialized(true)
+          } catch (err) {
+            console.error('Failed to start audio context:', err)
+            return
+          }
+        }
+
         audioService.playNote(midiNote)
         setPlayedNotes(prev => new Set([...prev, midiNote]))
       } catch (err) {
         console.error('Error playing note:', err)
       }
     },
-    [playedNotes]
+    [playedNotes, isAudioInitialized]
   )
 
   const stopNote = useCallback((midiNote: number) => {
