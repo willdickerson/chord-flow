@@ -10,7 +10,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { usePlaybackState } from './usePlaybackState'
-import { ChordChartInput } from './ChordChartInput'
+import { ChordChartInput } from '../charts/ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
 import { TriadControls } from './TriadControls'
 import { audioService } from '../../services/audioService'

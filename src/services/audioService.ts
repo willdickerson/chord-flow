@@ -5,7 +5,7 @@ import {
   findOptimalVoiceLeading,
 } from '../common/utils/graphUtils'
 import { generateTriads } from '../common/utils/chordUtils'
-import { CHORD_CHARTS } from '../features/playback/charts'
+import { CHORD_CHARTS } from '../features/charts/charts'
 
 export type InstrumentType = 'piano' | 'synth' | 'guitar'
 

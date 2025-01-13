@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { PianoKeyboard } from '../common/components/PianoKeyboard'
+import { PianoKeyboard } from '../features/keyboard/PianoKeyboard'
 import { PlaybackControls } from '../features/playback/PlaybackControls'
-import { InstrumentSelector } from '../common/components/InstrumentSelector'
+import { InstrumentSelector } from '../features/playback/InstrumentSelector'
 
 function App() {
   const [activeNotes, setActiveNotes] = useState<number[]>([])
