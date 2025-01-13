@@ -13,6 +13,7 @@ import { usePlaybackState } from './usePlaybackState'
 import { ChordChartInput } from '../charts/ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
 import { TriadControls } from './TriadControls'
+import { ArpeggioControls } from './ArpeggioControls'
 import { audioService } from '../../services/audioService'
 import * as Tone from 'tone'
 
@@ -343,34 +344,40 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
           </div>
 
           {/* Voice Leading Controls */}
-          <VoiceLeadingControls
-            isEnabled={!isPlaying}
-            onVoiceLeadingChange={voices => {
-              // Stop playback and reset state when voice leading changes
-              if (isPlaying) {
-                handleStop()
-              }
-              handleVoiceLeadingChange(voices)
-            }}
-          />
-
-          {/* Triad Controls */}
-          <TriadControls
-            isEnabled={!isPlaying}
-            onTriadTypeChange={type => {
-              // Stop playback and reset state when triad type changes
-              if (isPlaying) {
-                handleStop()
-              }
-              audioService.setTriadType(type)
-              // Regenerate sequence with new triad type
-              handleVoiceLeadingChange({
-                bass: true,
-                middle: true,
-                high: true,
-              })
-            }}
-          />
+          <div className="flex flex-col gap-3">
+            <TriadControls
+              onTriadTypeChange={type => {
+                // Stop playback and reset state when triad type changes
+                if (isPlaying) {
+                  handleStop()
+                }
+                audioService.setTriadType(type)
+                // Regenerate sequence with new triad type
+                handleVoiceLeadingChange({
+                  bass: true,
+                  middle: true,
+                  high: true,
+                })
+              }}
+              isEnabled={!isPlaying}
+            />
+            <ArpeggioControls
+              onArpeggioTypeChange={(type) => {
+                audioService.setArpeggioType(type)
+              }}
+              isEnabled={isArpeggiating}
+            />
+            <VoiceLeadingControls
+              isEnabled={!isPlaying}
+              onVoiceLeadingChange={voices => {
+                // Stop playback and reset state when voice leading changes
+                if (isPlaying) {
+                  handleStop()
+                }
+                handleVoiceLeadingChange(voices)
+              }}
+            />
+          </div>
 
           {/* Chord Chart */}
           <ChordChartInput

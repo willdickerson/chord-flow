@@ -61,6 +61,7 @@ export class AudioService {
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
   private triadType: 'spread' | 'close' = 'spread'
+  private arpeggioType: 'ascending' | 'descending' | 'alternating' = 'ascending'
   private isMobile = window.innerWidth <= 768
 
   constructor() {
@@ -455,21 +456,7 @@ export class AudioService {
     onNotesChange?.(this.currentMidiNotes)
 
     if (this._isArpeggiating) {
-      const noteDelay = duration / midiNotes.length
-      const noteDuration = noteDelay * 0.95 // Slightly shorter than delay to prevent overlap
-      const now = Tone.now()
-
-      midiNotes.forEach((note, i) => {
-        const startTime = now + (i * noteDelay) / 1000
-        instrument.triggerAttackRelease(
-          this.midiToNote(note),
-          noteDuration / 1000,
-          startTime,
-          0.7
-        )
-      })
-
-      await new Promise(resolve => setTimeout(resolve, duration))
+      await this.playArpeggio(midiNotes, duration)
     } else {
       instrument.triggerAttack(midiNotes.map(note => this.midiToNote(note)))
 
@@ -495,6 +482,36 @@ export class AudioService {
         instrument.triggerRelease(midiNotes.map(note => this.midiToNote(note)))
         throw err
       }
+    }
+  }
+
+  async playArpeggio(
+    midiNotes: number[],
+    duration: number,
+  ) {
+    const notesToPlay = [...midiNotes]
+    if (this.arpeggioType === 'descending') {
+      notesToPlay.reverse()
+    } else if (this.arpeggioType === 'alternating') {
+      // Alternate between ascending and descending based on current position
+      const currentPosition = this.getCurrentPosition()
+      if (currentPosition % 2 === 1) {
+        notesToPlay.reverse()
+      }
+    }
+
+    const noteDuration = duration / notesToPlay.length
+    for (let i = 0; i < notesToPlay.length; i++) {
+      const note = notesToPlay[i]
+      const noteFreq = Tone.Frequency(note, 'midi').toFrequency()
+      
+      if (this.currentInstrument === 'synth' && this.instruments.synth) {
+        this.instruments.synth.triggerAttackRelease(noteFreq, noteDuration / 1000)
+      } else if (this.currentInstrument === 'piano' && this.instruments.piano) {
+        this.instruments.piano.triggerAttackRelease(noteFreq, noteDuration / 1000)
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, noteDuration))
     }
   }
 
@@ -600,6 +617,14 @@ export class AudioService {
 
   getTriadType(): 'spread' | 'close' {
     return this.triadType
+  }
+
+  setArpeggioType(type: 'ascending' | 'descending' | 'alternating'): void {
+    this.arpeggioType = type
+  }
+
+  getArpeggioType(): 'ascending' | 'descending' | 'alternating' {
+    return this.arpeggioType
   }
 }
 
