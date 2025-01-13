@@ -155,15 +155,16 @@ export class AudioService {
     }
 
     try {
-      // For iOS, we need a user gesture to start audio
       if (this.isIOS && !this.hasUserGesture) {
+        this.isInitialized = true
         return
       }
 
-      // Start audio context and mark as initialized
+      if (Tone.context.state === 'suspended') {
+        await Tone.context.resume()
+      }
+
       await Tone.start()
-      await Tone.context.resume()
-      this.isInitialized = true
 
       // Initialize synth first for immediate playback
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
@@ -182,6 +183,7 @@ export class AudioService {
       }
 
       // Mark as initialized once synth is ready
+      this.isInitialized = true
       this.hasUserGesture = true
 
       // Load sampled instruments in the background
@@ -192,20 +194,10 @@ export class AudioService {
     }
   }
 
-  async ensureAudioInitialized(): Promise<void> {
-    if (!this.isInitialized) {
-      // For iOS, we need to handle the first user interaction
-      if (this.isIOS && !this.hasUserGesture) {
-        this.hasUserGesture = true
-        await this.initialize()
-      } else {
-        await this.initialize()
-      }
-    }
-
-    // Double-check audio context state
-    if (Tone.context.state === 'suspended') {
-      await Tone.context.resume()
+  async ensureAudioInitialized() {
+    if (!this.isInitialized || (this.isIOS && !this.hasUserGesture)) {
+      this.hasUserGesture = true
+      await this.initialize()
     }
   }
 
