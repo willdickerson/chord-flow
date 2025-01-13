@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Play,
   Pause,
@@ -67,17 +67,51 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleLoopToggle = () => {
-    const newLoopState = !isLooping
-    setIsLooping(newLoopState)
-    audioService.setLooping(newLoopState)
-  }
+  const handleLoopToggle = useCallback(async () => {
+    try {
+      const newValue = !isLooping
+      setIsLooping(newValue)
+      await audioService.setLooping(newValue)
+    } catch (err) {
+      console.error('Error toggling loop:', err)
+    }
+  }, [isLooping])
 
-  const handleArpeggiateToggle = () => {
-    const newArpState = !isArpeggiating
-    setIsArpeggiating(newArpState)
-    audioService.setArpeggiating(newArpState)
-  }
+  const handleArpeggiateToggle = useCallback(async () => {
+    try {
+      const newValue = !isArpeggiating
+      setIsArpeggiating(newValue)
+      await audioService.setArpeggiating(newValue)
+    } catch (err) {
+      console.error('Error toggling arpeggiator:', err)
+    }
+  }, [isArpeggiating])
+
+  const handleVolumeChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newVolume = parseInt(e.target.value)
+      setVolume(newVolume)
+      try {
+        await audioService.setVolume(newVolume)
+      } catch (err) {
+        console.error('Error setting volume:', err)
+      }
+    },
+    []
+  )
+
+  const handleDurationChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newDuration = parseInt(e.target.value)
+      setChordDuration(newDuration)
+      try {
+        await audioService.setChordDuration(newDuration)
+      } catch (err) {
+        console.error('Error setting duration:', err)
+      }
+    },
+    []
+  )
 
   const handleNotesChange = async (
     notes:
@@ -157,53 +191,24 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     }
   }
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseInt(e.target.value)
-    setVolume(newVolume)
-    audioService.setVolume(newVolume)
-    if (newVolume > 0) {
-      setIsMuted(false)
-    } else {
-      setIsMuted(true)
-    }
-  }
-
-  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDuration = parseInt(e.target.value)
-    setChordDuration(newDuration)
-    audioService.setChordDuration(newDuration)
-  }
-
-  const playChord = async (_chord: string, index: number) => {
-    try {
-      await Tone.start()
-      await audioService.initialize()
-
-      // Get the specific triad from the sequence
-      if (!sequence || !sequence[index]) {
-        console.warn(
-          'PlaybackControls: No sequence or triad found at index',
-          index
-        )
-        return
-      }
-
-      const triad = sequence[index]
-
-      // Immediately update the notes
-      onNotesChange(triad.midiNotes)
-
-      await audioService.playTriad(
-        triad.midiNotes,
-        audioService.getChordDuration(),
-        updatedNotes => {
-          onNotesChange(updatedNotes)
+  const playChord = useCallback(
+    async (_chord: string, index: number) => {
+      try {
+        handlePositionSelect(index)
+        if (sequence) {
+          const triad = sequence[index]
+          await audioService.playTriad(
+            triad.midiNotes,
+            chordDuration,
+            onNotesChange
+          )
         }
-      )
-    } catch (err) {
-      console.error('Failed to play chord:', err)
-    }
-  }
+      } catch (err) {
+        console.error('Error playing chord:', err)
+      }
+    },
+    [sequence, chordDuration, handlePositionSelect, onNotesChange]
+  )
 
   return (
     <div className="space-y-6">
