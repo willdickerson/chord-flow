@@ -330,40 +330,44 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               <TrendingUp className="w-3.5 h-3.5" />
             </button>
 
-            <div className="flex items-center gap-5">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleVolumeToggle}
-                  className="text-[#846C5B] hover:text-[#846C5B]/80 p-0 bg-transparent hover:bg-transparent border-0"
-                  aria-label={isMuted ? 'Unmute' : 'Mute'}
-                >
-                  {isMuted ? (
-                    <VolumeX className="w-4 h-4" />
-                  ) : (
-                    <Volume2 className="w-4 h-4" />
-                  )}
-                </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={volume}
-                  onChange={handleVolumeChange}
-                  className="w-20 h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448]"
-                />
-              </div>
+            <div className="flex items-center gap-2 flex-wrap overflow-hidden">
+              <div className="flex items-center gap-2 flex-shrink min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0">
+                  <button
+                    onClick={handleVolumeToggle}
+                    className="text-[#846C5B] hover:text-[#846C5B]/80 p-0 bg-transparent hover:bg-transparent border-0 flex-shrink-0"
+                    aria-label={isMuted ? 'Unmute' : 'Mute'}
+                  >
+                    {isMuted ? (
+                      <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" />
+                    ) : (
+                      <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                    )}
+                  </button>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448]"
+                    style={{ minWidth: 0 }}
+                  />
+                </div>
 
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-[#846C5B]" />
-                <input
-                  type="range"
-                  min="300"
-                  max="2000"
-                  step="10"
-                  value={chordDuration}
-                  onChange={handleDurationChange}
-                  className="w-20 h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448]"
-                />
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-[#846C5B] flex-shrink-0" />
+                  <input
+                    type="range"
+                    min="300"
+                    max="2000"
+                    step="10"
+                    value={chordDuration}
+                    onChange={handleDurationChange}
+                    className="w-[3rem] sm:w-[5rem] h-1 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448]"
+                    style={{ minWidth: 0 }}
+                  />
+                </div>
               </div>
             </div>
           </div>
