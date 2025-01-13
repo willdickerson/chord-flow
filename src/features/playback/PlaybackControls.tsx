@@ -42,7 +42,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   } = usePlaybackState(onNotesChange)
 
   const initialChordNames = audioService.getInitialChordNames()
-  const [isAudioInitialized, setIsAudioInitialized] = useState(false)
 
   const [volume, setVolume] = useState(15)
   const [previousVolume, setPreviousVolume] = useState(15)
@@ -51,18 +50,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [isLooping, setIsLooping] = useState(false)
   const [isArpeggiating, setIsArpeggiating] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
-
-  const initializeAudio = async () => {
-    if (!isAudioInitialized) {
-      try {
-        await Tone.start()
-        await audioService.initialize()
-        setIsAudioInitialized(true)
-      } catch (err) {
-        console.error('Failed to initialize audio:', err)
-      }
-    }
-  }
 
   useEffect(() => {
     // Set initial volume and chord duration
@@ -80,15 +67,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleLoopToggle = async () => {
-    await initializeAudio()
+  const handleLoopToggle = () => {
     const newLoopState = !isLooping
     setIsLooping(newLoopState)
     audioService.setLooping(newLoopState)
   }
 
-  const handleArpeggiateToggle = async () => {
-    await initializeAudio()
+  const handleArpeggiateToggle = () => {
     const newArpState = !isArpeggiating
     setIsArpeggiating(newArpState)
     audioService.setArpeggiating(newArpState)
@@ -112,7 +97,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       if (notes.type === 'play' && notes.notes) {
         try {
           // Ensure audio context is started (required by browsers)
-          await initializeAudio()
+          await Tone.start()
+          await audioService.initialize()
 
           const duration = notes.duration || audioService.getChordDuration()
           const useArp =
@@ -158,8 +144,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     }
   }
 
-  const handleVolumeToggle = async () => {
-    await initializeAudio()
+  const handleVolumeToggle = () => {
     if (isMuted) {
       setVolume(previousVolume)
       setIsMuted(false)
@@ -172,8 +157,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     }
   }
 
-  const handleVolumeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    await initializeAudio()
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseInt(e.target.value)
     setVolume(newVolume)
     audioService.setVolume(newVolume)
