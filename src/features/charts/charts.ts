@@ -71070,7 +71070,6 @@ export const CHORD_CHARTS: ChordChart[] = [
       'Gm6',
       'Gm6',
       'Gm6',
-      'Gm6',
       'Cm6',
       'Cm6',
       'Gm6',
