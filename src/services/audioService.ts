@@ -1,25 +1,20 @@
 import * as Tone from 'tone'
-import { Inversion, Triad } from '../common/types'
+import { Inversion, Triad, VoiceLeadingState } from '../common/types'
 import {
   buildVoiceLeadingGraph,
   findOptimalVoiceLeading,
 } from '../common/utils/graphUtils'
 import { generateTriads } from '../common/utils/chordUtils'
 import { CHORD_CHARTS } from '../features/charts/charts'
-
-export type InstrumentType = 'piano' | 'synth' | 'guitar'
-
-export interface VoiceLeadingState {
-  bass: boolean
-  middle: boolean
-  high: boolean
-}
-
-const defaultVoiceLeadingState: VoiceLeadingState = {
-  bass: true,
-  middle: true,
-  high: true,
-}
+import {
+  AUDIO_DEFAULTS,
+  DEFAULT_VOICE_LEADING_STATE,
+  INSTRUMENT_TYPES,
+  InstrumentType,
+  SEQUENCE_RANGES,
+  TriadType,
+  ArpeggioType,
+} from './audioConstants'
 
 const defaultChordNames = CHORD_CHARTS.find(
   chart => chart.title === 'Giant Steps'
@@ -29,39 +24,31 @@ const defaultTriads = Object.fromEntries(
   defaultChordNames!.map(chord => [chord, generateTriads(chord, 'spread')])
 )
 
-// Mobile keyboard range (2 octaves)
-const MOBILE_MIDI_START = 60 // C4
-const MOBILE_MIDI_END = 84 // C7
-
-// Desktop range for sequence generation
-const DESKTOP_MIDI_START = 40 // E2
-const DESKTOP_MIDI_END = 76 // E5
-
 export class AudioService {
   private instruments: Record<
     InstrumentType,
     Tone.Sampler | Tone.PolySynth | null
-  > = {
-    piano: null,
-    synth: null,
-    guitar: null,
-  }
+  > = Object.fromEntries(INSTRUMENT_TYPES.map(type => [type, null])) as Record<
+    InstrumentType,
+    Tone.Sampler | Tone.PolySynth | null
+  >
+
   private currentInstrument: InstrumentType = 'synth'
   private isInitialized = false
   private _shouldStop = false
-  private volume = -12
-  private _isArpeggiating = true
-  private _isLooping = false
+  private volume = AUDIO_DEFAULTS.VOLUME
+  private _isArpeggiating = AUDIO_DEFAULTS.IS_ARPEGGIATING
+  private _isLooping = AUDIO_DEFAULTS.IS_LOOPING
   private playbackTimeout: ReturnType<typeof setTimeout> | null = null
   private currentPosition = 0
   private savedPosition = 0
   private onComplete: (() => void) | null = null
-  private chordDuration = 500
+  private chordDuration = AUDIO_DEFAULTS.CHORD_DURATION
   private currentMidiNotes: number[] = []
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
-  private triadType: 'spread' | 'close' = 'spread'
-  private arpeggioType: 'ascending' | 'descending' | 'alternating' = 'ascending'
+  private triadType: TriadType = AUDIO_DEFAULTS.TRIAD_TYPE
+  private arpeggioType: ArpeggioType = AUDIO_DEFAULTS.ARPEGGIO_TYPE
   private isMobile = window.innerWidth <= 768
 
   constructor() {
@@ -92,9 +79,7 @@ export class AudioService {
     this._isArpeggiating = value
     if (value) {
       Tone.Transport.start()
-      Tone.Transport.scheduleRepeat(() => {
-        // Arpeggiator logic here
-      }, '8n')
+      Tone.Transport.scheduleRepeat(() => {}, '8n')
     } else {
       Tone.Transport.cancel()
       Tone.Transport.stop()
@@ -562,12 +547,12 @@ export class AudioService {
   }
 
   generateOptimalSequence(
-    voiceLeadingState: VoiceLeadingState = defaultVoiceLeadingState
+    voiceLeadingState: VoiceLeadingState = DEFAULT_VOICE_LEADING_STATE
   ): Triad[] {
     const chords = this.currentChordNames
     const midiRange: [number, number] = this.isMobile
-      ? [MOBILE_MIDI_START, MOBILE_MIDI_END] // Mobile range: C4 to C7
-      : [DESKTOP_MIDI_START, DESKTOP_MIDI_END] // Desktop range: E2 to E5
+      ? SEQUENCE_RANGES.MOBILE
+      : SEQUENCE_RANGES.DESKTOP
     const triads = this.currentTriads
 
     const customVoiceLeadingCost = (
@@ -619,22 +604,22 @@ export class AudioService {
     return path
   }
 
-  setTriadType(type: 'spread' | 'close'): void {
+  setTriadType(type: TriadType): void {
     this.triadType = type
     this.currentTriads = Object.fromEntries(
       this.currentChordNames.map(chord => [chord, generateTriads(chord, type)])
     )
   }
 
-  getTriadType(): 'spread' | 'close' {
+  getTriadType(): TriadType {
     return this.triadType
   }
 
-  setArpeggioType(type: 'ascending' | 'descending' | 'alternating'): void {
+  setArpeggioType(type: ArpeggioType): void {
     this.arpeggioType = type
   }
 
-  getArpeggioType(): 'ascending' | 'descending' | 'alternating' {
+  getArpeggioType(): ArpeggioType {
     return this.arpeggioType
   }
 }

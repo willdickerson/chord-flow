@@ -1,5 +1,6 @@
 import { Piano, KeyboardMusic, Guitar } from 'lucide-react'
-import { InstrumentType, audioService } from '../../services/audioService'
+import { InstrumentType } from '../../services/audioConstants'
+import { audioService } from '../../services/audioService'
 import { useState } from 'react'
 
 export const InstrumentSelector = () => {

@@ -21,6 +21,12 @@ export type GraphEdge = {
   weight: number
 }
 
+export interface VoiceLeadingState {
+  bass: boolean
+  middle: boolean
+  high: boolean
+}
+
 export type VoiceLeadingGraph = {
   nodes: GraphNode[]
   edges: GraphEdge[]

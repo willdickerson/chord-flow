@@ -3,6 +3,7 @@ import {
   SCALE_INTERVALS,
   ENHARMONIC_MAP,
   Inversion,
+  NOTE_TO_MIDI_BASE,
 } from '../../common/types'
 
 export function parseChord(chord: string): {
@@ -152,24 +153,4 @@ export function findAllTriadsInRange(
   }
 
   return validMidis
-}
-
-export const NOTE_TO_MIDI_BASE: { [key: string]: number } = {
-  C: 60,
-  'C#': 61,
-  Db: 61,
-  D: 62,
-  'D#': 63,
-  Eb: 63,
-  E: 64,
-  F: 65,
-  'F#': 66,
-  Gb: 66,
-  G: 67,
-  'G#': 68,
-  Ab: 68,
-  A: 69,
-  'A#': 70,
-  Bb: 70,
-  B: 71,
 }
