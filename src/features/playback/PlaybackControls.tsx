@@ -5,10 +5,11 @@ import {
   RotateCcw,
   Volume2,
   VolumeX,
-  Clock,
   Repeat,
   TrendingUp,
 } from 'lucide-react'
+import Icon from '@mdi/react'
+import { mdiMetronome } from '@mdi/js'
 import { usePlaybackState } from './usePlaybackState'
 import { ChordChartInput } from '../charts/ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
@@ -170,7 +171,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   }
 
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDuration = parseInt(e.target.value)
+    const sliderValue = parseInt(e.target.value)
+    const newDuration = 2300 - sliderValue
     setChordDuration(newDuration)
     audioService.setChordDuration(newDuration)
   }
@@ -310,9 +312,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                     aria-label={isMuted ? 'Unmute' : 'Mute'}
                   >
                     {isMuted ? (
-                      <VolumeX className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
+                      <VolumeX className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                     ) : (
-                      <Volume2 className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
+                      <Volume2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
                     )}
                   </button>
                   <input
@@ -327,13 +329,17 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0">
-                  <Clock className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-[#846C5B] flex-shrink-0" />
+                  <Icon
+                    path={mdiMetronome}
+                    size={0.65}
+                    className="text-[#846C5B] flex-shrink-0"
+                  />
                   <input
                     type="range"
                     min="300"
                     max="2000"
                     step="10"
-                    value={chordDuration}
+                    value={2300 - chordDuration}
                     onChange={handleDurationChange}
                     className="w-[3rem] sm:w-[5rem] h-1.5 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
                     style={{ minWidth: 0 }}
