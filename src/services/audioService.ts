@@ -1,9 +1,6 @@
 import * as Tone from 'tone'
 import { Inversion, Triad, VoiceLeadingState } from '../common/types'
-import {
-  buildVoiceLeadingGraph,
-  findOptimalVoiceLeading,
-} from '../common/utils/graphUtils'
+import { generateOptimalVoiceLeadingSequence } from '../common/utils/graphUtils'
 import { generateTriads } from '../common/utils/chordUtils'
 import { CHORD_CHARTS } from '../features/charts/charts'
 import {
@@ -154,7 +151,6 @@ export class AudioService {
     try {
       await Tone.start()
 
-      // Initialize synth first for immediate playback
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'triangle' },
         envelope: {
@@ -165,15 +161,12 @@ export class AudioService {
         },
       }).toDestination()
 
-      // Set initial volume for synth
       if (this.instruments.synth) {
         this.instruments.synth.volume.value = Tone.gainToDb(this.volume / 100)
       }
 
-      // Mark as initialized once synth is ready
       this.isInitialized = true
 
-      // Load sampled instruments in the background
       this.loadSampledInstruments()
     } catch (err) {
       console.error('Failed to initialize audio service:', err)
@@ -183,7 +176,6 @@ export class AudioService {
 
   private async loadSampledInstruments() {
     try {
-      // Initialize piano with Salamander samples
       this.instruments.piano = new Tone.Sampler({
         urls: {
           A0: 'A0.mp3',
@@ -228,7 +220,6 @@ export class AudioService {
         },
       }).toDestination()
 
-      // Initialize guitar with nylon guitar samples
       this.instruments.guitar = new Tone.Sampler({
         urls: {
           E2: 'E2.mp3',
@@ -308,7 +299,6 @@ export class AudioService {
     onNotesChange?: (notes: number[]) => void
   ) {
     if (this._shouldStop || this.currentPosition >= sequence.length) {
-      // If we're looping and not manually stopped, start from beginning
       if (
         this._isLooping &&
         !this._shouldStop &&
@@ -320,7 +310,6 @@ export class AudioService {
         return
       }
 
-      // Otherwise stop playback and clear state
       this._shouldStop = true
       const instrument = this.getCurrentInstrument()
       if (instrument) {
@@ -334,7 +323,6 @@ export class AudioService {
 
     const triad = sequence[this.currentPosition]
 
-    // Update visualization before playing
     this.savedPosition = this.currentPosition
     this.currentMidiNotes = triad.midiNotes
     onNotesChange?.(this.currentMidiNotes)
@@ -342,18 +330,15 @@ export class AudioService {
     this.playTriad(triad.midiNotes, this.chordDuration, onNotesChange)
 
     this.playbackTimeout = setTimeout(() => {
-      // Only advance position and play next chord if not stopped
       if (!this._shouldStop && this.currentPosition < sequence.length - 1) {
         this.currentPosition++
         this.savedPosition = this.currentPosition
         this.playNextTriad(sequence, onNotesChange)
       } else if (!this._shouldStop && this._isLooping) {
-        // We've reached the end but we're looping
         this.currentPosition = 0
         this.savedPosition = 0
         this.playNextTriad(sequence, onNotesChange)
       } else if (!this._shouldStop) {
-        // We've reached the end of the sequence
         this._shouldStop = true
         const instrument = this.getCurrentInstrument()
         if (instrument) {
@@ -433,10 +418,8 @@ export class AudioService {
       throw new Error('No instrument loaded')
     }
 
-    // Cancel any previously playing notes
     this.cancelScheduledEvents()
 
-    // Update current notes for visualization
     this.currentMidiNotes = midiNotes
     onNotesChange?.(this.currentMidiNotes)
 
@@ -475,7 +458,6 @@ export class AudioService {
     if (this.arpeggioType === 'descending') {
       notesToPlay.reverse()
     } else if (this.arpeggioType === 'alternating') {
-      // Alternate between ascending and descending based on current position
       const currentPosition = this.getCurrentPosition()
       if (currentPosition % 2 === 1) {
         notesToPlay.reverse()
@@ -520,7 +502,6 @@ export class AudioService {
     const note = this.midiToNote(midiNote)
     instrument.triggerAttack(note)
 
-    // Update current notes for visualization
     this.currentMidiNotes = [midiNote]
   }
 
@@ -533,7 +514,6 @@ export class AudioService {
     const note = this.midiToNote(midiNote)
     instrument.triggerRelease(note)
 
-    // Remove the note from current notes
     this.currentMidiNotes = this.currentMidiNotes.filter(n => n !== midiNote)
   }
 
@@ -549,59 +529,16 @@ export class AudioService {
   generateOptimalSequence(
     voiceLeadingState: VoiceLeadingState = DEFAULT_VOICE_LEADING_STATE
   ): Triad[] {
-    const chords = this.currentChordNames
     const midiRange: [number, number] = this.isMobile
       ? SEQUENCE_RANGES.MOBILE
       : SEQUENCE_RANGES.DESKTOP
-    const triads = this.currentTriads
 
-    const customVoiceLeadingCost = (
-      currentNotes: number[],
-      nextNotes: number[]
-    ): number => {
-      let totalCost = 0
-      let activeVoices = 0
-
-      const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.001)
-
-      if (voiceLeadingState.bass) activeVoices++
-      if (voiceLeadingState.middle) activeVoices++
-      if (voiceLeadingState.high) activeVoices++
-
-      totalCost +=
-        Math.abs(currentNotes[0] - nextNotes[0]) *
-        getWeight(voiceLeadingState.bass)
-      totalCost +=
-        Math.abs(currentNotes[1] - nextNotes[1]) *
-        getWeight(voiceLeadingState.middle)
-      totalCost +=
-        Math.abs(currentNotes[2] - nextNotes[2]) *
-        getWeight(voiceLeadingState.high)
-
-      return activeVoices > 0 ? totalCost / activeVoices : totalCost
-    }
-
-    const graph = buildVoiceLeadingGraph(
-      chords,
+    return generateOptimalVoiceLeadingSequence(
+      this.currentChordNames,
       midiRange,
-      triads,
-      customVoiceLeadingCost
+      this.currentTriads,
+      voiceLeadingState
     )
-
-    // Use phantom nodes as start nodes and actual end nodes
-    const phantomNodes = graph.nodes.filter(node => node.position === -1)
-    const endNodes = graph.nodes.filter(
-      node => node.position === chords.length - 1
-    )
-
-    const path = findOptimalVoiceLeading(graph, phantomNodes, endNodes)
-
-    if (!path.length) {
-      console.error('No valid path found')
-      return []
-    }
-
-    return path
   }
 
   setTriadType(type: TriadType): void {

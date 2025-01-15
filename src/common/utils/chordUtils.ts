@@ -91,7 +91,6 @@ function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b, 0)
 }
 
-// Helper function to generate all permutations of three notes
 function generatePermutations(notes: string[]): string[] {
   const result: string[] = []
   const n = notes.length
@@ -119,7 +118,6 @@ export function findAllTriadsInRange(
   const validMidis: number[][] = []
   const octaves = [-2, -1, 0, 1, 2]
 
-  // Generate all possible combinations of octaves
   for (const o1 of octaves) {
     for (const o2 of octaves) {
       for (const o3 of octaves) {
@@ -129,7 +127,6 @@ export function findAllTriadsInRange(
           baseMidis[2] + o3 * 12,
         ]
 
-        // Check if all notes are within the desired range
         const inRange = midiNotes.every(
           midi => midiRange[0] <= midi && midi <= midiRange[1]
         )
@@ -144,7 +141,6 @@ export function findAllTriadsInRange(
           (midi, i) => i === 0 || Math.abs(midi - midiNotes[i - 1]) <= 12
         )
 
-        // Only add valid combinations
         if (inRange && isAscending && withinOctave) {
           validMidis.push(midiNotes)
         }

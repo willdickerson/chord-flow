@@ -239,3 +239,48 @@ export function findOptimalVoiceLeading(
 
   return path
 }
+
+export function calculateVoiceLeadingCostWithWeights(
+  currentNotes: number[],
+  nextNotes: number[],
+  voiceWeights: { bass: boolean; middle: boolean; high: boolean }
+): number {
+  let totalCost = 0
+  let activeVoices = 0
+
+  const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.001)
+
+  if (voiceWeights.bass) activeVoices++
+  if (voiceWeights.middle) activeVoices++
+  if (voiceWeights.high) activeVoices++
+
+  totalCost +=
+    Math.abs(currentNotes[0] - nextNotes[0]) * getWeight(voiceWeights.bass)
+  totalCost +=
+    Math.abs(currentNotes[1] - nextNotes[1]) * getWeight(voiceWeights.middle)
+  totalCost +=
+    Math.abs(currentNotes[2] - nextNotes[2]) * getWeight(voiceWeights.high)
+
+  return activeVoices > 0 ? totalCost / activeVoices : totalCost
+}
+
+export function generateOptimalVoiceLeadingSequence(
+  chords: ChordName[],
+  midiRange: [number, number],
+  triads: { [key: string]: Inversion[] },
+  voiceWeights: { bass: boolean; middle: boolean; high: boolean }
+): Triad[] {
+  const costFunction = (currentNotes: number[], nextNotes: number[]) =>
+    calculateVoiceLeadingCostWithWeights(currentNotes, nextNotes, voiceWeights)
+
+  const graph = buildVoiceLeadingGraph(chords, midiRange, triads, costFunction)
+
+  // Use phantom nodes as start nodes and actual end nodes
+  const phantomNodes = graph.nodes.filter(node => node.position === -1)
+  const endNodes = graph.nodes.filter(
+    node => node.position === chords.length - 1
+  )
+
+  const path = findOptimalVoiceLeading(graph, phantomNodes, endNodes)
+  return path.length ? path : []
+}

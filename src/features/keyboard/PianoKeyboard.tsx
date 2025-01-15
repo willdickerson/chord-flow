@@ -57,13 +57,12 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     : KEYBOARD_CONFIG.midiEnd
   const totalOctaves = Math.floor((effectiveMidiEnd - effectiveMidiStart) / 12)
 
-  // Convert MIDI note to octave and note within octave
   const isNoteActive = (midiNote: number) =>
     activeNotes.includes(midiNote) || playedNotes.has(midiNote)
 
   const playNote = useCallback(
     async (midiNote: number) => {
-      if (playedNotes.has(midiNote)) return // Don't play if already playing
+      if (playedNotes.has(midiNote)) return
 
       try {
         await audioService.initialize()

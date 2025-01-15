@@ -96,15 +96,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const handleChordClick = async (chord: string, index: number) => {
     if (isEditing) return
 
-    // Update position immediately
     onPositionSelect(index)
 
-    // If playing, stop first
     if (isPlaying) {
       onStop()
     }
 
-    // Play the clicked chord
     await playChord(chord, index)
   }
 
@@ -118,7 +115,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const handleEditStart = () => {
     setPreviousChart({ ...currentChart, chords: [...chords] })
     setIsEditing(true)
-    onNotesChange([]) // Clear keyboard lights
+    onNotesChange([])
   }
 
   const handleEditCancel = () => {
@@ -137,7 +134,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleNewChart = () => {
-    setPreviousChart({ ...currentChart, chords: [...chords] }) // Save current state before creating new
+    setPreviousChart({ ...currentChart, chords: [...chords] })
     const newChart = {
       title: 'Untitled Chart',
       composer: 'Unknown',
@@ -185,7 +182,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Handle chord suggestions dropdown
       if (
         suggestionRef.current &&
         !suggestionRef.current.contains(event.target as Node) &&
@@ -194,7 +190,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         setShowChordSuggestions(false)
       }
 
-      // Handle switch chart dropdown
       if (
         searchRef.current &&
         !searchRef.current.contains(event.target as Node) &&
@@ -347,7 +342,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging || dragSourceIndexRef.current === null) return
 
-    // Update overlay position
     if (dragOverlayRef.current) {
       dragOverlayRef.current.style.left = `${e.clientX}px`
       dragOverlayRef.current.style.top = `${e.clientY}px`
@@ -358,7 +352,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     )
     const sourceIndex = dragSourceIndexRef.current
 
-    // Find the chord element we're hovering over
     const targetElement = chordElements.find(element => {
       const rect = element.getBoundingClientRect()
       return (
@@ -397,7 +390,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       handleChartChange(newChords)
     }
 
-    // Remove overlay
     if (dragOverlayRef.current) {
       document.body.removeChild(dragOverlayRef.current)
       dragOverlayRef.current = null

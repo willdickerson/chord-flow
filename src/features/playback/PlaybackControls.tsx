@@ -98,7 +98,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     } else {
       if (notes.type === 'play' && notes.notes) {
         try {
-          // Ensure audio context is started (required by browsers)
           await Tone.start()
           await audioService.initialize()
 
@@ -108,17 +107,14 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               ? notes.useArpeggiator
               : audioService.isArpeggiating
 
-          // Always update visual state
           onNotesChange(notes.notes)
 
-          // Temporarily set arpeggiator state if needed
           const originalArpState = audioService.isArpeggiating
           if (useArp !== originalArpState) {
             audioService.setArpeggiating(useArp)
           }
 
           try {
-            // Play the notes
             await audioService.playTriad(
               notes.notes,
               duration,
@@ -129,7 +125,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               }
             )
           } finally {
-            // Restore original arpeggiator state
             if (useArp !== originalArpState) {
               audioService.setArpeggiating(originalArpState)
             }
@@ -182,7 +177,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
       await Tone.start()
       await audioService.initialize()
 
-      // Get the specific triad from the sequence
       if (!sequence || !sequence[index]) {
         console.warn(
           'PlaybackControls: No sequence or triad found at index',
@@ -193,7 +187,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
       const triad = sequence[index]
 
-      // Immediately update the notes
       onNotesChange(triad.midiNotes)
 
       await audioService.playTriad(
@@ -354,7 +347,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             <VoiceLeadingControls
               isEnabled={!isPlaying}
               onVoiceLeadingChange={voices => {
-                // Stop playback and reset state when voice leading changes
                 if (isPlaying) {
                   handleStop()
                 }
@@ -363,12 +355,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             />
             <TriadControls
               onTriadTypeChange={type => {
-                // Stop playback and reset state when triad type changes
                 if (isPlaying) {
                   handleStop()
                 }
                 audioService.setTriadType(type)
-                // Regenerate sequence with new triad type
                 handleVoiceLeadingChange({
                   bass: true,
                   middle: true,

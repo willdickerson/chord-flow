@@ -56,11 +56,9 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     if (isGenerating) return
 
     try {
-      // Initialize audio before starting playback
       await audioService.initialize()
 
       if (!isPlaying) {
-        // Check if we have a sequence
         if (!sequence || sequence.length === 0) {
           const newSequence = await generateSequence()
           if (!newSequence) {
@@ -71,10 +69,8 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
           setSequence(newSequence)
         }
 
-        // Set playing state before starting playback
         setIsPlaying(true)
 
-        // Use the current sequence value
         const currentSequence = sequence || (await generateSequence())
         if (!currentSequence) return
 
@@ -122,17 +118,14 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     (position: number) => {
       if (isGenerating || !sequence) return
 
-      // If playing, stop playback first
       if (isPlaying) {
         audioService.stopPlayback()
         setIsPlaying(false)
       }
 
-      // Update position
       setCurrentPosition(position)
       audioService.setPosition(position)
 
-      // Show the notes for this chord
       const selectedChord = sequence[position]
       if (selectedChord) {
         displayedNotesRef.current = selectedChord.midiNotes
@@ -145,13 +138,11 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   const handleVoiceLeadingChange = useCallback(
     (voices: VoiceLeadingState) => {
       setVoiceLeadingState(voices)
-      // Stop any current playback and reset position
       if (isPlaying) {
         audioService.stopPlayback()
         setIsPlaying(false)
       }
       setCurrentPosition(0)
-      // Generate new sequence with updated voice leading settings
       generateSequence()
     },
     [isPlaying, generateSequence]
