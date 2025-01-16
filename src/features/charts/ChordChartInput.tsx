@@ -598,8 +598,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
       {isEditing && (
         <div className="flex justify-center mt-4">
-          <div className="w-[656px] flex gap-2">
-            <div className="relative w-64">
+          <div className="w-[656px] flex gap-2 sm:px-0 px-4">
+            <div className="relative w-64 sm:w-64 w-40">
               <input
                 ref={inputRef}
                 type="text"
@@ -618,7 +618,27 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 }}
                 onKeyDown={handleChordKeyDown}
                 placeholder="Type a chord (e.g., Am7)"
-                className="w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
+                className="hidden sm:block w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
+              />
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={e => {
+                  setInputValue(e.target.value)
+                  setSelectedChordIndex(0)
+                  if (e.target.value && !showChordSuggestions) {
+                    setShowChordSuggestions(true)
+                  }
+                }}
+                onFocus={() => {
+                  if (inputValue) {
+                    setShowChordSuggestions(true)
+                  }
+                }}
+                onKeyDown={handleChordKeyDown}
+                placeholder="Type a chord"
+                className="block sm:hidden w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
               />
               {showChordSuggestions && (
                 <div
@@ -651,19 +671,21 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 </div>
               )}
             </div>
-            <button
-              onClick={handleEditDone}
-              disabled={chords.length < 1}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}`}
-            >
-              Done
-            </button>
-            <button
-              onClick={handleEditCancel}
-              className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
-            >
-              Cancel
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleEditDone}
+                disabled={chords.length < 1}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}`}
+              >
+                Done
+              </button>
+              <button
+                onClick={handleEditCancel}
+                className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
