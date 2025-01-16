@@ -47,8 +47,6 @@ export class AudioService {
   private triadType: TriadType = AUDIO_DEFAULTS.TRIAD_TYPE
   private arpeggioType: ArpeggioType = AUDIO_DEFAULTS.ARPEGGIO_TYPE
   private isMobile = window.innerWidth <= 768
-  private isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-  private audioContext: AudioContext | null = null
 
   constructor() {
     window.addEventListener('resize', () => {
@@ -145,40 +143,13 @@ export class AudioService {
     this.chordDuration = duration
   }
 
-  private async unlockAudioContext() {
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext ||
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).webkitAudioContext)()
-    }
-
-    if (this.audioContext.state === 'suspended') {
-      await this.audioContext.resume()
-    }
-
-    const buffer = this.audioContext.createBuffer(1, 1, 22050)
-    const source = this.audioContext.createBufferSource()
-    source.buffer = buffer
-    source.connect(this.audioContext.destination)
-    source.start(0)
-  }
-
   async initialize() {
     if (this.isInitialized) {
       return
     }
 
     try {
-      if (this.isIOS) {
-        await this.unlockAudioContext()
-      }
-
       await Tone.start()
-
-      if (this.isIOS && this.audioContext) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Tone.setContext(this.audioContext as any)
-      }
 
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'triangle' },
@@ -440,16 +411,7 @@ export class AudioService {
     duration: number,
     onNotesChange?: (notes: number[]) => void
   ): Promise<void> {
-    if (!this.isInitialized) {
-      console.warn('Audio service not initialized')
-      return
-    }
-
     if (midiNotes.length === 0) return
-
-    if (this.isIOS) {
-      await this.unlockAudioContext()
-    }
 
     const instrument = this.getCurrentInstrument()
     if (!instrument) {
@@ -531,16 +493,7 @@ export class AudioService {
     }
   }
 
-  async playNote(midiNote: number): Promise<void> {
-    if (!this.isInitialized) {
-      console.warn('Audio service not initialized')
-      return
-    }
-
-    if (this.isIOS) {
-      await this.unlockAudioContext()
-    }
-
+  playNote(midiNote: number): void {
     const instrument = this.getCurrentInstrument()
     if (!instrument) {
       throw new Error('No instrument loaded')
