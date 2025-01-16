@@ -2,7 +2,7 @@ import { VoiceLeadingState } from '../common/types'
 
 export const SEQUENCE_RANGES = {
   DESKTOP: [40, 76] as [number, number],
-  MOBILE: [60, 84] as [number, number],
+  MOBILE: [48, 72] as [number, number],
 } as const
 
 export const AUDIO_DEFAULTS = {

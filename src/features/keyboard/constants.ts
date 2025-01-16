@@ -9,8 +9,8 @@ export const KEYBOARD_CONFIG: KeyboardConfig = {
 }
 
 export const MOBILE_KEYBOARD_CONFIG: KeyboardConfig = {
-  midiStart: 60, // C4
-  midiEnd: 84, // C7
+  midiStart: 48, // C3
+  midiEnd: 72, // C5
   keyWidth: 20,
   whiteKeyHeight: 120,
   blackKeyHeight: 75,
