@@ -60,6 +60,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const chartListRef = useRef<HTMLDivElement>(null)
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
+  const shareButtonRef = useRef<HTMLButtonElement>(null)
 
   const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
   const giantStepsIndex = charts.findIndex(
@@ -553,12 +554,11 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   type="text"
                   readOnly
                   value={shareUrl}
-                  className="flex-1 p-2 bg-white/50 rounded border border-[#846C5B]/20 text-sm overflow-x-auto text-[#2C1810]"
+                  className="flex-1 p-2 bg-white/30 bg-[#F5E6D3]/50 rounded border border-[#846C5B]/20 text-sm overflow-x-auto text-[#2C1810] placeholder-[#846C5B]/60"
                 />
                 <button
                   onClick={handleCopy}
-                  className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
-                  aria-label="Copy URL"
+                  className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 transition-colors"
                 >
                   <Copy size={16} />
                 </button>
