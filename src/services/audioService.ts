@@ -245,7 +245,7 @@ export class AudioService {
         onload: () => {
           if (this.instruments.guitar) {
             this.instruments.guitar.volume.value = Tone.gainToDb(
-              (this.volume - 40) / 100
+              (this.volume - 60) / 100
             )
           }
         },
