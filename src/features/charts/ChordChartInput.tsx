@@ -513,8 +513,17 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       <div className="flex justify-center">
         <div className="w-[656px] relative">
           <button
+            ref={shareButtonRef}
             onClick={handleShare}
-            className="absolute right-0 top-1/2 -translate-y-1/2 min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
+            className={`
+              absolute right-0 top-1/2 -translate-y-1/2 min-w-8 h-8
+              flex items-center justify-center rounded-md
+              ${showShareModal ? 'bg-[#E3B448]' : 'bg-[#F5E6D3]'}
+              text-[#846C5B] 
+              hover:bg-[#E3B448] focus:bg-[#E3B448] 
+              focus:outline-none
+              transition-colors
+            `}
             aria-label="Share"
           >
             <Share size={16} />
