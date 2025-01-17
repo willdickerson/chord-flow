@@ -567,7 +567,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 />
                 <button
                   onClick={handleCopy}
-                  className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 transition-colors"
+                  className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
                 >
                   <Copy size={16} />
                 </button>
