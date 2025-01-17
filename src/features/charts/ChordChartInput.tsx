@@ -510,8 +510,15 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   return (
     <div className="space-y-4 max-w-full">
       <div className="flex justify-center">
-        <div className="w-[656px] flex items-center">
-          <div className="flex-1 relative text-center">
+        <div className="w-[656px] relative">
+          <button
+            onClick={handleShare}
+            className="absolute right-0 top-1/2 -translate-y-1/2 min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
+            aria-label="Share"
+          >
+            <Share size={16} />
+          </button>
+          <div className="text-center px-10">
             <h2 className="text-lg font-medium text-[#2C1810]">
               {currentChart.title === 'Untitled Chart'
                 ? 'Chord Chart'
@@ -521,13 +528,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               <p className="text-sm text-[#846C5B]">{currentChart.composer}</p>
             )}
           </div>
-          <button
-            onClick={handleShare}
-            className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
-            aria-label="Share"
-          >
-            <Share size={16} />
-          </button>
         </div>
       </div>
 
