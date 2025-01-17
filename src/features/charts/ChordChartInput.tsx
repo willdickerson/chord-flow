@@ -537,7 +537,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
           <div className="relative">
             <div className="relative bg-[#F5E6D3] rounded-lg p-4 w-full max-w-md mx-auto">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-[#2C1810]">Share Chart</h3>
+                <h3 className="text-lg font-medium text-[#2C1810]">
+                  Share Chart
+                </h3>
                 <button
                   onClick={() => setShowShareModal(false)}
                   className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
@@ -715,8 +717,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
       {isEditing && (
         <div className="flex justify-center mt-4">
-          <div className="w-[656px] flex gap-2 sm:px-0 px-4">
-            <div className="relative w-64 sm:w-64 w-40">
+          <div className="w-[656px] flex flex-col sm:flex-row gap-2 sm:px-0 px-4">
+            <div className="relative flex-1 sm:w-64 sm:flex-none">
               <input
                 ref={inputRef}
                 type="text"
@@ -735,27 +737,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 }}
                 onKeyDown={handleChordKeyDown}
                 placeholder="Type a chord (e.g., Am7)"
-                className="hidden sm:block w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
-              />
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={e => {
-                  setInputValue(e.target.value)
-                  setSelectedChordIndex(0)
-                  if (e.target.value && !showChordSuggestions) {
-                    setShowChordSuggestions(true)
-                  }
-                }}
-                onFocus={() => {
-                  if (inputValue) {
-                    setShowChordSuggestions(true)
-                  }
-                }}
-                onKeyDown={handleChordKeyDown}
-                placeholder="Type a chord"
-                className="block sm:hidden w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
+                className="w-full px-3 py-1.5 rounded-md text-sm border border-[#846C5B]/20 focus:outline-none focus:border-[#A6B39C] bg-[#F5E6D3] text-[#2C1810] placeholder-[#846C5B]/60"
               />
               {showChordSuggestions && (
                 <div
@@ -788,17 +770,17 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 </div>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:flex-none">
               <button
                 onClick={handleEditDone}
                 disabled={chords.length < 1}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}`}
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}`}
               >
                 Done
               </button>
               <button
                 onClick={handleEditCancel}
-                className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
+                className="flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 hover:bg-[#A6B39C]/20"
               >
                 Cancel
               </button>
