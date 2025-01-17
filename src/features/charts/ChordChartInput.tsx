@@ -143,17 +143,17 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         chords: newChords,
       })
     }
-  }, []) // Only run on mount
+  }, [initialChordNames, initialTitle, initialComposer])
 
   useEffect(() => {
-    if (initialChordNames) {
+    if (initialChordNames && (!initialTitle || !initialComposer)) {
       const newChords = initialChordNames.map(chord => ({
         id: Math.random().toString(),
         value: chord,
       }))
       setChords(newChords)
     }
-  }, [initialChordNames])
+  }, [initialChordNames, initialTitle, initialComposer])
 
   const handleChordClick = async (chord: string, index: number) => {
     if (isEditing) return
