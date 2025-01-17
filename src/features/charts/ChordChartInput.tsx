@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Triad } from '../../common/types'
 import { CHORD_CHARTS, convertChartToInputFormat } from './charts'
 import { createShareableUrl } from '../../common/utils/urlUtils'
-import { Share2 } from 'lucide-react'
+import { Share, Copy, X } from 'lucide-react'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -58,6 +58,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [selectedChordIndex, setSelectedChordIndex] = useState(0)
   const chordListRef = useRef<HTMLDivElement>(null)
   const chartListRef = useRef<HTMLDivElement>(null)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
 
   const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
   const giantStepsIndex = charts.findIndex(
@@ -480,21 +482,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       chords: chords.map(c => c.value),
     }
     const shareableUrl = createShareableUrl(chartData)
-    navigator.clipboard
-      .writeText(shareableUrl)
-      .then(() => {
-        const shareButton = document.querySelector('.share-button')
-        if (shareButton) {
-          const originalText = shareButton.textContent
-          shareButton.textContent = 'Copied!'
-          setTimeout(() => {
-            shareButton.textContent = originalText
-          }, 2000)
-        }
-      })
-      .catch(err => {
-        console.error('Failed to copy URL:', err)
-      })
+    setShareUrl(shareableUrl)
+    setShowShareModal(true)
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareUrl)
   }
 
   const handleChartSelect = (chart: typeof currentChart, index: number) => {
@@ -530,13 +523,44 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
           </div>
           <button
             onClick={handleShare}
-            className="share-button flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#2C1810] text-white hover:bg-[#846C5B] transition-colors"
+            className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 transition-colors"
+            aria-label="Share"
           >
-            <Share2 size={16} />
-            Share
+            <Share size={16} />
           </button>
         </div>
       </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed -top-4 -right-4 -bottom-4 -left-4 bg-black/50 flex items-center justify-center z-[9999]">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-4 max-w-md w-full mx-4 shadow-xl">
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+              aria-label="Close"
+            >
+              <X size={16} />
+            </button>
+            <h3 className="text-lg font-medium mb-4">Share Chart</h3>
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                readOnly
+                value={shareUrl}
+                className="flex-1 p-2 bg-gray-50 rounded border border-gray-200 text-sm"
+              />
+              <button
+                onClick={handleCopy}
+                className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 transition-colors"
+                aria-label="Copy URL"
+              >
+                <Copy size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-center">
         <div className="grid grid-cols-4 gap-2 w-[656px] p-4 border border-[#846C5B]/20 rounded-lg bg-[#F5E6D3]/50">
