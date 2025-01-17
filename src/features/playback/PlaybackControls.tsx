@@ -56,8 +56,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const effectiveInitialChordNames =
     propInitialChordNames || defaultInitialChordNames
 
-  const [volume, setVolume] = useState(15)
-  const [previousVolume, setPreviousVolume] = useState(15)
+  const [volume, setVolume] = useState(100)
+  const [previousVolume, setPreviousVolume] = useState(100)
   const [isMuted, setIsMuted] = useState(false)
   const [chordDuration, setChordDuration] = useState(500)
   const [isLooping, setIsLooping] = useState(false)
@@ -65,8 +65,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
-    // Set initial volume and chord duration
-    audioService.setVolume(15)
+    audioService.setVolume(100)
     audioService.setChordDuration(500)
     audioService.setArpeggiating(true)
   }, [])

@@ -239,14 +239,13 @@ export class AudioService {
           'F#4': 'Fs4.mp3',
           'G#4': 'Gs4.mp3',
         },
-        release: 1.2,
-        volume: -3,
+        release: 1,
         baseUrl:
           'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
         onload: () => {
           if (this.instruments.guitar) {
             this.instruments.guitar.volume.value = Tone.gainToDb(
-              this.volume / 100
+              (this.volume - 40) / 100
             )
           }
         },
@@ -288,7 +287,6 @@ export class AudioService {
     this.savedPosition = startPosition
     this.onComplete = onComplete
 
-    // Start transport for all playback modes
     Tone.Transport.start()
 
     this.playNextTriad(sequence, onNotesChange)
