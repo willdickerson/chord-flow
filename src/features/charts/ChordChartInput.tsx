@@ -533,26 +533,26 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
       {/* Share Modal */}
       {showShareModal && (
-        <div className="fixed -top-4 -right-4 -bottom-4 -left-4 bg-black/50 flex items-center justify-center z-[9999]">
-          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-4 max-w-md w-full mx-4 shadow-xl">
+        <div className="fixed -top-4 -right-4 -bottom-4 -left-4 bg-black/50 flex items-center justify-center z-[9999] p-4">
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-4 w-full max-w-md mx-auto shadow-xl">
             <button
               onClick={() => setShowShareModal(false)}
-              className="absolute right-4 top-4 text-gray-500 hover:text-gray-700"
+              className="absolute right-3 top-3 text-gray-500 hover:text-gray-700"
               aria-label="Close"
             >
               <X size={16} />
             </button>
-            <h3 className="text-lg font-medium mb-4">Share Chart</h3>
+            <h3 className="text-lg font-medium mb-3 pr-8">Share Chart</h3>
             <div className="flex gap-2 items-center">
               <input
                 type="text"
                 readOnly
                 value={shareUrl}
-                className="flex-1 p-2 bg-gray-50 rounded border border-gray-200 text-sm"
+                className="flex-1 p-2 bg-gray-50 rounded border border-gray-200 text-sm overflow-x-auto"
               />
               <button
                 onClick={handleCopy}
-                className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 transition-colors"
+                className="shrink-0 min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 transition-colors"
                 aria-label="Copy URL"
               >
                 <Copy size={16} />
