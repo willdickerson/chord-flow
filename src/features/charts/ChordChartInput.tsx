@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { Triad } from '../../common/types'
 import { CHORD_CHARTS, convertChartToInputFormat } from './charts'
+import { createShareableUrl } from '../../common/utils/urlUtils'
+import { Share2 } from 'lucide-react'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -16,18 +18,27 @@ export interface ChordChartInputProps {
   onStop: () => void
   playChord: (chord: string, index: number) => void
   onEditingChange?: (isEditing: boolean) => void
+  title?: string
+  composer?: string
+  onChartChange?: (
+    chartData: { title: string; composer: string; chords: string[] } | null
+  ) => void
 }
 
 export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   sequence,
   currentPosition,
   onPositionSelect,
+  initialChordNames,
   isPlaying,
   onNotesChange,
   onChordSequenceChange,
   onStop,
   playChord,
   onEditingChange,
+  title: initialTitle,
+  composer: initialComposer,
+  onChartChange,
 }) => {
   const [inputValue, setInputValue] = useState('')
   const [chartSearchValue, setChartSearchValue] = useState('')
@@ -54,10 +65,34 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   )
 
   const [currentChart, setCurrentChart] = useState(
-    giantStepsIndex >= 0 ? charts[giantStepsIndex] : charts[0]
+    initialTitle && initialComposer
+      ? {
+          title: initialTitle,
+          composer: initialComposer,
+          chords:
+            initialChordNames?.map(chord => ({
+              id: Math.random().toString(),
+              value: chord,
+            })) || [],
+        }
+      : giantStepsIndex >= 0
+        ? charts[giantStepsIndex]
+        : charts[0]
   )
   const [previousChart, setPreviousChart] = useState(
-    giantStepsIndex >= 0 ? charts[giantStepsIndex] : charts[0]
+    initialTitle && initialComposer
+      ? {
+          title: initialTitle,
+          composer: initialComposer,
+          chords:
+            initialChordNames?.map(chord => ({
+              id: Math.random().toString(),
+              value: chord,
+            })) || [],
+        }
+      : giantStepsIndex >= 0
+        ? charts[giantStepsIndex]
+        : charts[0]
   )
   const [chords, setChords] = useState(
     sequence
@@ -92,6 +127,31 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       onEditingChange(false)
     }
   }, [isEditing, onEditingChange])
+
+  useEffect(() => {
+    if (initialChordNames && initialTitle && initialComposer) {
+      const newChords = initialChordNames.map(chord => ({
+        id: Math.random().toString(),
+        value: chord,
+      }))
+      setChords(newChords)
+      setCurrentChart({
+        title: initialTitle,
+        composer: initialComposer,
+        chords: newChords,
+      })
+    }
+  }, []) // Only run on mount
+
+  useEffect(() => {
+    if (initialChordNames) {
+      const newChords = initialChordNames.map(chord => ({
+        id: Math.random().toString(),
+        value: chord,
+      }))
+      setChords(newChords)
+    }
+  }, [initialChordNames])
 
   const handleChordClick = async (chord: string, index: number) => {
     if (isEditing) return
@@ -413,10 +473,49 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     }
   })
 
+  const handleShare = () => {
+    const chartData = {
+      title: currentChart.title,
+      composer: currentChart.composer,
+      chords: chords.map(c => c.value),
+    }
+    const shareableUrl = createShareableUrl(chartData)
+    navigator.clipboard
+      .writeText(shareableUrl)
+      .then(() => {
+        const shareButton = document.querySelector('.share-button')
+        if (shareButton) {
+          const originalText = shareButton.textContent
+          shareButton.textContent = 'Copied!'
+          setTimeout(() => {
+            shareButton.textContent = originalText
+          }, 2000)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to copy URL:', err)
+      })
+  }
+
+  const handleChartSelect = (chart: typeof currentChart, index: number) => {
+    setCurrentChart(chart)
+    setPreviousChart(chart)
+    setChords(chart.chords)
+    onChordSequenceChange(chart.chords.map(c => c.value))
+    setShowChartSearch(false)
+    setSelectedChartIndex(index)
+    setChartSearchValue('')
+    if (onChartChange) {
+      onChartChange({
+        title: chart.title,
+        composer: chart.composer,
+        chords: chart.chords.map(c => c.value),
+      })
+    }
+  }
+
   return (
-    <div
-      className={`space-y-4 max-w-full ${isDragging ? 'cursor-grabbing' : ''}`}
-    >
+    <div className="space-y-4 max-w-full">
       <div className="flex justify-center">
         <div className="w-[656px] flex items-center">
           <div className="flex-1 relative text-center">
@@ -429,6 +528,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               <p className="text-sm text-[#846C5B]">{currentChart.composer}</p>
             )}
           </div>
+          <button
+            onClick={handleShare}
+            className="share-button flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#2C1810] text-white hover:bg-[#846C5B] transition-colors"
+          >
+            <Share2 size={16} />
+            Share
+          </button>
         </div>
       </div>
 
@@ -556,24 +662,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                         .map((chart, index) => (
                           <div
                             key={chart.title}
-                            onClick={() => {
-                              setPreviousChart({
-                                ...currentChart,
-                                chords: [...chords],
-                              })
-                              setCurrentChart(chart)
-                              setChords(chart.chords)
-                              if (currentPosition > 0) {
-                                onPositionSelect(0)
-                              }
-                              onNotesChange([])
-                              onChordSequenceChange(
-                                chart.chords.map(chord => chord.value)
-                              )
-                              setShowChartSearch(false)
-                              setSelectedChartIndex(index)
-                              setChartSearchValue('')
-                            }}
+                            onClick={() => handleChartSelect(chart, index)}
                             className={`
                               px-3 py-2 cursor-pointer hover:bg-[#A6B39C]/10
                               ${selectedChartIndex === index ? 'bg-[#A6B39C]/20' : ''}

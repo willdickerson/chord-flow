@@ -25,10 +25,19 @@ interface PlaybackControlsProps {
     middle: boolean
     high: boolean
   }) => void
+  initialChordNames?: string[]
+  title?: string
+  composer?: string
+  onChartChange?: (
+    chartData: { title: string; composer: string; chords: string[] } | null
+  ) => void
 }
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   onNotesChange,
+  initialChordNames: propInitialChordNames,
+  title,
+  composer,
 }) => {
   const {
     sequence,
@@ -43,7 +52,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     updateChordSequence,
   } = usePlaybackState(onNotesChange)
 
-  const initialChordNames = audioService.getInitialChordNames()
+  const defaultInitialChordNames = audioService.getInitialChordNames()
+  const effectiveInitialChordNames =
+    propInitialChordNames || defaultInitialChordNames
 
   const [volume, setVolume] = useState(15)
   const [previousVolume, setPreviousVolume] = useState(15)
@@ -381,7 +392,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             currentPosition={currentPosition}
             onPositionSelect={handlePositionSelect}
             isEnabled={!isGenerating}
-            initialChordNames={initialChordNames}
+            initialChordNames={effectiveInitialChordNames}
             isPlaying={isPlaying}
             onNotesChange={handleNotesChange}
             audioService={audioService}
@@ -389,6 +400,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             onStop={handleStop}
             playChord={playChord}
             onEditingChange={setIsEditing}
+            title={title}
+            composer={composer}
           />
         </div>
       </div>
