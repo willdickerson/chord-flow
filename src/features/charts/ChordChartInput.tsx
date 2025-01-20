@@ -47,6 +47,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [isEditing, setIsEditing] = useState(false)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [draggedChordValue, setDraggedChordValue] = useState<string | null>(null)
   const dragOverlayRef = useRef<HTMLDivElement | null>(null)
   const dragSourceRef = useRef<Element | null>(null)
   const dragSourceIndexRef = useRef<number | null>(null)
@@ -379,6 +380,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     e.preventDefault()
     dragSourceRef.current = e.currentTarget
     dragSourceIndexRef.current = index
+    setDraggedChordValue(chords[index].value)
 
     const overlay = document.createElement('div')
     overlay.className = 'fixed pointer-events-none z-50 text-[#2C1810]'
@@ -403,7 +405,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || dragSourceIndexRef.current === null) return
+    if (!isDragging || dragSourceIndexRef.current === null || !draggedChordValue) return
 
     if (dragOverlayRef.current) {
       dragOverlayRef.current.style.left = `${e.clientX}px`
@@ -431,8 +433,11 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       )
       if (targetIndex !== -1 && targetIndex !== sourceIndex) {
         const newChords = [...chords]
-        const [movedChord] = newChords.splice(sourceIndex, 1)
-        newChords.splice(targetIndex, 0, movedChord)
+        newChords.splice(sourceIndex, 1)
+        newChords.splice(targetIndex, 0, { 
+          id: Math.random().toString(), 
+          value: draggedChordValue 
+        })
         handleChartChange(newChords)
         setDropTarget(targetIndex)
         dragSourceIndexRef.current = targetIndex
@@ -444,12 +449,16 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     if (
       isDragging &&
       dropTarget !== null &&
-      dragSourceIndexRef.current !== null
+      dragSourceIndexRef.current !== null &&
+      draggedChordValue !== null
     ) {
       const sourceIndex = dragSourceIndexRef.current
       const newChords = [...chords]
-      const [movedChord] = newChords.splice(sourceIndex, 1)
-      newChords.splice(dropTarget, 0, movedChord)
+      newChords.splice(sourceIndex, 1)
+      newChords.splice(dropTarget, 0, { 
+        id: Math.random().toString(), 
+        value: draggedChordValue 
+      })
       handleChartChange(newChords)
     }
 
@@ -462,6 +471,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     setDropTarget(null)
     dragSourceRef.current = null
     dragSourceIndexRef.current = null
+    setDraggedChordValue(null)
   }
 
   useEffect(() => {
