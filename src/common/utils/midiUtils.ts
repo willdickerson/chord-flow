@@ -31,7 +31,6 @@ export const downloadMidiFile = (
   const trackEvents = []
   const ticksPerBeat = 96
   const bpm = 120
-  const ticksPerNote = isArpeggiating ? ticksPerBeat / 3 : ticksPerBeat // 3 notes per beat in arpeggio mode
 
   // Set tempo (120 BPM)
   trackEvents.push([
@@ -39,6 +38,27 @@ export const downloadMidiFile = (
     0xFF, 0x51, 0x03, // tempo meta event
     0x07, 0xA1, 0x20, // 500000 microseconds per quarter note (120 BPM)
   ])
+
+  // Set time signature
+  if (isArpeggiating) {
+    trackEvents.push([
+      0, // delta time
+      0xFF, 0x58, 0x04, // time signature meta event
+      0x03, // numerator (3)
+      0x02, // denominator (2^2 = 4, so 3/4 time)
+      0x18, // clocks per metronome click (24 MIDI clocks per quarter note)
+      0x08, // number of 32nd notes per 24 MIDI clocks (8)
+    ])
+  } else {
+    trackEvents.push([
+      0, // delta time
+      0xFF, 0x58, 0x04, // time signature meta event
+      0x04, // numerator (4)
+      0x02, // denominator (2^2 = 4, so 4/4 time)
+      0x18, // clocks per metronome click
+      0x08, // number of 32nd notes per 24 MIDI clocks
+    ])
+  }
 
   // Add title metadata if provided
   if (songName) {
@@ -62,54 +82,71 @@ export const downloadMidiFile = (
     ])
   }
 
-  // For each time point, we'll group all events that happen at that time
+  // For arpeggio mode, flatten all notes into a single sequence
+  const allNotes: number[] = []
   sequence.forEach((triad, chordIndex) => {
-    const notes = triad.midiNotes
-    if (isArpeggiating) {
-      // Sort notes based on arpeggio type
-      const sortedNotes = [...notes].sort((a, b) => a - b)
-      let arpeggioNotes: number[]
-      
-      switch (arpeggioType) {
-        case 'ascending':
-          arpeggioNotes = sortedNotes
-          break
-        case 'descending':
-          arpeggioNotes = sortedNotes.reverse()
-          break
-        case 'alternating':
-          arpeggioNotes = chordIndex % 2 === 0 ? sortedNotes : sortedNotes.reverse()
-          break
-        default:
-          arpeggioNotes = sortedNotes
-      }
+    const sortedNotes = [...triad.midiNotes].sort((a, b) => a - b)
+    let chordNotes: number[]
+    
+    switch (arpeggioType) {
+      case 'ascending':
+        chordNotes = sortedNotes
+        break
+      case 'descending':
+        chordNotes = sortedNotes.reverse()
+        break
+      case 'alternating':
+        chordNotes = chordIndex % 2 === 0 ? sortedNotes : sortedNotes.reverse()
+        break
+      default:
+        chordNotes = sortedNotes
+    }
+    allNotes.push(...chordNotes)
+  })
 
-      // Add note events for each note in the arpeggio
-      arpeggioNotes.forEach((note, noteIndex) => {
-        // Note on event
-        const isFirstNoteOfFirstChord = noteIndex === 0 && chordIndex === 0
-        const isFirstNoteOfChord = noteIndex === 0
-        
-        trackEvents.push([
-          isFirstNoteOfFirstChord ? 0 :
-          isFirstNoteOfChord ? ticksPerNote : // First note starts after last note of previous chord
-          ticksPerNote, // Other notes start after previous note
-          0x90,
-          note,
-          0x50,
-        ])
+  // Add each note as a quarter note in sequence
+  allNotes.forEach((note, index) => {
+    if (index > 0) {
+      // Note-off for previous note (happens at same time as current note-on)
+      trackEvents.push([
+        ticksPerBeat, // One beat since last event
+        0x80,
+        allNotes[index - 1],
+        0x00,
+      ])
 
-        // Note off event
-        trackEvents.push([
-          ticksPerNote, // All notes last for one third of a beat
-          0x80,
-          note,
-          0x00,
-        ])
-      })
-
+      // Note-on for current note
+      trackEvents.push([
+        0, // Immediately after note-off
+        0x90,
+        note,
+        0x50,
+      ])
     } else {
-      // Chord mode - all notes start and end together
+      // First note just needs note-on
+      trackEvents.push([
+        0,
+        0x90,
+        note,
+        0x50,
+      ])
+    }
+  })
+
+  // Final note-off for the last note
+  if (allNotes.length > 0) {
+    trackEvents.push([
+      ticksPerBeat,
+      0x80,
+      allNotes[allNotes.length - 1],
+      0x00,
+    ])
+  }
+
+  // For non-arpeggio mode, handle chords as before
+  if (!isArpeggiating) {
+    sequence.forEach((triad, chordIndex) => {
+      const notes = triad.midiNotes
       if (chordIndex > 0) {
         // End previous chord
         sequence[chordIndex - 1].midiNotes.forEach((note, index) => {
@@ -131,19 +168,19 @@ export const downloadMidiFile = (
           0x50,
         ])
       })
-    }
-  })
-
-  // Add final note-off events for the last chord if not in arpeggio mode
-  if (!isArpeggiating && sequence.length > 0) {
-    sequence[sequence.length - 1].midiNotes.forEach((note, index) => {
-      trackEvents.push([
-        index === 0 ? ticksPerBeat : 0,
-        0x80,
-        note,
-        0x00,
-      ])
     })
+
+    // Add final note-off events for the last chord
+    if (sequence.length > 0) {
+      sequence[sequence.length - 1].midiNotes.forEach((note, index) => {
+        trackEvents.push([
+          index === 0 ? ticksPerBeat : 0,
+          0x80,
+          note,
+          0x00,
+        ])
+      })
+    }
   }
 
   // End of track
