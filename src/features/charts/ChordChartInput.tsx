@@ -47,7 +47,11 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [isEditing, setIsEditing] = useState(false)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [draggedChordValue, setDraggedChordValue] = useState<string | null>(null)
+  const [draggedChordValue, setDraggedChordValue] = useState<string | null>(
+    null
+  )
+  const [dragStartIndex, setDragStartIndex] = useState<number | null>(null)
+  const [visualChords, setVisualChords] = useState<typeof chords>([])
   const dragOverlayRef = useRef<HTMLDivElement | null>(null)
   const dragSourceRef = useRef<Element | null>(null)
   const dragSourceIndexRef = useRef<number | null>(null)
@@ -380,7 +384,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     e.preventDefault()
     dragSourceRef.current = e.currentTarget
     dragSourceIndexRef.current = index
+    setDragStartIndex(index)
     setDraggedChordValue(chords[index].value)
+    setVisualChords([...chords])
 
     const overlay = document.createElement('div')
     overlay.className = 'fixed pointer-events-none z-50 text-[#2C1810]'
@@ -405,7 +411,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || dragSourceIndexRef.current === null || !draggedChordValue) return
+    if (
+      !isDragging ||
+      dragSourceIndexRef.current === null ||
+      !draggedChordValue ||
+      dragStartIndex === null
+    )
+      return
 
     if (dragOverlayRef.current) {
       dragOverlayRef.current.style.left = `${e.clientX}px`
@@ -432,13 +444,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
         targetElement.getAttribute('data-chord-index') || '-1'
       )
       if (targetIndex !== -1 && targetIndex !== sourceIndex) {
-        const newChords = [...chords]
-        newChords.splice(sourceIndex, 1)
-        newChords.splice(targetIndex, 0, { 
-          id: Math.random().toString(), 
-          value: draggedChordValue 
+        const newVisualChords = [...chords]
+        newVisualChords.splice(dragStartIndex, 1)
+        newVisualChords.splice(targetIndex, 0, {
+          id: Math.random().toString(),
+          value: draggedChordValue,
         })
-        handleChartChange(newChords)
+        setVisualChords(newVisualChords)
         setDropTarget(targetIndex)
         dragSourceIndexRef.current = targetIndex
       }
@@ -449,15 +461,16 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     if (
       isDragging &&
       dropTarget !== null &&
-      dragSourceIndexRef.current !== null &&
+      dragStartIndex !== null &&
       draggedChordValue !== null
     ) {
-      const sourceIndex = dragSourceIndexRef.current
       const newChords = [...chords]
-      newChords.splice(sourceIndex, 1)
-      newChords.splice(dropTarget, 0, { 
-        id: Math.random().toString(), 
-        value: draggedChordValue 
+      newChords.splice(dragStartIndex, 1)
+      const adjustedDropTarget =
+        dropTarget > dragStartIndex ? dropTarget - 1 : dropTarget
+      newChords.splice(adjustedDropTarget, 0, {
+        id: Math.random().toString(),
+        value: draggedChordValue,
       })
       handleChartChange(newChords)
     }
@@ -472,6 +485,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     dragSourceRef.current = null
     dragSourceIndexRef.current = null
     setDraggedChordValue(null)
+    setDragStartIndex(null)
+    setVisualChords([])
   }
 
   useEffect(() => {
@@ -517,6 +532,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       })
     }
   }
+
+  const displayChords = isDragging ? visualChords : chords
 
   return (
     <div className="space-y-4 max-w-full">
@@ -589,7 +606,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
 
       <div className="flex justify-center">
         <div className="grid grid-cols-4 gap-2 w-[656px] p-4 border border-[#846C5B]/20 rounded-lg bg-[#F5E6D3]/50">
-          {chords.map(({ id, value }, index) => (
+          {displayChords.map(({ id, value }, index) => (
             <div
               key={id}
               data-chord-index={index}
