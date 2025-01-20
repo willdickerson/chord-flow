@@ -47,9 +47,16 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   const updateChordSequence = useCallback(
     (chordNames: string[]) => {
       audioService.setCurrentChordNames(chordNames)
-      generateSequence()
+      if (chordNames.length > 0) {
+        generateSequence()
+      } else {
+        setSequence(null)
+        setCurrentPosition(0)
+        displayedNotesRef.current = []
+        onNotesChange([])
+      }
     },
-    [generateSequence]
+    [generateSequence, onNotesChange]
   )
 
   const handlePlayback = async () => {

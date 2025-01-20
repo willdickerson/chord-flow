@@ -210,6 +210,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     }
     setCurrentChart(newChart)
     setChords([])
+    onNotesChange([])
     onChordSequenceChange([])
     setIsEditing(true)
     setInputValue('')
