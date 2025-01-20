@@ -670,7 +670,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 disabled={isPlaying}
                 className={`
                   px-1.5 py-1.5 rounded-md text-sm font-medium
-                  ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}
+                  ${isPlaying ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#A6B39C]/20'}
                   bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20
                 `}
               >
@@ -681,7 +681,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 disabled={isPlaying}
                 className={`
                   px-1.5 py-1.5 rounded-md text-sm font-medium
-                  ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}
+                  ${isPlaying ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#A6B39C]/20'}
                   bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20
                 `}
               >
@@ -703,7 +703,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   disabled={isPlaying || isEditing}
                   className={`
                     w-48 px-3 py-1.5 rounded-md text-sm font-medium
-                    ${isPlaying || isEditing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/10'}
+                    ${isPlaying || isEditing ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#A6B39C]/10'}
                     bg-[#F5E6D3] text-[#2C1810] border border-[#846C5B]/20
                     focus:outline-none focus:border-[#A6B39C] placeholder-[#846C5B]/60
                   `}
@@ -812,7 +812,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
               <button
                 onClick={handleEditDone}
                 disabled={chords.length < 1}
-                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#A6B39C]/20'}`}
+                className={`flex-1 sm:flex-none px-3 py-1.5 rounded-md text-sm font-medium bg-[#A6B39C]/10 text-[#2C1810] border border-[#846C5B]/20 ${chords.length < 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#A6B39C]/20'}`}
               >
                 Done
               </button>
