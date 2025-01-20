@@ -419,6 +419,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     )
       return
 
+    document.body.style.cursor = 'grabbing'
+
     if (dragOverlayRef.current) {
       dragOverlayRef.current.style.left = `${e.clientX}px`
       dragOverlayRef.current.style.top = `${e.clientY}px`
@@ -458,6 +460,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleMouseUp = () => {
+    document.body.style.cursor = ''
+
     if (
       isDragging &&
       dropTarget !== null &&
