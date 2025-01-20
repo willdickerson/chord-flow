@@ -466,9 +466,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     ) {
       const newChords = [...chords]
       newChords.splice(dragStartIndex, 1)
-      const adjustedDropTarget =
-        dropTarget > dragStartIndex ? dropTarget - 1 : dropTarget
-      newChords.splice(adjustedDropTarget, 0, {
+      newChords.splice(dropTarget, 0, {
         id: Math.random().toString(),
         value: draggedChordValue,
       })
