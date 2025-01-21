@@ -6,6 +6,7 @@ import { InstrumentSelector } from '../features/playback/InstrumentSelector'
 import { useParams, useNavigate } from 'react-router-dom'
 import { decodeChartData } from '../common/utils/urlUtils'
 import { audioService } from '../services/audioService'
+import { InfoModal } from '../features/info/InfoModal'
 
 function ChartRoute() {
   const { encodedData } = useParams()
@@ -36,7 +37,12 @@ function ChartRoute() {
           <main className="relative w-full p-8 bg-[#F5E6D3] rounded-lg">
             <div className="space-y-6">
               <div className="space-y-6">
-                <InstrumentSelector />
+                <div className="flex items-center justify-between gap-4">
+                  <InstrumentSelector />
+                  <div className="flex-none">
+                    <InfoModal />
+                  </div>
+                </div>
                 <PlaybackControls
                   onNotesChange={setActiveNotes}
                   initialChordNames={initialChartData?.chords}
