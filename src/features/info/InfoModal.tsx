@@ -22,7 +22,7 @@ export const InfoModal = () => {
                 className="absolute top-3 right-3 m-w-8 m-h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
                 aria-label="Close"
               >
-                <X size={14} />
+                <X size={16} />
               </button>
 
               <div className="space-y-4 sm:space-y-6 overflow-y-auto max-h-[60vh] sm:max-h-[70vh] md:max-h-[80vh]">
