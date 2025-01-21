@@ -15,22 +15,17 @@ export const InfoModal = () => {
 
       {showModal && (
         <div className="fixed -top-4 -right-4 -bottom-4 -left-4 bg-[#2C1810]/50 flex items-center justify-center z-[9999] p-4">
-          <div className="relative w-full max-w-2xl">
-            <div className="relative bg-[#F5E6D3] rounded-lg p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-medium text-[#2C1810]">
-                  About Chord Flow
-                </h2>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
-                  aria-label="Close"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+          <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-2xl mx-auto">
+            <div className="relative bg-[#F5E6D3] rounded-lg p-4 sm:p-6">
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors z-10"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
 
-              <div className="space-y-6 overflow-y-auto max-h-[70vh]">
+              <div className="space-y-4 sm:space-y-6 overflow-y-auto max-h-[60vh] sm:max-h-[70vh] md:max-h-[80vh]">
                 <section>
                   <h3 className="font-medium text-[#2C1810] mb-2">
                     What is Chord Flow?
@@ -46,7 +41,7 @@ export const InfoModal = () => {
 
                 <section>
                   <h3 className="font-medium text-[#2C1810] mb-2">Features</h3>
-                  <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-2">
+                  <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
                     <li>Configurable arpeggio and triad styles</li>
                     <li>Extensive library of jazz standards</li>
                     <li>MIDI export and shareable chord charts</li>
@@ -57,7 +52,7 @@ export const InfoModal = () => {
                   <h3 className="font-medium text-[#2C1810] mb-2">
                     How to Use
                   </h3>
-                  <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-2">
+                  <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
                     <li>Choose a song or create your own progression</li>
                     <li>Set your preferred tempo and instrument sound</li>
                     <li>Press play to hear the progression</li>
@@ -68,7 +63,7 @@ export const InfoModal = () => {
                   <h3 className="font-medium text-[#2C1810] mb-2">
                     Practice Tips
                   </h3>
-                  <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-2">
+                  <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
                     <li>
                       Follow the voice leading for smooth chord transitions
                     </li>
