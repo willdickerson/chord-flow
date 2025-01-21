@@ -311,13 +311,13 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink min-w-0">
                   <button
                     onClick={handleVolumeToggle}
-                    className="text-[#846C5B] hover:text-[#846C5B]/80 p-0 bg-transparent hover:bg-transparent border-0 flex-shrink-0"
+                    className="text-[#846C5B] hover:text-[#2C1810]/80 p-0 bg-[#F5E6D3] hover:bg-[#F5E6D3] border-0 flex-shrink-0"
                     aria-label={isMuted ? 'Unmute' : 'Mute'}
                   >
                     {isMuted ? (
-                      <VolumeX className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                      <VolumeX className="w-4 h-4 sm:w-4.5 sm:h-4.5 bg-[#F5E6D3] hover:bg-[#F5E6D3]" />
                     ) : (
-                      <Volume2 className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                      <Volume2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 bg-[#F5E6D3] hover:bg-[#F5E6D3]" />
                     )}
                   </button>
                   <input
