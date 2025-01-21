@@ -19,7 +19,7 @@ export const InfoModal = () => {
             <div className="relative bg-[#F5E6D3] rounded-lg p-4 sm:p-6">
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-3 right-3 m-w-8 m-h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
+                className="absolute top-3 right-3 m-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
                 aria-label="Close"
               >
                 <X size={16} />
