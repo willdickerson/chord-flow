@@ -42,7 +42,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   title: initialTitle,
   composer: initialComposer,
   onChartChange,
-  songName,
 }) => {
   const [inputValue, setInputValue] = useState('')
   const [chartSearchValue, setChartSearchValue] = useState('')
@@ -541,7 +540,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   }
 
   const handleMidiDownload = () => {
-    downloadMidiFile(sequence, audioService, currentChart.title, currentChart.composer)
+    downloadMidiFile(
+      sequence ? { chords: sequence } : null,
+      audioService,
+      currentChart.title,
+      currentChart.composer
+    )
   }
 
   const displayChords = isDragging ? visualChords : chords
@@ -596,7 +600,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                   <X size={16} />
                 </button>
               </div>
-              
+
               {/* Export Chord Chart Drawer */}
               <details className="w-full group mb-2">
                 <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
@@ -644,7 +648,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                       Download MIDI
                     </button>
                     <button
-                      onClick={() => {/* TODO: Implement MP3 download */}}
+                      onClick={() => {
+                        /* TODO: Implement MP3 download */
+                      }}
                       className="flex-1 px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
                     >
                       Download MP3

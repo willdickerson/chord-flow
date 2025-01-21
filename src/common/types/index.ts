@@ -90,3 +90,8 @@ export const NOTE_TO_MIDI_BASE: { [key: string]: number } = {
   Bb: 70,
   B: 71,
 }
+
+export type ChordSequence = {
+  chords: Triad[]
+  tempo?: number
+}
