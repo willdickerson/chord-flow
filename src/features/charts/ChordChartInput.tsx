@@ -586,73 +586,73 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       {/* Export Modal */}
       {showShareModal && (
         <div className="fixed -top-4 -right-4 -bottom-4 -left-4 bg-[#2C1810]/50 flex items-center justify-center z-[9999] p-4">
-        <div className="relative w-full max-w-xs">
-          <div className="relative bg-[#F5E6D3] rounded-lg p-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-[#2C1810]">
-                Export Song
-              </h3>
-              <button
-                onClick={() => setShowShareModal(false)}
-                className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
-                aria-label="Close"
-              >
-                <X size={16} />
-              </button>
+          <div className="relative w-full max-w-xs">
+            <div className="relative bg-[#F5E6D3] rounded-lg p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-[#2C1810]">
+                  Export Song
+                </h3>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 transition-colors"
+                  aria-label="Close"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Export Chord Chart Drawer */}
+              <details className="w-full group mb-2">
+                <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
+                  <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
+                    Export Chord Chart
+                  </span>
+                </summary>
+                <div className="flex flex-col gap-2 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
+                  <p className="text-sm text-[#846C5B]">
+                    Copy shareable link to this chart.
+                  </p>
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      readOnly
+                      value={shareUrl}
+                      className="flex-1 p-2 bg-white/30 bg-[#F5E6D3]/50 rounded border border-[#846C5B]/20 text-sm overflow-x-auto text-[#2C1810] placeholder-[#846C5B]/60"
+                    />
+                    <button
+                      onClick={handleCopy}
+                      className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
+                    >
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                </div>
+              </details>
+
+              {/* Export Audio Drawer */}
+              <details className="w-full group">
+                <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
+                  <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
+                    Export Audio
+                  </span>
+                </summary>
+                <div className="flex flex-col gap-2 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
+                  <p className="text-sm text-[#846C5B]">
+                    Download audio as MIDI.
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleMidiDownload}
+                      className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
+                    >
+                      Download MIDI
+                    </button>
+                  </div>
+                </div>
+              </details>
             </div>
-
-            {/* Export Chord Chart Drawer */}
-            <details className="w-full group mb-2">
-              <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
-                <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
-                  Export Chord Chart
-                </span>
-              </summary>
-              <div className="flex flex-col gap-2 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
-                <p className="text-sm text-[#846C5B]">
-                  Copy shareable link to this chart.
-                </p>
-                <div className="flex gap-2 items-center">
-                  <input
-                    type="text"
-                    readOnly
-                    value={shareUrl}
-                    className="flex-1 p-2 bg-white/30 bg-[#F5E6D3]/50 rounded border border-[#846C5B]/20 text-sm overflow-x-auto text-[#2C1810] placeholder-[#846C5B]/60"
-                  />
-                  <button
-                    onClick={handleCopy}
-                    className="min-w-8 h-8 flex items-center justify-center rounded-md bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
-                  >
-                    <Copy size={16} />
-                  </button>
-                </div>
-              </div>
-            </details>
-
-            {/* Export Audio Drawer */}
-            <details className="w-full group">
-              <summary className="cursor-pointer p-2 border border-[#846C5B]/20 rounded-md text-sm font-medium group-open:rounded-b-none group-open:border-b-0 group/summary">
-                <span className="text-[#2C1810] group-hover/summary:text-[#2C1810]/80 transition-colors">
-                  Export Audio
-                </span>
-              </summary>
-              <div className="flex flex-col gap-2 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
-                <p className="text-sm text-[#846C5B]">
-                  Download audio as MIDI.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleMidiDownload}
-                    className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
-                  >
-                    Download MIDI
-                  </button>
-                </div>
-              </div>
-            </details>
           </div>
         </div>
-      </div>
       )}
 
       <div className="flex justify-center">
