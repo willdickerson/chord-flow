@@ -71,6 +71,16 @@ export const InfoModal = () => {
                     <li>Try different triad types and styles</li>
                   </ul>
                 </section>
+
+                <section>
+                  <h3 className="font-medium text-[#2C1810] mb-2">
+                    Mobile Audio Note
+                  </h3>
+                  <p className="text-sm text-[#846C5B]">
+                    For audio playback on mobile devices, make sure your phone
+                    is unmuted or use headphones.
+                  </p>
+                </section>
               </div>
             </div>
           </div>
