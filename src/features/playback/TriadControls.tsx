@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface TriadControlsProps {
-  onTriadTypeChange: (type: 'open' | 'close') => void
+  onTriadTypeChange: (type: 'open' | 'close' | 'all') => void
   isEnabled: boolean
 }
 
@@ -9,11 +9,11 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
   onTriadTypeChange,
   isEnabled,
 }) => {
-  const [selectedType, setSelectedType] = React.useState<'open' | 'close'>(
+  const [selectedType, setSelectedType] = React.useState<'open' | 'close' | 'all'>(
     'open'
   )
 
-  const handleTypeToggle = (type: 'open' | 'close') => {
+  const handleTypeToggle = (type: 'open' | 'close' | 'all') => {
     if (!isEnabled) return
     setSelectedType(type)
     onTriadTypeChange(type)
@@ -30,7 +30,7 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
         <p className="text-sm text-[#846C5B]">
           Select which type of triads to use when generating chord voicings.
         </p>
-        <div className="grid grid-cols-2 w-full gap-2">
+        <div className="grid grid-cols-3 w-full gap-2">
           {/* open Triads */}
           <button
             onClick={() => handleTypeToggle('open')}
@@ -47,9 +47,9 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
-            title="Use open Triads"
+            title="Use open triads"
           >
-            open
+            Open
           </button>
 
           {/* Close Triads */}
@@ -68,9 +68,30 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
-            title="Use Close Triads"
+            title="Use close triads"
           >
             Close
+          </button>
+
+          {/* All Triads */}
+          <button
+            onClick={() => handleTypeToggle('all')}
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+              ${
+                !isEnabled
+                  ? selectedType === 'all'
+                    ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
+                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
+                  : selectedType === 'all'
+                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
+                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+              }
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
+              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
+            disabled={!isEnabled}
+            title="Use all triad variations"
+          >
+            All
           </button>
         </div>
       </div>

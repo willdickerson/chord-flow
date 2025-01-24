@@ -22,5 +22,5 @@ export const DEFAULT_VOICE_LEADING_STATE: VoiceLeadingState = {
 
 export const INSTRUMENT_TYPES = ['piano', 'synth', 'guitar'] as const
 export type InstrumentType = (typeof INSTRUMENT_TYPES)[number]
-export type TriadType = 'close' | 'open'
+export type TriadType = 'close' | 'open' | 'all'
 export type ArpeggioType = 'ascending' | 'descending' | 'alternating'
