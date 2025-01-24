@@ -9,9 +9,9 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
   onTriadTypeChange,
   isEnabled,
 }) => {
-  const [selectedType, setSelectedType] = React.useState<'open' | 'close' | 'all'>(
-    'open'
-  )
+  const [selectedType, setSelectedType] = React.useState<
+    'open' | 'close' | 'all'
+  >('open')
 
   const handleTypeToggle = (type: 'open' | 'close' | 'all') => {
     if (!isEnabled) return
