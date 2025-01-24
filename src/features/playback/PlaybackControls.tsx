@@ -177,7 +177,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
   const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const sliderValue = parseInt(e.target.value)
-    const newDuration = 2300 - sliderValue
+    const newDuration = 5300 - sliderValue
     setChordDuration(newDuration)
     audioService.setChordDuration(newDuration)
   }
@@ -340,9 +340,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                   <input
                     type="range"
                     min="300"
-                    max="2000"
+                    max="5000"
                     step="10"
-                    value={2300 - chordDuration}
+                    value={5300 - chordDuration}
                     onChange={handleDurationChange}
                     className="w-[3rem] sm:w-[5rem] h-1.5 bg-[#846C5B]/20 rounded-lg appearance-none cursor-pointer accent-[#E3B448] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 sm:[&::-webkit-slider-thumb]:w-4 sm:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#E3B448] [&::-webkit-slider-thumb]:border-none [&::-webkit-slider-thumb]:shadow-none [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 sm:[&::-moz-range-thumb]:w-4 sm:[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#E3B448] [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-none"
                     style={{ minWidth: 0 }}
