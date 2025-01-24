@@ -18,7 +18,7 @@ const defaultChordNames = CHORD_CHARTS.find(
 )!.chords
 
 const defaultTriads = Object.fromEntries(
-  defaultChordNames!.map(chord => [chord, generateTriads(chord, 'spread')])
+  defaultChordNames!.map(chord => [chord, generateTriads(chord, 'open')])
 )
 
 export class AudioService {

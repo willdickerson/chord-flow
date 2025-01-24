@@ -45,7 +45,7 @@ export function parseChord(chord: string): {
 
 export function generateTriads(
   chord: string,
-  triadType: 'all' | 'close' | 'spread' = 'spread'
+  triadType: 'all' | 'close' | 'open' = 'open'
 ): Inversion[] {
   const { originalRoot, standardizedRoot, chordType } = parseChord(chord)
 
@@ -74,7 +74,7 @@ export function generateTriads(
       triad_permutations[4],
     ]
   } else {
-    // spread
+    // open
     triads = [
       triad_permutations[1],
       triad_permutations[2],

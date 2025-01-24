@@ -25,7 +25,7 @@ npm run dev
 ## Features
 
 - Play chord progressions with optimized voice leading
-- Choose between spread and close voicings
+- Choose between open and close voicings
 - Select which voices to optimize (bass, middle, high)
 - Built with React, TypeScript, and Vite
 

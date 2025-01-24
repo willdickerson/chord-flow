@@ -10,7 +10,7 @@ export const AUDIO_DEFAULTS = {
   CHORD_DURATION: 500,
   IS_ARPEGGIATING: true,
   IS_LOOPING: false,
-  TRIAD_TYPE: 'spread' as const,
+  TRIAD_TYPE: 'open' as const,
   ARPEGGIO_TYPE: 'ascending' as const,
 }
 
@@ -22,5 +22,5 @@ export const DEFAULT_VOICE_LEADING_STATE: VoiceLeadingState = {
 
 export const INSTRUMENT_TYPES = ['piano', 'synth', 'guitar'] as const
 export type InstrumentType = (typeof INSTRUMENT_TYPES)[number]
-export type TriadType = 'close' | 'spread'
+export type TriadType = 'close' | 'open'
 export type ArpeggioType = 'ascending' | 'descending' | 'alternating'
