@@ -100,12 +100,20 @@ K:C
         return `[${processedNotes.join('')}]`
       })
 
+      // Get total number of bars in the sequence
+      const totalBars = Math.ceil(currentSequence.length / 4)
+      const currentBar = Math.floor(rowStartIndex / 4) + 1
+
+      // Add appropriate bar lines
+      const barLine = currentBar === totalBars ? '|]' : '|'
+      const measureWithBarLines = measureWithNaturals.join('') + barLine
+
       abcNotation = `
 X:1
 M:4/4
 L:1/4
 K:c
-${measureWithNaturals.join('')}|]`.trim()
+${measureWithBarLines}`.trim()
     }
 
     console.log('ABC Notation:', abcNotation)
@@ -183,9 +191,6 @@ ${measureWithNaturals.join('')}|]`.trim()
   useEffect(() => {
     const updateSelection = () => {
       if (divRef.current) {
-        const position = audioService.getCurrentPosition()
-        const relativePosition = position % 4
-
         // Remove previous selections
         const selectedNotes = divRef.current.querySelectorAll(
           '.abcjs-note_selected'
@@ -194,10 +199,16 @@ ${measureWithNaturals.join('')}|]`.trim()
           note.classList.remove('abcjs-note_selected')
         })
 
-        // Find and select the current note
-        const notes = divRef.current.querySelectorAll('.abcjs-note')
-        if (notes[relativePosition]) {
-          notes[relativePosition].classList.add('abcjs-note_selected')
+        // Only add selection if we have active notes
+        if (activeNotes.length > 0) {
+          const position = audioService.getCurrentPosition()
+          const relativePosition = position % 4
+
+          // Find and select the current note
+          const notes = divRef.current.querySelectorAll('.abcjs-note')
+          if (notes[relativePosition]) {
+            notes[relativePosition].classList.add('abcjs-note_selected')
+          }
         }
       }
     }
@@ -207,9 +218,8 @@ ${measureWithNaturals.join('')}|]`.trim()
 
     // Then update every 100ms
     const interval = setInterval(updateSelection, 100)
-
     return () => clearInterval(interval)
-  }, [])
+  }, [activeNotes])
 
   return (
     <div className="w-full overflow-x-auto">
