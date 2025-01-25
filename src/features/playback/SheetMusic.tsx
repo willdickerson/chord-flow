@@ -22,10 +22,10 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
       if (divRef.current) {
         const position = audioService.getCurrentPosition()
         const relativePosition = position % 4
-        console.log('Updating selection for position:', {
-          position,
-          relativePosition,
-        })
+        // console.log('Updating selection for position:', {
+        //   position,
+        //   relativePosition,
+        // })
 
         // Remove previous selections
         const selectedNotes = divRef.current.querySelectorAll(
@@ -39,7 +39,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
         const notes = divRef.current.querySelectorAll('.abcjs-note')
         if (notes[relativePosition]) {
           notes[relativePosition].classList.add('abcjs-note_selected')
-          console.log('Selected note:', notes[relativePosition])
+          // console.log('Selected note:', notes[relativePosition])
         }
       }
     }
@@ -87,7 +87,7 @@ X:1
 M:4/4
 L:1/4
 K:C
-[${noteNames.join('')}]4|]`.trim()
+[${noteNames.join('')}]|]`.trim()
     } else {
       // Show the current row of chords from the sequence
       const rowStartIndex = Math.floor(position / 4) * 4
@@ -101,21 +101,48 @@ K:C
       const measureNotes = rowChords.map((chord: Triad, index: number) => {
         const noteNames = chord.midiNotes
           .map(note => midiNoteToName(note))
-          .map(note => note.replace('#', '^').replace('b', '_'))
+        console.log('Converted notes:', noteNames);
         return `[${noteNames.join('')}]`
       })
+
+      console.log('Measure notes before naturals:', measureNotes);
 
       // Pad with rests if we don't have 4 chords
       while (measureNotes.length < 4) {
         measureNotes.push('z')
       }
 
+      // Track accidentals in the measure
+      const accidentalsByNote: { [key: string]: string } = {}
+      const measureWithNaturals = measureNotes.map((chord, index) => {
+        // Remove brackets and split into individual notes
+        const notes = chord.slice(1, -1).match(/(\^?[A-Za-g]'*,*)/g) || []
+        
+        const processedNotes = notes.map(note => {
+          const noteLetter = note.match(/[A-Za-g]/)?.[0] || ''
+          const hasSharp = note.startsWith('^')
+          const octaveMarks = note.match(/['|,]+/)?.[0] || ''
+          
+          // Check if this note had a different accidental before
+          const prevAccidental = accidentalsByNote[noteLetter]
+          const needsNatural = prevAccidental === '^' && !hasSharp
+          
+          // Update accidental tracking
+          accidentalsByNote[noteLetter] = hasSharp ? '^' : ''
+          
+          // Construct the note with natural if needed
+          return `${hasSharp ? '^' : (needsNatural ? '=' : '')}${noteLetter}${octaveMarks}`
+        })
+        
+        return `[${processedNotes.join('')}]`
+      })
+
       abcNotation = `
 X:1
 M:4/4
 L:1/4
-K:C
-${measureNotes.join('')}|]`.trim()
+K:c
+${measureWithNaturals.join('')}|]`.trim()
     }
 
     console.log('ABC Notation:', abcNotation)
@@ -189,7 +216,7 @@ ${measureNotes.join('')}|]`.trim()
       // Store the visualObj for reference
       visualObjRef.current = visualObj
 
-      console.log('Successfully rendered ABC notation')
+      // console.log('Successfully rendered ABC notation')
 
       // Clean up the style element when component updates
       return () => {

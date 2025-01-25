@@ -2,7 +2,7 @@ import { ChordSequence, Triad } from '../types/'
 import { AudioService } from '../../services/audioService'
 
 const NOTE_NAMES = [
-  'C',
+  'c',
   'C#',
   'D',
   'D#',
@@ -17,10 +17,27 @@ const NOTE_NAMES = [
 ]
 
 export function midiNoteToName(midiNote: number): string {
-  const noteName = NOTE_NAMES[midiNote % 12]
-  const octave = Math.floor(midiNote / 12) - 1
-  console.log(noteName, octave)
-  return `${noteName}${octave}`
+  const noteNum = midiNote % 12
+  const noteLetter = NOTE_NAMES[noteNum].charAt(0)
+  const hasAccidental = NOTE_NAMES[noteNum].length > 1
+  const isC = noteNum === 0  // Check if the note is C/c
+  
+  // In ABC notation:
+  // Middle C (MIDI 60) is C
+  // Notes above get apostrophes (C')
+  // Notes below get commas (C,)
+  const middleC = 48  // Shifted down one octave to make everything display higher
+  const octaveDiff = midiNote - middleC
+  let octaveMarks = ''
+  if (octaveDiff >= 12) {
+    // For c note, reduce the octave count by 1
+    const octaveCount = Math.floor(octaveDiff / 12)
+    octaveMarks = "'".repeat(isC ? octaveCount - 1 : octaveCount)
+  } else if (octaveDiff < 0) {
+    octaveMarks = ",".repeat(Math.floor(Math.abs(octaveDiff) / 12))
+  }
+  
+  return (hasAccidental ? '^' : '') + noteLetter + octaveMarks
 }
 
 export const downloadMidiFile = (
