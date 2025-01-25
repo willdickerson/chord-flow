@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ABCJS from 'abcjs'
 import { midiNoteToName } from '../../common/utils/midiUtils'
 import { usePlaybackState } from './usePlaybackState'
@@ -13,9 +13,70 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
   const divRef = useRef<HTMLDivElement>(null)
   const visualObjRef = useRef<any>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
   const { sequence, currentPosition } = usePlaybackState(notes => {
     // We don't need to handle notes changes here
   })
+
+  // Effect to handle mobile breakpoint
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Effect to calculate the appropriate scale
+  useEffect(() => {
+    const calculateScale = () => {
+      if (!containerRef.current) return;
+      
+      // Base width is 900 (from staffwidth)
+      // We want to ensure this fits within the container with some padding
+      const containerWidth = containerRef.current.offsetWidth
+      const targetWidth = containerWidth - 40 // 20px padding on each side
+      const baseWidth = isMobile ? 400 : 900
+      
+      // Calculate scale that would make the staff fit
+      const newScale = Math.min(isMobile ? 1.2 : 2, (targetWidth / baseWidth))
+      const scale = newScale
+      const staffwidth = isMobile ? 400 : 900
+
+      // Render the ABC notation
+      const visualObj = ABCJS.renderAbc(divRef.current, `
+X:1
+M:4/4
+L:1/4
+K:C
+z|]`, {
+        add_classes: true,
+        staffwidth,
+        scale,
+        format: {
+          alignbars: 4,
+          stretchlast: false,
+        },
+        paddingbottom: 0,
+        paddingtop: 0,
+        selectionColor: "transparent",
+        dragging: false,
+        selectTypes: [],
+      })
+
+      // Store the visualObj for reference
+      visualObjRef.current = visualObj
+    }
+
+    // Calculate scale immediately and on resize
+    calculateScale()
+    window.addEventListener('resize', calculateScale)
+    
+    return () => {
+      window.removeEventListener('resize', calculateScale)
+    }
+  }, [isMobile])
 
   // Effect to center the staff
   useEffect(() => {
@@ -44,7 +105,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
       clearTimeout(timeoutId)
       window.removeEventListener('resize', centerStaff)
     }
-  }, [sequence, currentPosition])
+  }, [sequence, currentPosition, isMobile])
 
   // Effect to render the sheet music
   useEffect(() => {
@@ -190,8 +251,8 @@ ${measureWithBarLines}`.trim()
       // Render the sheet music
       const visualObj = ABCJS.renderAbc(divRef.current, abcNotation, {
         add_classes: true,
-        staffwidth: 900,
-        scale: 2,
+        staffwidth: isMobile ? 400 : 900,
+        scale: isMobile ? 1.2 : 2,
         format: {
           alignbars: 4,
           stretchlast: false,
@@ -215,7 +276,7 @@ ${measureWithBarLines}`.trim()
     } catch (error) {
       console.error('Error rendering ABC notation:', error)
     }
-  }, [activeNotes])
+  }, [activeNotes, isMobile])
 
   // Effect to update selection when position changes
   useEffect(() => {
@@ -252,7 +313,7 @@ ${measureWithBarLines}`.trim()
   }, [activeNotes])
 
   return (
-    <div ref={containerRef} className="w-full overflow-x-auto">
+    <div ref={containerRef} className="w-full overflow-x-auto px-5">
       <div ref={divRef} className="transition-[padding] duration-200" />
     </div>
   )
