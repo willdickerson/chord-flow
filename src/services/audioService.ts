@@ -157,7 +157,7 @@ export class AudioService {
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine4' },
         envelope: {
-          release: 1,
+          attack: 0.01,
           decay: 0.2,
           sustain: 0.5,
           release: 1.5,
