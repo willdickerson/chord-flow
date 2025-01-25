@@ -151,9 +151,6 @@ export class AudioService {
     try {
       await Tone.start()
 
-      const reverb = new Tone.Reverb({ decay: 2.5, wet: 0.1 }).toDestination()
-      const chorus = new Tone.Chorus(1.5, 2.5, 0.2).connect(reverb).start()
-
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
         oscillator: { type: 'sine4' },
         envelope: {
@@ -164,7 +161,7 @@ export class AudioService {
         },
       })
         .set({ volume: -8 })
-        .connect(chorus)
+        .toDestination()
 
       if (this.instruments.synth) {
         this.instruments.synth.volume.value = Tone.gainToDb(this.volume / 100)
