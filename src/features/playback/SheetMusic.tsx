@@ -12,9 +12,39 @@ interface SheetMusicProps {
 export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
   const divRef = useRef<HTMLDivElement>(null)
   const visualObjRef = useRef<any>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   const { sequence, currentPosition } = usePlaybackState(notes => {
     // We don't need to handle notes changes here
   })
+
+  // Effect to center the staff
+  useEffect(() => {
+    const centerStaff = () => {
+      if (!containerRef.current || !divRef.current) return;
+      
+      const containerWidth = containerRef.current.offsetWidth
+      const staffWidth = divRef.current.querySelector('.abcjs-staff')?.getBoundingClientRect().width || 0
+      
+      // Only add padding if the staff is narrower than the container
+      if (staffWidth < containerWidth) {
+        const leftPadding = Math.max(0, (containerWidth - staffWidth) / 2)
+        divRef.current.style.paddingLeft = `${leftPadding}px`
+      } else {
+        divRef.current.style.paddingLeft = '0'
+      }
+    }
+
+    // Center after a short delay to ensure the staff has rendered
+    const timeoutId = setTimeout(centerStaff, 0)
+    
+    // Also center on window resize
+    window.addEventListener('resize', centerStaff)
+    
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', centerStaff)
+    }
+  }, [sequence, currentPosition])
 
   // Effect to render the sheet music
   useEffect(() => {
@@ -222,10 +252,8 @@ ${measureWithBarLines}`.trim()
   }, [activeNotes])
 
   return (
-    <div className="w-full overflow-x-auto">
-      <div className="max-w-[900px] mx-auto grid place-items-center">
-        <div ref={divRef} className="w-full" />
-      </div>
+    <div ref={containerRef} className="w-full overflow-x-auto">
+      <div ref={divRef} className="transition-[padding] duration-200" />
     </div>
   )
 }
