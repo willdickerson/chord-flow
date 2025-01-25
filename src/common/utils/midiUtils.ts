@@ -2,7 +2,7 @@ import { ChordSequence, Triad } from '../types/'
 import { AudioService } from '../../services/audioService'
 
 const NOTE_NAMES = [
-  'c',
+  'C',
   'C#',
   'D',
   'D#',
@@ -20,7 +20,6 @@ export function midiNoteToName(midiNote: number): string {
   const noteNum = midiNote % 12
   const noteLetter = NOTE_NAMES[noteNum].charAt(0)
   const hasAccidental = NOTE_NAMES[noteNum].length > 1
-  const isC = noteNum === 0  // Check if the note is C/c
   
   // In ABC notation:
   // Middle C (MIDI 60) is C
@@ -29,12 +28,16 @@ export function midiNoteToName(midiNote: number): string {
   const middleC = 48  // Shifted down one octave to make everything display higher
   const octaveDiff = midiNote - middleC
   let octaveMarks = ''
-  if (octaveDiff >= 12) {
-    // For c note, reduce the octave count by 1
+  
+  // For notes below middle C
+  if (octaveDiff < 0) {
+    // Add commas for each octave below middle C
+    octaveMarks = ','.repeat(Math.floor(Math.abs(octaveDiff) / 12) + 1)
+  }
+  // For notes above middle C
+  else if (octaveDiff >= 12) {
     const octaveCount = Math.floor(octaveDiff / 12)
-    octaveMarks = "'".repeat(isC ? octaveCount - 1 : octaveCount)
-  } else if (octaveDiff < 0) {
-    octaveMarks = ",".repeat(Math.floor(Math.abs(octaveDiff) / 12))
+    octaveMarks = "'".repeat(octaveCount)
   }
   
   return (hasAccidental ? '^' : '') + noteLetter + octaveMarks
