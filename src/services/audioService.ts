@@ -151,15 +151,20 @@ export class AudioService {
     try {
       await Tone.start()
 
+      const reverb = new Tone.Reverb({ decay: 2.5, wet: 0.1 }).toDestination()
+      const chorus = new Tone.Chorus(1.5, 2.5, 0.2).connect(reverb).start()
+
       this.instruments.synth = new Tone.PolySynth(Tone.Synth, {
-        oscillator: { type: 'triangle' },
+        oscillator: { type: 'sine4' },
         envelope: {
-          attack: 0.005,
-          decay: 0.1,
-          sustain: 0.3,
           release: 1,
+          decay: 0.2,
+          sustain: 0.5,
+          release: 1.5,
         },
-      }).toDestination()
+      })
+        .set({ volume: -8 })
+        .connect(chorus)
 
       if (this.instruments.synth) {
         this.instruments.synth.volume.value = Tone.gainToDb(this.volume / 100)
@@ -208,7 +213,7 @@ export class AudioService {
             A7: 'A7.mp3',
             C8: 'C8.mp3',
           },
-          release: 1,
+          release: 1.5,
           baseUrl: 'https://tonejs.github.io/audio/salamander/',
           onload: () => {
             if (this.instruments.piano) {
@@ -222,6 +227,7 @@ export class AudioService {
       })
 
       const guitarLoadPromise = new Promise<void>(resolve => {
+        const reverb = new Tone.Reverb({ decay: 2.5, wet: 0.1 }).toDestination()
         this.instruments.guitar = new Tone.Sampler({
           urls: {
             E2: 'E2.mp3',
@@ -241,18 +247,19 @@ export class AudioService {
             'F#4': 'Fs4.mp3',
             'G#4': 'Gs4.mp3',
           },
-          release: 1,
+          release: 1.5,
+          attack: 0.01,
           baseUrl:
             'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
           onload: () => {
             if (this.instruments.guitar) {
               this.instruments.guitar.volume.value = Tone.gainToDb(
-                (this.volume - 60) / 100
+                (this.volume - 75) / 100
               )
             }
             resolve()
           },
-        }).toDestination()
+        }).connect(reverb)
       })
 
       await Promise.all([pianoLoadPromise, guitarLoadPromise])
