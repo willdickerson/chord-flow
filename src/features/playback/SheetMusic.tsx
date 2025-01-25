@@ -90,7 +90,7 @@ z|]`, {
       // Only add padding if the staff is narrower than the container
       if (staffWidth < containerWidth) {
         // Use different padding ratios for mobile and desktop
-        const paddingRatio = isMobile ? 0.333 : 0.47
+        const paddingRatio = isMobile ? 0.4 : 0.5
         const leftPadding = Math.max(0, (containerWidth - staffWidth) * paddingRatio)
         divRef.current.style.paddingLeft = `${leftPadding}px`
       } else {
@@ -316,8 +316,32 @@ ${measureWithBarLines}`.trim()
   }, [activeNotes])
 
   return (
-    <div ref={containerRef} className="w-full overflow-x-auto px-5">
-      <div ref={divRef} className="transition-[padding] duration-200" />
+    <div className="container mx-auto px-4">
+      <div className="relative w-full max-w-4xl mx-auto mb-2" style={{ height: isMobile ? '100px' : '220px' }}>
+        <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg shadow-lg"></div>
+        <div className="relative w-full h-full bg-[#F5E6D3] rounded-lg p-2">
+          <div 
+            ref={containerRef} 
+            style={{ 
+              width: '100%',
+              height: isMobile ? '96px' : '216px',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div 
+              ref={divRef}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '100%'
+              }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
