@@ -22,11 +22,14 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
   // Effect to handle mobile breakpoint
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768)
+      const newIsMobile = window.innerWidth <= 768
+      if (newIsMobile !== isMobile) {
+        setIsMobile(newIsMobile)
+      }
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [isMobile])
 
   // Effect to calculate the appropriate scale
   useEffect(() => {
@@ -69,12 +72,10 @@ z|]`, {
       visualObjRef.current = visualObj
     }
 
-    // Calculate scale immediately and on resize
+    // Calculate scale immediately
     calculateScale()
-    window.addEventListener('resize', calculateScale)
     
     return () => {
-      window.removeEventListener('resize', calculateScale)
     }
   }, [isMobile])
 
@@ -88,7 +89,9 @@ z|]`, {
       
       // Only add padding if the staff is narrower than the container
       if (staffWidth < containerWidth) {
-        const leftPadding = Math.max(0, (containerWidth - staffWidth) / 2)
+        // Use different padding ratios for mobile and desktop
+        const paddingRatio = isMobile ? 0.333 : 0.47
+        const leftPadding = Math.max(0, (containerWidth - staffWidth) * paddingRatio)
         divRef.current.style.paddingLeft = `${leftPadding}px`
       } else {
         divRef.current.style.paddingLeft = '0'
