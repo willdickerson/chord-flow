@@ -16,43 +16,6 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
     // We don't need to handle notes changes here
   })
 
-  // Effect to update selection when position changes
-  useEffect(() => {
-    const updateSelection = () => {
-      if (divRef.current) {
-        const position = audioService.getCurrentPosition()
-        const relativePosition = position % 4
-        // console.log('Updating selection for position:', {
-        //   position,
-        //   relativePosition,
-        // })
-
-        // Remove previous selections
-        const selectedNotes = divRef.current.querySelectorAll(
-          '.abcjs-note_selected'
-        )
-        selectedNotes.forEach(note => {
-          note.classList.remove('abcjs-note_selected')
-        })
-
-        // Find and select the current note
-        const notes = divRef.current.querySelectorAll('.abcjs-note')
-        if (notes[relativePosition]) {
-          notes[relativePosition].classList.add('abcjs-note_selected')
-          // console.log('Selected note:', notes[relativePosition])
-        }
-      }
-    }
-
-    // Update immediately
-    updateSelection()
-
-    // Then update every 100ms
-    const interval = setInterval(updateSelection, 100)
-
-    return () => clearInterval(interval)
-  }, [])
-
   // Effect to render the sheet music
   useEffect(() => {
     console.log('Render effect running with:', {
@@ -156,6 +119,10 @@ ${measureWithNaturals.join('')}|]`.trim()
           box-shadow: none !important;
           width: 100% !important;
           color: #2C1810 !important;
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
         }
         .abcjs-container svg {
           position: static !important;
@@ -165,6 +132,7 @@ ${measureWithNaturals.join('')}|]`.trim()
           max-width: 100% !important;
           height: auto !important;
           color: #2C1810 !important;
+          pointer-events: none !important;
         }
         .abcjs-note:not(.abcjs-note_selected) *, .abcjs-staff-extra *, .abcjs-bar * {
           fill: #2C1810 !important;
@@ -186,31 +154,15 @@ ${measureWithNaturals.join('')}|]`.trim()
         add_classes: true,
         staffwidth: 900,
         scale: 2,
-        paddingleft: 130,
         format: {
           alignbars: 4,
           stretchlast: false,
         },
         paddingbottom: 0,
         paddingtop: 0,
-        oneSvgPerLine: true,
-        clickListener: (abcelem: any, tuneNumber: number, classes: string) => {
-          console.log('Click event:', { abcelem, tuneNumber, classes })
-          // When a note is clicked, select it
-          if (abcelem.svgEl) {
-            // Remove previous selections
-            const selectedNotes = divRef.current?.querySelectorAll(
-              '.abcjs-note_selected'
-            )
-            selectedNotes?.forEach(note => {
-              note.classList.remove('abcjs-note_selected')
-            })
-
-            // Add selection to clicked note
-            abcelem.svgEl.classList.add('abcjs-note_selected')
-          }
-        },
-        selectTypes: ['note'],
+        selectionColor: "transparent",
+        dragging: false,
+        selectTypes: [],
       })
 
       // Store the visualObj for reference
@@ -226,6 +178,38 @@ ${measureWithNaturals.join('')}|]`.trim()
       console.error('Error rendering ABC notation:', error)
     }
   }, [activeNotes])
+
+  // Effect to update selection when position changes
+  useEffect(() => {
+    const updateSelection = () => {
+      if (divRef.current) {
+        const position = audioService.getCurrentPosition()
+        const relativePosition = position % 4
+
+        // Remove previous selections
+        const selectedNotes = divRef.current.querySelectorAll(
+          '.abcjs-note_selected'
+        )
+        selectedNotes.forEach(note => {
+          note.classList.remove('abcjs-note_selected')
+        })
+
+        // Find and select the current note
+        const notes = divRef.current.querySelectorAll('.abcjs-note')
+        if (notes[relativePosition]) {
+          notes[relativePosition].classList.add('abcjs-note_selected')
+        }
+      }
+    }
+
+    // Update immediately
+    updateSelection()
+
+    // Then update every 100ms
+    const interval = setInterval(updateSelection, 100)
+
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="w-full overflow-x-auto">
