@@ -8,6 +8,7 @@ import { decodeChartData } from '../common/utils/urlUtils'
 import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
 import { SheetMusic } from '../features/playback/SheetMusic'
+import { DisplayControls, DisplayOption } from '../features/playback/DisplayControls'
 
 function ChartRoute() {
   const { encodedData } = useParams()
@@ -25,16 +26,28 @@ function ChartRoute() {
     }
     return null
   })
+  const [activeDisplay, setActiveDisplay] = useState<DisplayOption>('keyboard')
 
   return (
     <div className="flex-1">
       <div className="container mx-auto pt-4">
-        <PianoKeyboard activeNotes={activeNotes} />
+        <DisplayControls
+          activeDisplay={activeDisplay}
+          onChange={setActiveDisplay}
+        />
       </div>
 
-      <div className="container mx-auto flex justify-center">
-        <SheetMusic activeNotes={activeNotes} />
+      <div className="container mx-auto pt-4">
+        {(activeDisplay === 'keyboard') && (
+          <PianoKeyboard activeNotes={activeNotes} />
+        )}
       </div>
+
+      {(activeDisplay === 'notation') && (
+        <div className="container mx-auto flex justify-center pt-4">
+          <SheetMusic activeNotes={activeNotes} />
+        </div>
+      )}
 
       <div className="container mx-auto flex items-center justify-center p-4">
         <div className="relative w-full max-w-4xl mx-auto">
