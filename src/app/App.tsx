@@ -7,6 +7,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { decodeChartData } from '../common/utils/urlUtils'
 import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
+import { SheetMusic } from '../features/playback/SheetMusic'
 
 function ChartRoute() {
   const { encodedData } = useParams()
@@ -29,6 +30,10 @@ function ChartRoute() {
     <div className="flex-1">
       <div className="container mx-auto pt-4">
         <PianoKeyboard activeNotes={activeNotes} />
+      </div>
+
+      <div className="container mx-auto flex justify-center">
+        <SheetMusic activeNotes={activeNotes} />
       </div>
 
       <div className="container mx-auto flex items-center justify-center p-4">

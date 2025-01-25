@@ -1,6 +1,28 @@
 import { ChordSequence, Triad } from '../types/'
 import { AudioService } from '../../services/audioService'
 
+const NOTE_NAMES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+]
+
+export function midiNoteToName(midiNote: number): string {
+  const noteName = NOTE_NAMES[midiNote % 12]
+  const octave = Math.floor(midiNote / 12) - 1
+  console.log(noteName, octave)
+  return `${noteName}${octave}`
+}
+
 export const downloadMidiFile = (
   sequence: ChordSequence | null,
   audioService: AudioService,
