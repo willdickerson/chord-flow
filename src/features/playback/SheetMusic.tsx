@@ -254,8 +254,10 @@ ${measureWithBarLines}`.trim()
       // Render the sheet music
       const visualObj = ABCJS.renderAbc(divRef.current, abcNotation, {
         add_classes: true,
-        staffwidth: isMobile ? 400 : 900,
-        scale: isMobile ? 1.2 : 2,
+        // staffwidth: isMobile ? 400 : 900,
+        // scale: isMobile ? 1.2 : 2,
+        staffwidth: 400,
+        scale: 1.2,
         format: {
           alignbars: 4,
           stretchlast: false,
@@ -317,14 +319,17 @@ ${measureWithBarLines}`.trim()
 
   return (
     <div className="container mx-auto px-4">
-      <div className="relative w-full max-w-4xl mx-auto mb-2" style={{ height: isMobile ? '100px' : '220px' }}>
-        <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg shadow-lg"></div>
+      <div className="relative mx-auto mb-2" style={{ 
+        height: '180px',
+        maxWidth: '480px' // 400px staff + some padding
+      }}>
+        <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg"></div>
         <div className="relative w-full h-full bg-[#F5E6D3] rounded-lg p-2">
           <div 
             ref={containerRef} 
             style={{ 
               width: '100%',
-              height: isMobile ? '96px' : '216px',
+              height: '176px',
               position: 'relative',
               overflow: 'hidden'
             }}
