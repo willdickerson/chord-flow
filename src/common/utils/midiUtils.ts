@@ -20,15 +20,10 @@ export function midiNoteToName(midiNote: number): string {
   const noteNum = midiNote % 12
   const noteLetter = NOTE_NAMES[noteNum].charAt(0)
   const hasAccidental = NOTE_NAMES[noteNum].length > 1
-  
-  // In ABC notation:
-  // Middle C (MIDI 60) is C
-  // Notes above get apostrophes (C')
-  // Notes below get commas (C,)
-  const middleC = 48  // Shifted down one octave to make everything display higher
+  const middleC = 48 // Shifted down one octave to make everything display higher
   const octaveDiff = midiNote - middleC
   let octaveMarks = ''
-  
+
   // For notes below middle C
   if (octaveDiff < 0) {
     // Add commas for each octave below middle C
@@ -39,7 +34,7 @@ export function midiNoteToName(midiNote: number): string {
     const octaveCount = Math.floor(octaveDiff / 12)
     octaveMarks = "'".repeat(octaveCount)
   }
-  
+
   return (hasAccidental ? '^' : '') + noteLetter + octaveMarks
 }
 

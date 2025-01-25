@@ -8,7 +8,10 @@ import { decodeChartData } from '../common/utils/urlUtils'
 import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
 import { SheetMusic } from '../features/playback/SheetMusic'
-import { DisplayControls, DisplayOption } from '../features/playback/DisplayControls'
+import {
+  DisplayControls,
+  DisplayOption,
+} from '../features/playback/DisplayControls'
 
 function ChartRoute() {
   const { encodedData } = useParams()
@@ -38,12 +41,12 @@ function ChartRoute() {
       </div>
 
       <div className="container mx-auto pt-4">
-        {(activeDisplay === 'keyboard') && (
+        {activeDisplay === 'keyboard' && (
           <PianoKeyboard activeNotes={activeNotes} />
         )}
       </div>
 
-      {(activeDisplay === 'notation') && (
+      {activeDisplay === 'notation' && (
         <div className="container mx-auto flex justify-center pt-4">
           <SheetMusic activeNotes={activeNotes} />
         </div>
