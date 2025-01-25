@@ -279,7 +279,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
         className="relative mx-auto mb-2"
         style={{
           height: '180px',
-          maxWidth: '480px',
+          maxWidth: '380px',
         }}
       >
         <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg"></div>
