@@ -17,6 +17,8 @@ function ChartRoute() {
   const { encodedData } = useParams()
   const navigate = useNavigate()
   const [activeNotes, setActiveNotes] = useState<number[]>([])
+  const [isEditing, setIsEditing] = useState(false)
+  const [activeDisplay, setActiveDisplay] = useState<DisplayOption>('keyboard')
   const [initialChartData] = useState(() => {
     if (encodedData) {
       try {
@@ -29,7 +31,6 @@ function ChartRoute() {
     }
     return null
   })
-  const [activeDisplay, setActiveDisplay] = useState<DisplayOption>('keyboard')
 
   return (
     <div className="flex-1">
@@ -37,16 +38,17 @@ function ChartRoute() {
         <DisplayControls
           activeDisplay={activeDisplay}
           onChange={setActiveDisplay}
+          isEditing={isEditing}
         />
       </div>
 
       <div className="container mx-auto pt-4">
-        {activeDisplay === 'keyboard' && (
+        {(activeDisplay === 'keyboard' || isEditing) && (
           <PianoKeyboard activeNotes={activeNotes} />
         )}
       </div>
 
-      {activeDisplay === 'notation' && (
+      {activeDisplay === 'notation' && !isEditing && (
         <div className="container mx-auto flex justify-center pt-4">
           <SheetMusic activeNotes={activeNotes} />
         </div>
@@ -70,10 +72,21 @@ function ChartRoute() {
                   title={initialChartData?.title}
                   composer={initialChartData?.composer}
                   onChartChange={chartData => {
+                    if (chartData === null) {
+                      setActiveDisplay('keyboard')
+                      return
+                    }
                     if (chartData) {
                       navigate('/')
                     }
                   }}
+                  onEditingChange={isEditing => {
+                    setIsEditing(isEditing)
+                    if (isEditing) {
+                      setActiveDisplay('keyboard')
+                    }
+                  }}
+                  isEditing={isEditing}
                 />
               </div>
             </div>

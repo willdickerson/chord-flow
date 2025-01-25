@@ -31,6 +31,8 @@ interface PlaybackControlsProps {
   onChartChange?: (
     chartData: { title: string; composer: string; chords: string[] } | null
   ) => void
+  onEditingChange?: (isEditing: boolean) => void
+  isEditing?: boolean
 }
 
 export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
@@ -38,6 +40,9 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   initialChordNames: propInitialChordNames,
   title,
   composer,
+  onChartChange,
+  onEditingChange,
+  isEditing = false,
 }) => {
   const {
     sequence,
@@ -62,7 +67,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const [chordDuration, setChordDuration] = useState(500)
   const [isLooping, setIsLooping] = useState(false)
   const [isArpeggiating, setIsArpeggiating] = useState(true)
-  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     audioService.setVolume(100)
@@ -398,9 +402,11 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             onChordSequenceChange={updateChordSequence}
             onStop={handleStop}
             playChord={playChord}
-            onEditingChange={setIsEditing}
+            onEditingChange={onEditingChange}
             title={title}
             composer={composer}
+            onChartChange={onChartChange}
+            isEditing={isEditing}
           />
         </div>
       </div>

@@ -14,7 +14,6 @@ export interface ChordChartInputProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   audioService: any
   onChordSequenceChange: (chordSequence: string[]) => void
   onStop: () => void
@@ -25,29 +24,32 @@ export interface ChordChartInputProps {
   onChartChange?: (
     chartData: { title: string; composer: string; chords: string[] } | null
   ) => void
-  songName?: string
+  isEditing?: boolean
 }
 
 export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   sequence,
   currentPosition,
   onPositionSelect,
+  isEnabled,
   initialChordNames,
   isPlaying,
   onNotesChange,
+  audioService,
   onChordSequenceChange,
   onStop,
   playChord,
   onEditingChange,
-  title: initialTitle,
-  composer: initialComposer,
+  title: initialTitle = '',
+  composer: initialComposer = '',
   onChartChange,
+  isEditing: propIsEditing,
 }) => {
   const [inputValue, setInputValue] = useState('')
   const [chartSearchValue, setChartSearchValue] = useState('')
   const [showChartSearch, setShowChartSearch] = useState(false)
   const [selectedChartIndex, setSelectedChartIndex] = useState(0)
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(propIsEditing || false)
   const [dropTarget, setDropTarget] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [draggedChordValue, setDraggedChordValue] = useState<string | null>(
@@ -164,6 +166,12 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     }
   }, [initialChordNames, initialTitle, initialComposer])
 
+  useEffect(() => {
+    if (propIsEditing !== undefined) {
+      setIsEditing(propIsEditing)
+    }
+  }, [propIsEditing])
+
   const handleChordClick = async (chord: string, index: number) => {
     if (isEditing) return
 
@@ -187,6 +195,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     setPreviousChart({ ...currentChart, chords: [...chords] })
     setIsEditing(true)
     onNotesChange([])
+    if (onChartChange) {
+      onChartChange(null)
+    }
   }
 
   const handleEditCancel = () => {
@@ -217,6 +228,9 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     onChordSequenceChange([])
     setIsEditing(true)
     setInputValue('')
+    if (onChartChange) {
+      onChartChange(null)
+    }
   }
 
   const handleDeleteChord = (index: number) => {
