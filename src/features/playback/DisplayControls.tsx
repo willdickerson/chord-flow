@@ -37,12 +37,12 @@ export const DisplayControls: React.FC<DisplayControlsProps> = ({
         aria-disabled={isEditing}
         className={`py-1.5 px-3 rounded-md text-sm font-medium transition-colors outline-none ${
           activeDisplay === 'notation' && !isEditing
-            ? 'bg-[#A4B494] text-[#2C1810]'
-            : 'bg-[#F5E6D3] text-[#2C1810]'
+            ? 'bg-[#A4B494] text-[#2C1810] hover:bg-[#A4B494] focus:bg-[#A4B494] cursor-pointer'
+            : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#A4B494]/50 focus:bg-[#A4B494]/50 cursor-pointer'
         } ${
           isEditing
             ? 'opacity-50 cursor-not-allowed pointer-events-none'
-            : 'hover:bg-[#A4B494]/50 focus:bg-[#A4B494]/50 cursor-pointer'
+            : 'hover:bg-[#A4B494] focus:bg-[#A4B494] cursor-pointer'
         }`}
       >
         Notation

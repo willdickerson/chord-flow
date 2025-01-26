@@ -87,8 +87,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
 
       // Only add padding if the staff is narrower than the container
       if (staffWidth < containerWidth) {
-        // Use different padding ratios for mobile and desktop
-        const paddingRatio = isMobile ? 0.4 : 0.5
+        const paddingRatio = 0.46
         const leftPadding = Math.max(
           0,
           (containerWidth - staffWidth) * paddingRatio
