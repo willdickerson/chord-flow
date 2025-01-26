@@ -64,11 +64,9 @@ const GUITAR_SAMPLES = {
 export const downloadWavFile = async (
   sequence: ChordSequence | null,
   audioService: AudioService,
-  songName?: string,
-  composer?: string
+  songName?: string
 ) => {
   if (!sequence) return
-  console.log('Starting WAV generation...', { sequence })
 
   // Get duration from audioService's initial value if not already set
   const chordDuration =
@@ -77,13 +75,6 @@ export const downloadWavFile = async (
   const currentInstrument = audioService.getCurrentInstrument()
   const instrumentType = audioService.getCurrentInstrumentType()
 
-  console.log('Audio settings:', {
-    chordDuration,
-    totalDuration: duration,
-    isArpeggiating: audioService.isArpeggiating,
-    instrument: instrumentType,
-  })
-
   if (!currentInstrument) {
     console.error('No instrument available')
     return
@@ -91,22 +82,18 @@ export const downloadWavFile = async (
 
   try {
     // Create the offline rendering context
-    console.log('Starting offline rendering...')
-
     const buffer = await Tone.Offline(
       async ({ destination }) => {
         // Create a new instrument instance for offline rendering
-        let offlineInstrument: Tone.Sampler | Tone.PolySynth
+        let offlineInstrument:
+          | Tone.Sampler
+          | Tone.PolySynth<Tone.Synth<Tone.SynthOptions>>
+          | null = null
 
         if (currentInstrument instanceof Tone.Sampler) {
           // For sampled instruments (piano, guitar), we need to create a new sampler and wait for it to load
-          const settings = currentInstrument.get()
-          console.log('Current instrument settings:', settings)
-
           const samples =
             instrumentType === 'piano' ? PIANO_SAMPLES : GUITAR_SAMPLES
-
-          console.log('Creating sampler:', { instrumentType, samples })
 
           await new Promise<void>((resolve, reject) => {
             offlineInstrument = new Tone.Sampler({
@@ -115,7 +102,6 @@ export const downloadWavFile = async (
               release: 1.5,
               attack: instrumentType === 'guitar' ? 0.01 : undefined,
               onload: () => {
-                console.log('Offline sampler loaded')
                 resolve()
               },
               onerror: err => {
@@ -127,13 +113,21 @@ export const downloadWavFile = async (
         } else {
           // For synth, create a new PolySynth with the same settings
           offlineInstrument = new Tone.PolySynth(Tone.Synth, {
-            maxPolyphony: 32,
-            voice: Tone.Synth,
-            options: currentInstrument.get(),
-          }).connect(destination)
+            oscillator: { type: 'sine4' },
+            envelope: {
+              attack: 0.01,
+              decay: 0.2,
+              sustain: 0.5,
+              release: 1.5,
+            },
+          })
+            .set({ volume: -8 })
+            .toDestination()
         }
 
-        console.log('Scheduling notes...')
+        if (!offlineInstrument) {
+          throw new Error('Failed to initialize instrument')
+        }
 
         // Schedule all the notes
         for (let i = 0; i < sequence.chords.length; i++) {
@@ -148,7 +142,7 @@ export const downloadWavFile = async (
             const noteDuration = chordDuration / notes.length // Keep in milliseconds for consistency
 
             // Handle arpeggio direction
-            let notesToPlay = [...notes]
+            const notesToPlay = [...notes]
             if (audioService.getArpeggioType() === 'descending') {
               notesToPlay.reverse()
             } else if (audioService.getArpeggioType() === 'alternating') {
@@ -193,19 +187,11 @@ export const downloadWavFile = async (
       duration / 1000 + 1.5
     ) // Add extra time for release tails
 
-    console.log('Rendering complete, trimming buffer...')
-
     // Calculate where the last note ends
     const lastNoteTime = ((sequence.chords.length - 1) * chordDuration) / 1000 // Start time of last note
     const lastNoteDuration = chordDuration / 1000 // Duration of last note
     const endTime = lastNoteTime + lastNoteDuration + 1 // Add 1s for release tail
     const samplesNeeded = Math.ceil(endTime * buffer.sampleRate)
-
-    console.log('Trimming buffer:', {
-      originalLength: buffer.length,
-      endTime,
-      samplesNeeded,
-    })
 
     // Create a new buffer with the correct length
     const trimmedBuffer = Tone.context.createBuffer(
@@ -222,7 +208,6 @@ export const downloadWavFile = async (
     }
 
     // Create WAV from trimmed buffer
-    console.log('Creating WAV blob...')
     const numberOfChannels = trimmedBuffer.numberOfChannels
     const sampleRate = trimmedBuffer.sampleRate
     const length = trimmedBuffer.length * numberOfChannels * 2
@@ -276,7 +261,6 @@ export const downloadWavFile = async (
     const fileName = songName
       ? `${songName.toLowerCase().replace(/\s+/g, '-')}-chord-flow.wav`
       : 'chord-chart-chord-flow.wav'
-    console.log('Creating download link:', fileName)
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -285,7 +269,6 @@ export const downloadWavFile = async (
 
     // Cleanup
     URL.revokeObjectURL(url)
-    console.log('WAV generation complete!')
   } catch (error) {
     console.error('Error generating WAV:', error)
   }

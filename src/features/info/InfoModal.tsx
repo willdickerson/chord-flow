@@ -44,7 +44,7 @@ export const InfoModal = () => {
                   <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
                     <li>Configurable arpeggio and triad styles</li>
                     <li>Extensive library of jazz standards</li>
-                    <li>MIDI export and shareable chord charts</li>
+                    <li>Audio export and shareable chord charts</li>
                   </ul>
                 </section>
 
@@ -68,7 +68,7 @@ export const InfoModal = () => {
                       Follow the voice leading for smooth chord transitions
                     </li>
                     <li>Use loop mode to master sequences</li>
-                    <li>Try different triad types and styles</li>
+                    <li>Try different triad types</li>
                   </ul>
                 </section>
 
