@@ -41,6 +41,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
                   ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
                   : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
+            title="Ascending Arpeggios"
           >
             Ascending
           </button>
@@ -53,6 +54,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
                   ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
                   : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
+            title="Descending Arpeggios"
           >
             Descending
           </button>
@@ -65,6 +67,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
                   ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
                   : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
+            title="Alternating Arpeggios"
           >
             Alternating
           </button>
