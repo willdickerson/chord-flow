@@ -226,7 +226,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
           format: {
             stretchlast: false,
           },
-          paddingbottom: 0,
+          paddingbottom: 10,
           paddingtop: 0,
           selectionColor: 'transparent',
           dragging: false,
