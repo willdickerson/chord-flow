@@ -56,7 +56,7 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedVoices.bass
                     ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
-                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
@@ -77,7 +77,7 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedVoices.middle
                     ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
-                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
@@ -98,7 +98,7 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
                     : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedVoices.high
                     ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
-                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
