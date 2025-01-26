@@ -69,7 +69,8 @@ export const downloadWavFile = async (
   if (!sequence) return
   console.log('Starting WAV generation...', { sequence })
 
-  const chordDuration = audioService.getChordDuration()
+  // Get duration from audioService's initial value if not already set
+  const chordDuration = (audioService.getChordDuration() || audioService.getInitialChordDuration()) * 2 // Double duration to match live playback
   const duration = sequence.chords.length * chordDuration
   const currentInstrument = audioService.getCurrentInstrument()
   const instrumentType = audioService.getCurrentInstrumentType()
@@ -137,15 +138,45 @@ export const downloadWavFile = async (
         const startTime = i * chordDuration / 1000 // Convert to seconds for Tone.js
         
         if (audioService.isArpeggiating) {
-          // Handle arpeggio playback
-          const noteDuration = (chordDuration / 1000) / notes.length // Convert to seconds
-          for (let j = 0; j < notes.length; j++) {
-            const noteTime = startTime + (j * noteDuration)
-            offlineInstrument.triggerAttackRelease(notes[j], noteDuration, noteTime)
+          // Handle arpeggio playback - match the timing in audioService.playArpeggio
+          const noteDuration = chordDuration / notes.length // Keep in milliseconds for consistency
+          
+          // Handle arpeggio direction
+          let notesToPlay = [...notes]
+          if (audioService.getArpeggioType() === 'descending') {
+            notesToPlay.reverse()
+          } else if (audioService.getArpeggioType() === 'alternating') {
+            if (i % 2 === 1) {
+              notesToPlay.reverse()
+            }
+          }
+          
+          // Schedule each note with proper timing
+          for (let j = 0; j < notesToPlay.length; j++) {
+            const noteStartTime = startTime + (j * noteDuration / 1000) // Convert to seconds for scheduling
+            
+            // Make each note last until the next note starts (or chord ends)
+            const nextNoteTime = j < notesToPlay.length - 1 
+              ? startTime + ((j + 1) * noteDuration / 1000)
+              : startTime + (chordDuration / 1000)
+            
+            const noteDurationSeconds = nextNoteTime - noteStartTime
+            
+            offlineInstrument.triggerAttackRelease(
+              notesToPlay[j],
+              noteDurationSeconds * 0.9, // Slightly shorter for separation
+              noteStartTime,
+              0.7 // Velocity to match live playback
+            )
           }
         } else {
           // Play chord as block
-          offlineInstrument.triggerAttackRelease(notes, chordDuration / 1000, startTime)
+          offlineInstrument.triggerAttackRelease(
+            notes, 
+            chordDuration / 1000 * 0.95, // Make slightly shorter for better separation
+            startTime,
+            0.7 // Velocity to match live playback
+          )
         }
         
         // Add a small delay between iterations to allow for proper scheduling
@@ -154,7 +185,7 @@ export const downloadWavFile = async (
 
       // Wait a bit to ensure all notes are processed
       await new Promise(resolve => setTimeout(resolve, 100))
-    }, duration / 1000 + 0.5) // Add extra time for release tails
+    }, duration / 1000 + 1.5) // Add extra time for release tails
 
     console.log('Rendering complete, creating WAV...')
     
