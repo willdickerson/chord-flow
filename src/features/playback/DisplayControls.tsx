@@ -40,8 +40,8 @@ export const DisplayControls: React.FC<DisplayControlsProps> = ({
             ? 'bg-[#A4B494] text-[#2C1810]'
             : 'bg-[#F5E6D3] text-[#2C1810]'
         } ${
-          isEditing 
-            ? 'opacity-50 cursor-not-allowed pointer-events-none' 
+          isEditing
+            ? 'opacity-50 cursor-not-allowed pointer-events-none'
             : 'hover:bg-[#A4B494]/50 focus:bg-[#A4B494]/50 cursor-pointer'
         }`}
       >

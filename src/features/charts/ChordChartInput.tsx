@@ -14,7 +14,7 @@ export interface ChordChartInputProps {
   initialChordNames?: string[]
   isPlaying: boolean
   onNotesChange: (notes: number[]) => void
-  audioService: any
+  audioService: typeof audioService
   onChordSequenceChange: (chordSequence: string[]) => void
   onStop: () => void
   playChord: (chord: string, index: number) => void
@@ -31,7 +31,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   sequence,
   currentPosition,
   onPositionSelect,
-  isEnabled,
   initialChordNames,
   isPlaying,
   onNotesChange,
