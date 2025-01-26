@@ -42,17 +42,34 @@ function ChartRoute() {
         />
       </div>
 
-      <div className="container mx-auto pt-4">
-        {(activeDisplay === 'keyboard' || isEditing) && (
+      <div className="container mx-auto pt-4 relative">
+        <div
+          className={`absolute w-full transition-opacity duration-200 ${
+            activeDisplay === 'keyboard' || isEditing
+              ? 'opacity-100'
+              : 'opacity-0 pointer-events-none'
+          }`}
+        >
           <PianoKeyboard activeNotes={activeNotes} />
-        )}
-      </div>
-
-      {activeDisplay === 'notation' && !isEditing && (
-        <div className="container mx-auto flex justify-center">
-          <SheetMusic activeNotes={activeNotes} />
         </div>
-      )}
+
+        <div
+          className={`absolute w-full transition-opacity duration-200 ${
+            activeDisplay === 'notation' && !isEditing
+              ? 'opacity-100'
+              : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="flex justify-center">
+            <SheetMusic activeNotes={activeNotes} />
+          </div>
+        </div>
+
+        {/* Invisible div to maintain height */}
+        <div className="invisible">
+          <PianoKeyboard activeNotes={[]} />
+        </div>
+      </div>
 
       <div className="container mx-auto flex items-center justify-center p-4">
         <div className="relative w-full max-w-4xl mx-auto">
