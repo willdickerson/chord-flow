@@ -178,60 +178,91 @@ export const downloadWavFile = async (
             0.7 // Velocity to match live playback
           )
         }
-        
-        // Add a small delay between iterations to allow for proper scheduling
-        await new Promise(resolve => setTimeout(resolve, 0))
       }
 
       // Wait a bit to ensure all notes are processed
       await new Promise(resolve => setTimeout(resolve, 100))
     }, duration / 1000 + 1.5) // Add extra time for release tails
 
-    console.log('Rendering complete, creating WAV...')
-    
-    // Create WAV blob
-    const numberOfChannels = buffer.numberOfChannels
-    const sampleRate = buffer.sampleRate
-    const length = buffer.length * numberOfChannels * 2
-    const outputBuffer = new ArrayBuffer(44 + length)
-    const view = new DataView(outputBuffer)
-    const channels = []
-    
-    // Write WAV header
-    writeString(view, 0, 'RIFF')
-    view.setUint32(4, 36 + length, true)
-    writeString(view, 8, 'WAVE')
-    writeString(view, 12, 'fmt ')
-    view.setUint32(16, 16, true)
-    view.setUint16(20, 1, true)
-    view.setUint16(22, numberOfChannels, true)
-    view.setUint32(24, sampleRate, true)
-    view.setUint32(28, sampleRate * numberOfChannels * 2, true)
-    view.setUint16(32, numberOfChannels * 2, true)
-    view.setUint16(34, 16, true)
-    writeString(view, 36, 'data')
-    view.setUint32(40, length, true)
+    console.log('Rendering complete, trimming buffer...')
 
-    // Write audio data
-    let offset = 44
-    for (let i = 0; i < buffer.numberOfChannels; i++) {
-      channels[i] = buffer.getChannelData(i)
+    // Calculate where the last note ends
+    const lastNoteTime = (sequence.chords.length - 1) * chordDuration / 1000 // Start time of last note
+    const lastNoteDuration = chordDuration / 1000 // Duration of last note
+    const endTime = (lastNoteTime + lastNoteDuration + 1.5) // Add 1.5s for release tail
+    const samplesNeeded = Math.ceil(endTime * buffer.sampleRate)
+
+    console.log('Trimming buffer:', {
+      originalLength: buffer.length,
+      endTime,
+      samplesNeeded
+    })
+
+    // Create a new buffer with the correct length
+    const trimmedBuffer = Tone.context.createBuffer(
+      buffer.numberOfChannels,
+      samplesNeeded,
+      buffer.sampleRate
+    )
+
+    // Copy just the samples we need
+    for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+      const channelData = buffer.getChannelData(channel)
+      const trimmedData = trimmedBuffer.getChannelData(channel)
+      trimmedData.set(channelData.subarray(0, samplesNeeded))
     }
 
+    // Create WAV from trimmed buffer
+    console.log('Creating WAV blob...')
+    const numberOfChannels = trimmedBuffer.numberOfChannels
+    const sampleRate = trimmedBuffer.sampleRate
+    const length = trimmedBuffer.length * numberOfChannels * 2
+    const outputBuffer = new ArrayBuffer(44 + length)
+    const view = new DataView(outputBuffer)
+
+    // Write WAV header
+    const writeString = (view: DataView, offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i))
+      }
+    }
+
+    writeString(view, 0, 'RIFF')                     // RIFF identifier
+    view.setUint32(4, 36 + length, true)            // RIFF chunk length
+    writeString(view, 8, 'WAVE')                     // RIFF type
+    writeString(view, 12, 'fmt ')                    // format chunk identifier
+    view.setUint32(16, 16, true)                    // format chunk length
+    view.setUint16(20, 1, true)                     // sample format (raw)
+    view.setUint16(22, numberOfChannels, true)      // channel count
+    view.setUint32(24, sampleRate, true)            // sample rate
+    view.setUint32(28, sampleRate * 2, true)        // byte rate (sample rate * block align)
+    view.setUint16(32, numberOfChannels * 2, true)  // block align (channel count * bytes per sample)
+    view.setUint16(34, 16, true)                    // bits per sample
+    writeString(view, 36, 'data')                   // data chunk identifier
+    view.setUint32(40, length, true)                // data chunk length
+
+    // Write audio data
+    const channels = []
+    for (let i = 0; i < trimmedBuffer.numberOfChannels; i++) {
+      channels[i] = trimmedBuffer.getChannelData(i)
+    }
+
+    let offset = 44
     while (offset < outputBuffer.byteLength) {
       for (let i = 0; i < numberOfChannels; i++) {
-        const sample = Math.max(-1, Math.min(1, channels[i][(offset - 44) / 2]))
-        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true)
+        const sample = Math.max(-1, Math.min(1, channels[i][(offset - 44) / 2 / numberOfChannels])) * 0x7fff
+        view.setInt16(offset, sample, true)
         offset += 2
       }
     }
 
-    const wavBlob = new Blob([outputBuffer], { type: 'audio/wav' })
+    // Create blob and download
+    const blob = new Blob([outputBuffer], { type: 'audio/wav' })
     
     // Create download link
     const fileName = songName ? `${songName}.wav` : 'chord-sequence.wav'
     console.log('Creating download link:', fileName)
-    const url = URL.createObjectURL(wavBlob)
+    const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
     link.download = fileName
@@ -242,11 +273,5 @@ export const downloadWavFile = async (
     console.log('WAV generation complete!')
   } catch (error) {
     console.error('Error generating WAV:', error)
-  }
-}
-
-function writeString(view: DataView, offset: number, string: string) {
-  for (let i = 0; i < string.length; i++) {
-    view.setUint8(offset + i, string.charCodeAt(i))
   }
 }
