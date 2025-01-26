@@ -281,6 +281,10 @@ export class AudioService {
     return instrument
   }
 
+  getCurrentInstrumentType(): InstrumentType {
+    return this.currentInstrument
+  }
+
   startPlayback(
     sequence: Triad[],
     startPosition: number,
