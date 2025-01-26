@@ -17,6 +17,10 @@ export function buildVoiceLeadingGraph(
     nextNotes: number[]
   ) => number = calculateVoiceLeadingCost
 ): VoiceLeadingGraph {
+  if (!chords.length) {
+    return { nodes: [], edges: [] }
+  }
+
   const nodes: GraphNode[] = []
   const edges: GraphEdge[] = []
 
@@ -270,6 +274,10 @@ export function generateOptimalVoiceLeadingSequence(
   triads: { [key: string]: Inversion[] },
   voiceWeights: { bass: boolean; middle: boolean; high: boolean }
 ): Triad[] {
+  if (!chords.length) {
+    return []
+  }
+
   const costFunction = (currentNotes: number[], nextNotes: number[]) =>
     calculateVoiceLeadingCostWithWeights(currentNotes, nextNotes, voiceWeights)
 

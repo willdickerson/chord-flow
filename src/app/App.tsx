@@ -7,11 +7,18 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { decodeChartData } from '../common/utils/urlUtils'
 import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
+import { SheetMusic } from '../features/playback/SheetMusic'
+import {
+  DisplayControls,
+  DisplayOption,
+} from '../features/playback/DisplayControls'
 
 function ChartRoute() {
   const { encodedData } = useParams()
   const navigate = useNavigate()
   const [activeNotes, setActiveNotes] = useState<number[]>([])
+  const [isEditing, setIsEditing] = useState(false)
+  const [activeDisplay, setActiveDisplay] = useState<DisplayOption>('keyboard')
   const [initialChartData] = useState(() => {
     if (encodedData) {
       try {
@@ -28,7 +35,40 @@ function ChartRoute() {
   return (
     <div className="flex-1">
       <div className="container mx-auto pt-4">
-        <PianoKeyboard activeNotes={activeNotes} />
+        <DisplayControls
+          activeDisplay={activeDisplay}
+          onChange={setActiveDisplay}
+          isEditing={isEditing}
+        />
+      </div>
+
+      <div className="container mx-auto pt-4 relative">
+        <div
+          className={`absolute w-full transition-opacity duration-200 ${
+            activeDisplay === 'keyboard' || isEditing
+              ? 'opacity-100'
+              : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <PianoKeyboard activeNotes={activeNotes} />
+        </div>
+
+        <div
+          className={`absolute w-full transition-opacity duration-200 ${
+            activeDisplay === 'notation' && !isEditing
+              ? 'opacity-100'
+              : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="flex justify-center">
+            <SheetMusic activeNotes={activeNotes} />
+          </div>
+        </div>
+
+        {/* Invisible div to maintain height */}
+        <div className="invisible">
+          <PianoKeyboard activeNotes={[]} />
+        </div>
       </div>
 
       <div className="container mx-auto flex items-center justify-center p-4">
@@ -49,10 +89,21 @@ function ChartRoute() {
                   title={initialChartData?.title}
                   composer={initialChartData?.composer}
                   onChartChange={chartData => {
+                    if (chartData === null) {
+                      setActiveDisplay('keyboard')
+                      return
+                    }
                     if (chartData) {
                       navigate('/')
                     }
                   }}
+                  onEditingChange={isEditing => {
+                    setIsEditing(isEditing)
+                    if (isEditing) {
+                      setActiveDisplay('keyboard')
+                    }
+                  }}
+                  isEditing={isEditing}
                 />
               </div>
             </div>

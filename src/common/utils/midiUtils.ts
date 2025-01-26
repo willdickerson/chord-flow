@@ -1,6 +1,43 @@
 import { ChordSequence, Triad } from '../types/'
 import { AudioService } from '../../services/audioService'
 
+const NOTE_NAMES = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+]
+
+export function midiNoteToName(midiNote: number): string {
+  const noteNum = midiNote % 12
+  const noteLetter = NOTE_NAMES[noteNum].charAt(0)
+  const hasAccidental = NOTE_NAMES[noteNum].length > 1
+  const middleC = 48 // Shifted down one octave to make everything display higher
+  const octaveDiff = midiNote - middleC
+  let octaveMarks = ''
+
+  // For notes below middle C
+  if (octaveDiff < 0) {
+    // Add commas for each octave below middle C
+    octaveMarks = ','.repeat(Math.floor(Math.abs(octaveDiff) / 12) + 1)
+  }
+  // For notes above middle C
+  else if (octaveDiff >= 12) {
+    const octaveCount = Math.floor(octaveDiff / 12)
+    octaveMarks = "'".repeat(octaveCount)
+  }
+
+  return (hasAccidental ? '^' : '') + noteLetter + octaveMarks
+}
+
 export const downloadMidiFile = (
   sequence: ChordSequence | null,
   audioService: AudioService,
