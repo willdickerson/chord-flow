@@ -553,7 +553,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
       sequence ? { chords: sequence } : null,
       audioService,
       currentChart.title,
-      currentChart.composer
     )
   }
 
