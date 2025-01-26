@@ -552,8 +552,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     downloadWavFile(
       sequence ? { chords: sequence } : null,
       audioService,
-      currentChart.title,
-      currentChart.composer
+      currentChart.title
     )
   }
 
