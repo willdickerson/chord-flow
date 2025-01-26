@@ -49,7 +49,7 @@ function ChartRoute() {
       </div>
 
       {activeDisplay === 'notation' && !isEditing && (
-        <div className="container mx-auto flex justify-center pt-4">
+        <div className="container mx-auto flex justify-center">
           <SheetMusic activeNotes={activeNotes} />
         </div>
       )}

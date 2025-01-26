@@ -223,7 +223,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
         const visualObj = ABCJS.renderAbc(divRef.current, abcNotation, {
           add_classes: true,
           staffwidth: 400,
-          scale: 1.2,
+          scale: 1,
           format: {
             stretchlast: false,
           },
@@ -278,7 +278,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
       <div
         className="relative mx-auto mb-2"
         style={{
-          height: '180px',
+          height: '100px',
           maxWidth: '380px',
         }}
       >
@@ -288,7 +288,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
             ref={containerRef}
             style={{
               width: '100%',
-              height: '176px',
+              height: '90px',
               position: 'relative',
               overflow: 'hidden',
             }}
