@@ -70,7 +70,7 @@ export const downloadWavFile = async (
   console.log('Starting WAV generation...', { sequence })
 
   // Get duration from audioService's initial value if not already set
-  const chordDuration = (audioService.getChordDuration() || audioService.getInitialChordDuration()) * 2 // Double duration to match live playback
+  const chordDuration = (audioService.getChordDuration() || audioService.getInitialChordDuration())
   const duration = sequence.chords.length * chordDuration
   const currentInstrument = audioService.getCurrentInstrument()
   const instrumentType = audioService.getCurrentInstrumentType()
@@ -189,7 +189,7 @@ export const downloadWavFile = async (
     // Calculate where the last note ends
     const lastNoteTime = (sequence.chords.length - 1) * chordDuration / 1000 // Start time of last note
     const lastNoteDuration = chordDuration / 1000 // Duration of last note
-    const endTime = (lastNoteTime + lastNoteDuration + 1.5) // Add 1.5s for release tail
+    const endTime = (lastNoteTime + lastNoteDuration + 1) // Add 1s for release tail
     const samplesNeeded = Math.ceil(endTime * buffer.sampleRate)
 
     console.log('Trimming buffer:', {
@@ -260,7 +260,9 @@ export const downloadWavFile = async (
     const blob = new Blob([outputBuffer], { type: 'audio/wav' })
     
     // Create download link
-    const fileName = songName ? `${songName}.wav` : 'chord-sequence.wav'
+    const fileName = songName 
+      ? `${songName.toLowerCase().replace(/\s+/g, '-')}-chord-flow.wav`
+      : 'chord-chart-chord-flow.wav'
     console.log('Creating download link:', fileName)
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
