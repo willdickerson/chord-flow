@@ -261,6 +261,32 @@ export const downloadWavFile = async (
     const fileName = songName
       ? `${songName.toLowerCase().replace(/\s+/g, '-')}-chord-flow.wav`
       : 'chord-chart-chord-flow.wav'
+
+    // Check if we're on mobile
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+
+    // Try Web Share API on mobile
+    if (isMobile && navigator.share && navigator.canShare) {
+      const file = new File([blob], fileName, { type: 'audio/wav' })
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'Download WAV',
+          })
+          return // Exit if sharing was successful
+        } catch (error: unknown) {
+          if (typeof error === 'object' && error && 'name' in error) {
+            if (error.name !== 'AbortError') {
+              console.error('Error sharing file:', error)
+            }
+          }
+          // Fall through to regular download if share fails or is cancelled
+        }
+      }
+    }
+
+    // Regular download for desktop or if Web Share API fails
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -271,7 +297,7 @@ export const downloadWavFile = async (
 
     // Cleanup
     URL.revokeObjectURL(url)
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error generating WAV:', error)
   }
 }
