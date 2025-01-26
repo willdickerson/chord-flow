@@ -44,7 +44,7 @@ export const InfoModal = () => {
                   <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
                     <li>Configurable arpeggio and triad styles</li>
                     <li>Extensive library of jazz standards</li>
-                    <li>MIDI export and shareable chord charts</li>
+                    <li>Audio export and shareable chord charts</li>
                   </ul>
                 </section>
 
@@ -53,9 +53,9 @@ export const InfoModal = () => {
                     How to Use
                   </h3>
                   <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
-                    <li>Choose a song or create your own progression</li>
-                    <li>Set your preferred tempo and instrument sound</li>
-                    <li>Press play to hear the progression</li>
+                    <li>Choose a song or create your own progression.</li>
+                    <li>Set your preferred tempo and instrument sound.</li>
+                    <li>Press play to hear the progression.</li>
                   </ul>
                 </section>
 
@@ -65,10 +65,13 @@ export const InfoModal = () => {
                   </h3>
                   <ul className="text-sm text-[#846C5B] list-disc list-inside space-y-1 sm:space-y-2">
                     <li>
-                      Follow the voice leading for smooth chord transitions
+                      Follow the voice leading for smooth chord transitions.
                     </li>
                     <li>Use loop mode to master sequences</li>
-                    <li>Try different triad types and styles</li>
+                    <li>
+                      Try playing with close triads, open triads, or a mix of
+                      both.
+                    </li>
                   </ul>
                 </section>
 

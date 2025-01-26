@@ -41,13 +41,13 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
                     ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
                     : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedType === 'open'
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
-                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
-            title="Use open triads"
+            title="Use Open Triads"
           >
             Open
           </button>
@@ -62,13 +62,13 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
                     ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
                     : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedType === 'close'
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
-                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
-            title="Use close triads"
+            title="Use Close Triads"
           >
             Close
           </button>
@@ -83,13 +83,13 @@ export const TriadControls: React.FC<TriadControlsProps> = ({
                     ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
                     : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
                   : selectedType === 'all'
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#C9A558] focus:bg-[#C9A558]'
-                    : 'bg-[#F5E6D3] text-[#2C1810] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
               }
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
               ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
             disabled={!isEnabled}
-            title="Use all triad variations"
+            title="Use All Triad Variations"
           >
             All
           </button>

@@ -31,7 +31,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
         <p className="text-sm text-[#846C5B]">
           Select how notes are played when the arpeggio feature is active.
         </p>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-3 w-full gap-2">
           <button
             onClick={() => handleTypeToggle('ascending')}
             className={`flex-1 py-1.5 px-3 rounded-md text-sm font-medium transition-colors outline-none ${
@@ -41,6 +41,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
                   ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
                   : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
+            title="Ascending Arpeggios"
           >
             Ascending
           </button>
@@ -53,6 +54,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
                   ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
                   : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
+            title="Descending Arpeggios"
           >
             Descending
           </button>
@@ -65,6 +67,7 @@ export const ArpeggioControls: React.FC<ArpeggioControlsProps> = ({
                   ? 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448]/20 cursor-pointer'
                   : 'bg-[#F5E6D3] text-[#846C5B]/50 pointer-events-none'
             }`}
+            title="Alternating Arpeggios"
           >
             Alternating
           </button>

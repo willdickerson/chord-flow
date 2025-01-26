@@ -3,8 +3,10 @@ import { Triad } from '../../common/types'
 import { CHORD_CHARTS, convertChartToInputFormat } from './charts'
 import { createShareableUrl } from '../../common/utils/urlUtils'
 import { downloadMidiFile } from '../../common/utils/midiUtils'
+import { downloadWavFile } from '../../common/utils/wavUtils'
 import { Share, Copy, X } from 'lucide-react'
 import { audioService } from '../../services/audioService'
+import { isMobileBrowser } from '../../common/utils/browserUtils'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -408,7 +410,6 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     const overlay = document.createElement('div')
     overlay.className = 'fixed pointer-events-none z-50 text-[#2C1810]'
     overlay.style.width = `${e.currentTarget.offsetWidth}px`
-    overlay.innerHTML = e.currentTarget.innerHTML
     overlay.style.transform = 'translate(-50%, -50%)'
     overlay.style.background = '#F5E6D3'
     overlay.style.padding = '0.375rem 0.75rem'
@@ -561,6 +562,14 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     )
   }
 
+  const handleWavDownload = () => {
+    downloadWavFile(
+      sequence ? { chords: sequence } : null,
+      audioService,
+      currentChart.title
+    )
+  }
+
   const displayChords = isDragging ? visualChords : chords
 
   return (
@@ -651,7 +660,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                 </summary>
                 <div className="flex flex-col gap-2 p-3 border-b border-x border-[#846C5B]/20 rounded-b-md">
                   <p className="text-sm text-[#846C5B]">
-                    Download audio as MIDI.
+                    Download audio as MIDI or WAV.
                   </p>
                   <div className="flex gap-2">
                     <button
@@ -659,6 +668,13 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                       className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
                     >
                       Download MIDI
+                    </button>
+                    <button
+                      onClick={handleWavDownload}
+                      disabled={isMobileBrowser()}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] ${isMobileBrowser() ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#E3B448]/20 focus:bg-[#E3B448]'} transition-colors`}
+                    >
+                      Download WAV
                     </button>
                   </div>
                 </div>
