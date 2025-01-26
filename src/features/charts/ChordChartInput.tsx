@@ -410,6 +410,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     const overlay = document.createElement('div')
     overlay.className = 'fixed pointer-events-none z-50 text-[#2C1810]'
     overlay.style.width = `${e.currentTarget.offsetWidth}px`
+    overlay.innerHTML = e.currentTarget.innerHTML
     overlay.style.transform = 'translate(-50%, -50%)'
     overlay.style.background = '#F5E6D3'
     overlay.style.padding = '0.375rem 0.75rem'
