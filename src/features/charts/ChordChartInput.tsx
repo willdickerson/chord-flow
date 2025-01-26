@@ -6,6 +6,7 @@ import { downloadMidiFile } from '../../common/utils/midiUtils'
 import { downloadWavFile } from '../../common/utils/wavUtils'
 import { Share, Copy, X } from 'lucide-react'
 import { audioService } from '../../services/audioService'
+import { isMobileBrowser } from '../../common/utils/browserUtils'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -657,7 +658,8 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     </button>
                     <button
                       onClick={handleWavDownload}
-                      className="px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors"
+                      disabled={isMobileBrowser()}
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] ${isMobileBrowser() ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#E3B448]/20 focus:bg-[#E3B448]'} transition-colors`}
                     >
                       Download WAV
                     </button>
