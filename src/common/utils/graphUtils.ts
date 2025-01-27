@@ -79,7 +79,6 @@ export function buildVoiceLeadingGraph(
   for (let i = 0; i < chords.length - 1; i++) {
     const currentNodes = nodes.filter(node => node.position === i)
     const nextNodes = nodes.filter(node => node.position === i + 1)
-    const isSameChord = chords[i] === chords[i + 1]
 
     for (const currentNode of currentNodes) {
       // Calculate and store all possible connections with their costs
@@ -89,35 +88,26 @@ export function buildVoiceLeadingGraph(
       }))
 
       for (const conn of possibleConnections) {
-        if (isSameChord) {
-          // For same chords: only add edges if there's some movement (cost > threshold)
-          // and add a small penalty to prefer movement when possible
-          if (conn.cost > COST_THRESHOLD) {
-            edges.push({
-              from: currentNode,
-              to: conn.node,
-              weight: conn.cost + SAME_CHORD_PENALTY,
-            })
-          } else {
-            // If cost is near zero (same voicing), only add if there are no better options
-            const hasMovementOptions = possibleConnections.some(
-              other => other.cost > COST_THRESHOLD
-            )
-            if (!hasMovementOptions) {
-              edges.push({
-                from: currentNode,
-                to: conn.node,
-                weight: COST_THRESHOLD,
-              })
-            }
-          }
-        } else {
-          // For different chords: add all reasonable connections
+        // Only add edges if there's some movement (cost > threshold)
+        // and add a small penalty to prefer movement when possible
+        if (conn.cost > COST_THRESHOLD) {
           edges.push({
             from: currentNode,
             to: conn.node,
-            weight: conn.cost,
+            weight: conn.cost + SAME_CHORD_PENALTY,
           })
+        } else {
+          // If cost is near zero (same voicing), only add if there are no better options
+          const hasMovementOptions = possibleConnections.some(
+            other => other.cost > COST_THRESHOLD
+          )
+          if (!hasMovementOptions) {
+            edges.push({
+              from: currentNode,
+              to: conn.node,
+              weight: COST_THRESHOLD,
+            })
+          }
         }
       }
 
