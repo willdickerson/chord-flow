@@ -7,15 +7,31 @@ import { audioService } from '../../services/audioService'
 
 interface SheetMusicProps {
   activeNotes: number[]
+  currentChords?: string[]
 }
 
-export const SheetMusic: React.FC<SheetMusicProps> = ({ activeNotes }) => {
+export const SheetMusic: React.FC<SheetMusicProps> = ({
+  activeNotes,
+  currentChords,
+}) => {
   const divRef = useRef<HTMLDivElement>(null)
   const visualObjRef = useRef<unknown>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const previousChordsRef = useRef<string[]>([])
 
   const { sequence, currentPosition } = usePlaybackState(() => {})
+
+  useEffect(() => {
+    const safeCurrentChords = currentChords ?? []
+    const chordsChanged =
+      JSON.stringify(safeCurrentChords) !==
+      JSON.stringify(previousChordsRef.current)
+    if (chordsChanged) {
+      audioService.setPosition(0)
+      previousChordsRef.current = safeCurrentChords
+    }
+  }, [currentChords])
 
   useEffect(() => {
     const handleResize = () => {

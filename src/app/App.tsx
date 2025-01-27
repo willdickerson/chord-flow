@@ -19,11 +19,13 @@ function ChartRoute() {
   const [activeNotes, setActiveNotes] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [activeDisplay, setActiveDisplay] = useState<DisplayOption>('keyboard')
+  const [currentChords, setCurrentChords] = useState<string[]>([])
   const [initialChartData] = useState(() => {
     if (encodedData) {
       try {
         const data = decodeChartData(encodedData)
         audioService.setCurrentChordNames(data.chords)
+        setCurrentChords(data.chords)
         return data
       } catch (error) {
         console.error('Failed to decode chart data:', error)
@@ -61,7 +63,10 @@ function ChartRoute() {
           }`}
         >
           <div className="flex justify-center">
-            <SheetMusic activeNotes={activeNotes} />
+            <SheetMusic
+              activeNotes={activeNotes}
+              currentChords={currentChords}
+            />
           </div>
         </div>
 
@@ -89,6 +94,7 @@ function ChartRoute() {
                   title={initialChartData?.title}
                   composer={initialChartData?.composer}
                   onChartChange={chartData => {
+                    setCurrentChords(chartData?.chords ?? [])
                     if (chartData === null) {
                       setActiveDisplay('keyboard')
                       return
