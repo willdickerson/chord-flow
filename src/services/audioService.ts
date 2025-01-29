@@ -54,6 +54,10 @@ export class AudioService {
     })
   }
 
+  public getIsInitialized(): boolean {
+    return this.isInitialized
+  }
+
   get shouldStop(): boolean {
     return this._shouldStop
   }

@@ -4,9 +4,8 @@ import { CHORD_CHARTS, convertChartToInputFormat } from './charts'
 import { createShareableUrl } from '../../common/utils/urlUtils'
 import { downloadMidiFile } from '../../common/utils/midiUtils'
 import { downloadWavFile } from '../../common/utils/wavUtils'
-import { Share, Copy, X } from 'lucide-react'
+import { Share, Copy, X, Loader2 } from 'lucide-react'
 import { audioService } from '../../services/audioService'
-import { isMobileBrowser } from '../../common/utils/browserUtils'
 
 export interface ChordChartInputProps {
   sequence: Triad[] | null
@@ -72,6 +71,7 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
   const shareButtonRef = useRef<HTMLButtonElement>(null)
+  const [isWavDownloading, setIsWavDownloading] = useState(false)
 
   const charts = CHORD_CHARTS.map(chart => convertChartToInputFormat(chart))
   const giantStepsIndex = charts.findIndex(
@@ -563,12 +563,17 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
     )
   }
 
-  const handleWavDownload = () => {
-    downloadWavFile(
-      sequence ? { chords: sequence } : null,
-      audioService,
-      currentChart.title
-    )
+  const handleWavDownload = async () => {
+    setIsWavDownloading(true)
+    try {
+      await downloadWavFile(
+        sequence ? { chords: sequence } : null,
+        audioService,
+        currentChart.title
+      )
+    } finally {
+      setIsWavDownloading(false)
+    }
   }
 
   const displayChords = isDragging ? visualChords : chords
@@ -672,10 +677,19 @@ export const ChordChartInput: React.FC<ChordChartInputProps> = ({
                     </button>
                     <button
                       onClick={handleWavDownload}
-                      disabled={isMobileBrowser()}
-                      className={`px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] ${isMobileBrowser() ? 'bg-[#F5E6D3]/50 text-[#846C5B]/50 cursor-not-allowed pointer-events-none' : 'hover:bg-[#E3B448]/20 focus:bg-[#E3B448]'} transition-colors`}
+                      disabled={isWavDownloading}
+                      className={`relative px-3 py-1.5 rounded-md text-sm font-medium bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/20 focus:bg-[#E3B448] transition-colors ${
+                        isWavDownloading ? 'opacity-50' : ''
+                      }`}
                     >
-                      Download WAV
+                      <span className="invisible">Download WAV</span>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        {isWavDownloading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Download WAV'
+                        )}
+                      </div>
                     </button>
                   </div>
                 </div>

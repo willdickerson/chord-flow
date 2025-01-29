@@ -68,6 +68,16 @@ export const downloadWavFile = async (
 ) => {
   if (!sequence) return
 
+  if (!audioService.getIsInitialized()) {
+    try {
+      await audioService.initialize()
+      await audioService.loadSampledInstruments()
+    } catch (err) {
+      console.error('Failed to initialize audio:', err)
+      return
+    }
+  }
+
   // Get duration from audioService's initial value if not already set
   const chordDuration =
     audioService.getChordDuration() || audioService.getInitialChordDuration()
