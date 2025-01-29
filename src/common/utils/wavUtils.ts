@@ -203,24 +203,29 @@ export const downloadWavFile = async (
     const endTime = lastNoteTime + lastNoteDuration + 1 // Add 1s for release tail
     const samplesNeeded = Math.ceil(endTime * buffer.sampleRate)
 
-    // Create a new buffer with the correct length
-    const trimmedBuffer = Tone.context.createBuffer(
-      buffer.numberOfChannels,
+    const monoBuffer = Tone.context.createBuffer(
+      1,
       samplesNeeded,
       buffer.sampleRate
     )
 
-    // Copy just the samples we need
-    for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
-      const channelData = buffer.getChannelData(channel)
-      const trimmedData = trimmedBuffer.getChannelData(channel)
-      trimmedData.set(channelData.subarray(0, samplesNeeded))
+    // Mix down to mono if source is stereo
+    const monoData = monoBuffer.getChannelData(0)
+    if (buffer.numberOfChannels === 2) {
+      const left = buffer.getChannelData(0)
+      const right = buffer.getChannelData(1)
+      for (let i = 0; i < samplesNeeded; i++) {
+        monoData[i] = (left[i] + right[i]) / 2 // Average the channels
+      }
+    } else {
+      // If source is already mono, just copy it
+      monoData.set(buffer.getChannelData(0).subarray(0, samplesNeeded))
     }
 
-    // Create WAV from trimmed buffer
-    const numberOfChannels = trimmedBuffer.numberOfChannels
-    const sampleRate = trimmedBuffer.sampleRate
-    const length = trimmedBuffer.length * numberOfChannels * 2
+    // Create WAV from mono buffer
+    const numberOfChannels = 1
+    const sampleRate = monoBuffer.sampleRate
+    const length = monoBuffer.length * numberOfChannels * 2
     const outputBuffer = new ArrayBuffer(44 + length)
     const view = new DataView(outputBuffer)
 
@@ -246,22 +251,13 @@ export const downloadWavFile = async (
     view.setUint32(40, length, true) // data chunk length
 
     // Write audio data
-    const channels = []
-    for (let i = 0; i < trimmedBuffer.numberOfChannels; i++) {
-      channels[i] = trimmedBuffer.getChannelData(i)
-    }
-
+    const monoChannel = monoBuffer.getChannelData(0)
     let offset = 44
     while (offset < outputBuffer.byteLength) {
-      for (let i = 0; i < numberOfChannels; i++) {
-        const sample =
-          Math.max(
-            -1,
-            Math.min(1, channels[i][(offset - 44) / 2 / numberOfChannels])
-          ) * 0x7fff
-        view.setInt16(offset, sample, true)
-        offset += 2
-      }
+      const sample =
+        Math.max(-1, Math.min(1, monoChannel[(offset - 44) / 2])) * 0x7fff
+      view.setInt16(offset, sample, true)
+      offset += 2
     }
 
     // Create blob and download
