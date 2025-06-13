@@ -139,7 +139,6 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
         activeNotes.length > 0
           ? activeNotes
               .map(note => midiNoteToName(note))
-              .map(note => note.replace('#', '^').replace('b', '_'))
           : ['z']
 
       abcNotation = `
@@ -154,8 +153,14 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
         rowStartIndex,
         Math.min(rowStartIndex + 4, currentSequence.length)
       )
-      const measureNotes = rowChords.map((chord: Triad) => {
-        const noteNames = chord.midiNotes.map(note => midiNoteToName(note))
+      const measureNotes = rowChords.map((chord: Triad, index: number) => {
+        let chordName = chord.chordName || ''
+        if (!chordName && currentChords) {
+          chordName = currentChords[rowStartIndex + index] || ''
+        }
+        
+        // Pass chord name for proper enharmonic spelling
+        const noteNames = chord.midiNotes.map(note => midiNoteToName(note, chordName))
         return `[${noteNames.join('')}]`
       })
 
@@ -165,18 +170,35 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
 
       const accidentalsByNote: { [key: string]: string } = {}
       const measureWithNaturals = measureNotes.map(chord => {
-        const notes = chord.slice(1, -1).match(/(\^?[A-Za-g]'*,*)/g) || []
+        // Regex to capture both sharp (^) and flat (_) accidentals
+        const notes = chord.slice(1, -1).match(/(\^|_)?[A-Za-g]'*,*/g) || []
 
         const processedNotes = notes.map(note => {
           const noteLetter = note.match(/[A-Za-g]/)?.[0] || ''
           const hasSharp = note.startsWith('^')
+          const hasFlat = note.startsWith('_')
           const octaveMarks = note.match(/['|,]+/)?.[0] || ''
           const prevAccidental = accidentalsByNote[noteLetter]
-          const needsNatural = prevAccidental === '^' && !hasSharp
+          
+          // Track accidentals by note letter
+          if (hasSharp) {
+            accidentalsByNote[noteLetter] = '^'
+          } else if (hasFlat) {
+            accidentalsByNote[noteLetter] = '_'
+          } else {
+            // Only clear accidental if this is an explicit natural
+            if (prevAccidental) {
+              accidentalsByNote[noteLetter] = ''
+            }
+          }
+          
+          // Determine if we need a natural sign
+          const needsNatural = (prevAccidental === '^' || prevAccidental === '_') && 
+                              !hasSharp && !hasFlat
 
-          accidentalsByNote[noteLetter] = hasSharp ? '^' : ''
-
-          return `${hasSharp ? '^' : needsNatural ? '=' : ''}${noteLetter}${octaveMarks}`
+          // Build the note with proper accidental
+          const accidental = hasSharp ? '^' : hasFlat ? '_' : needsNatural ? '=' : ''
+          return `${accidental}${noteLetter}${octaveMarks}`
         })
 
         return `[${processedNotes.join('')}]`
@@ -258,7 +280,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
     } catch (error) {
       console.error('Error rendering ABC notation:', error)
     }
-  }, [activeNotes, isMobile])
+  }, [activeNotes, isMobile, currentChords])
 
   useEffect(() => {
     const updateSelection = () => {

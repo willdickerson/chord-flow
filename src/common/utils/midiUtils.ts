@@ -1,41 +1,139 @@
 import { ChordSequence, Triad } from '../types/'
 import { AudioService } from '../../services/audioService'
 
-const NOTE_NAMES = [
-  'C',
-  'C#',
-  'D',
-  'D#',
-  'E',
-  'F',
-  'F#',
-  'G',
-  'G#',
-  'A',
-  'A#',
-  'B',
-]
 
-export function midiNoteToName(midiNote: number): string {
+export function midiNoteToName(
+  midiNote: number,
+  chordContext?: string
+): string {
   const noteNum = midiNote % 12
-  const noteLetter = NOTE_NAMES[noteNum].charAt(0)
-  const hasAccidental = NOTE_NAMES[noteNum].length > 1
   const middleC = 48 // Shifted down one octave to make everything display higher
   const octaveDiff = midiNote - middleC
   let octaveMarks = ''
-
-  // For notes below middle C
   if (octaveDiff < 0) {
     // Add commas for each octave below middle C
     octaveMarks = ','.repeat(Math.floor(Math.abs(octaveDiff) / 12) + 1)
-  }
-  // For notes above middle C
-  else if (octaveDiff >= 12) {
+  } else if (octaveDiff >= 12) {
     const octaveCount = Math.floor(octaveDiff / 12)
     octaveMarks = "'".repeat(octaveCount)
   }
-
-  return (hasAccidental ? '^' : '') + noteLetter + octaveMarks
+  
+  // Define the proper theoretical spelling for each scale degree in various contexts
+  // These are arranged as [key][scale degree] to get the correct spelling
+  const noteSpellings: Record<string, string[]> = {
+    // Sharp-based major scales
+    'C': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'G': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'D': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'A': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'E': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'B': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'F#': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    'C#': ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'],
+    
+    // Flat-based major scales
+    'F': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+    'Bb': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+    'Eb': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+    'Ab': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+    'Db': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+    'Gb': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+    'Cb': ['C', '_D', 'D', '_E', 'E', 'F', '_G', 'G', '_A', 'A', '_B', 'B'],
+  };
+  
+  // Define the preferred accidental patterns for different chord qualities
+  // Minor chords have flat thirds, diminished chords have flat thirds and fifths
+  const minorMods = [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]; // 1 = use flat at this scale degree
+  const diminishedMods = [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]; // Use flats at 3rd, 6th (dim 5th), and 10th (dim 7th)
+  
+  // Parse chord to identify root and quality
+  let rootNoteName = '';
+  let chordRoot = -1 // MIDI note number of the root (0-11)
+  let isMinorChord = false
+  let isDiminishedChord = false
+  let isAugmentedChord = false
+  
+  if (chordContext) {
+    // Extract the root note from the chord name
+    const rootMatch = chordContext.match(/^([A-G][#b]?)/);
+    if (rootMatch) {
+      rootNoteName = rootMatch[1];
+      
+      // Define a map to convert root note names to MIDI note numbers
+      const rootToMidi: Record<string, number> = {
+        'C': 0, 'C#': 1, 'Db': 1,
+        'D': 2, 'D#': 3, 'Eb': 3,
+        'E': 4, 'F': 5, 'F#': 6, 
+        'Gb': 6, 'G': 7, 'G#': 8, 
+        'Ab': 8, 'A': 9, 'A#': 10, 
+        'Bb': 10, 'B': 11
+      };
+      
+      chordRoot = rootToMidi[rootNoteName] ?? -1;
+      
+      // Detect chord quality from the chord name
+      const remainingPart = chordContext.substring(rootMatch[0].length);
+      
+      isMinorChord = (remainingPart.startsWith('m') || remainingPart.startsWith('-')) && 
+                    !chordContext.includes('maj') && 
+                    !chordContext.includes('dim') && 
+                    !chordContext.includes('aug');
+                    
+      isDiminishedChord = chordContext.includes('dim') || 
+                          chordContext.includes('°') || 
+                          chordContext.includes('o');
+                          
+      isAugmentedChord = chordContext.includes('aug') || 
+                         chordContext.includes('+');
+    }
+  }
+  
+  // If no valid chord context, default to C major/A minor (no sharps/flats)
+  if (!rootNoteName || chordRoot < 0) {
+    // For notes without context, use standard notation
+    // Simply use the ABC note name (using sharp notation)
+    const basicNoteNames = ['C', '^C', 'D', '^D', 'E', 'F', '^F', 'G', '^G', 'A', '^A', 'B'];
+    return basicNoteNames[noteNum] + octaveMarks;
+  }
+  
+  // Determine what position (scale degree) this note is in the chord
+  const notePosition = (noteNum - chordRoot + 12) % 12;
+  
+  // Use the appropriate key spelling based on the root accidental
+  // Flats use flat-based notation, sharps and naturals use sharp-based
+  let spellingKey = rootNoteName.charAt(0); // Base note (A-G)
+  if (rootNoteName.includes('b')) {
+    // Use the flat-based spelling for this key
+    spellingKey = rootNoteName.slice(0, -1) + 'b';
+  } else if (rootNoteName.includes('#')) {
+    // Use the sharp-based spelling for this key
+    spellingKey = rootNoteName.slice(0, -1) + '#';
+  }
+  
+  // Default to C for any key not in our mapping
+  const keySpelling = noteSpellings[spellingKey] || noteSpellings['C'];
+  
+  // Adjust the spelling based on chord quality
+  if (isMinorChord) {
+    // Minor chords use flat third (position 3)
+    return minorMods[notePosition] ? 
+           noteSpellings['F'][noteNum] + octaveMarks : // Flat-based notation for minor third
+           keySpelling[noteNum] + octaveMarks;
+  } 
+  else if (isDiminishedChord) {
+    // Diminished chords use flat third, fifth, and seventh
+    return diminishedMods[notePosition] ? 
+           noteSpellings['F'][noteNum] + octaveMarks : // Flat-based notation 
+           keySpelling[noteNum] + octaveMarks;
+  }
+  else if (isAugmentedChord && notePosition === 8) {
+    // Augmented chords use sharp fifth (position 8)
+    return noteSpellings['C'][noteNum] + octaveMarks; // Sharp-based notation for augmented fifth
+  } 
+  else {
+    // Regular major or other chord - use the standard notation for that key
+    return keySpelling[noteNum] + octaveMarks;
+  }
 }
 
 export const downloadMidiFile = (
