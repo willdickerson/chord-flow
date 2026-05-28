@@ -1,11 +1,25 @@
 import { useState, useRef, useCallback } from 'react'
 import { audioService } from '../../services/audioService'
-import { Triad } from '../../common/types'
+import {
+  ChordMode,
+  SeventhVoiceLeadingState,
+  Triad,
+  VoiceLeadingState,
+} from '../../common/types'
 
-interface VoiceLeadingState {
-  bass: boolean
-  middle: boolean
-  high: boolean
+type AnyVoiceLeadingState = VoiceLeadingState | SeventhVoiceLeadingState
+
+const DEFAULT_TRIAD_VOICES: VoiceLeadingState = {
+  bass: true,
+  middle: true,
+  high: true,
+}
+
+const DEFAULT_SEVENTH_VOICES: SeventhVoiceLeadingState = {
+  bass: true,
+  tenor: true,
+  alto: true,
+  soprano: true,
 }
 
 export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
@@ -14,13 +28,9 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [voiceLeadingState, setVoiceLeadingState] = useState<VoiceLeadingState>(
-    {
-      bass: true,
-      middle: true,
-      high: true,
-    }
-  )
+  const [chordMode, setChordModeState] = useState<ChordMode>('triad')
+  const [voiceLeadingState, setVoiceLeadingState] =
+    useState<AnyVoiceLeadingState>(DEFAULT_TRIAD_VOICES)
   const displayedNotesRef = useRef<number[]>([])
 
   const generateSequence = useCallback(async () => {
@@ -143,8 +153,25 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
   )
 
   const handleVoiceLeadingChange = useCallback(
-    (voices: VoiceLeadingState) => {
+    (voices: AnyVoiceLeadingState) => {
       setVoiceLeadingState(voices)
+      if (isPlaying) {
+        audioService.stopPlayback()
+        setIsPlaying(false)
+      }
+      setCurrentPosition(0)
+      generateSequence()
+    },
+    [isPlaying, generateSequence]
+  )
+
+  const handleChordModeChange = useCallback(
+    (mode: ChordMode) => {
+      audioService.setChordMode(mode)
+      setChordModeState(mode)
+      const defaults =
+        mode === 'seventh' ? DEFAULT_SEVENTH_VOICES : DEFAULT_TRIAD_VOICES
+      setVoiceLeadingState(defaults)
       if (isPlaying) {
         audioService.stopPlayback()
         setIsPlaying(false)
@@ -168,10 +195,12 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     isPlaying,
     error,
     voiceLeadingState,
+    chordMode,
     handlePlayback,
     handleRestart,
     handlePositionSelect,
     handleVoiceLeadingChange,
+    handleChordModeChange,
     handleStop,
     updateChordSequence,
   }

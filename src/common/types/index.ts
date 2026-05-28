@@ -27,6 +27,15 @@ export interface VoiceLeadingState {
   high: boolean
 }
 
+export interface SeventhVoiceLeadingState {
+  bass: boolean
+  tenor: boolean
+  alto: boolean
+  soprano: boolean
+}
+
+export type ChordMode = 'triad' | 'seventh'
+
 export type VoiceLeadingGraph = {
   nodes: GraphNode[]
   edges: GraphEdge[]
@@ -41,6 +50,16 @@ export const SCALE_INTERVALS: ScaleIntervals = {
   m: [2, 1, 2, 2, 1, 2, 2], // Minor
   dim: [2, 1, 2, 1, 2, 1, 2], // Diminished
   aug: [3, 1, 3, 1, 3], // Augmented
+}
+
+// Semitone offsets from the root for 4-note (seventh) chord qualities.
+export const SEVENTH_CHORD_INTERVALS: { [key: string]: number[] } = {
+  maj7: [0, 4, 7, 11],
+  '7': [0, 4, 7, 10],
+  m7: [0, 3, 7, 10],
+  m7b5: [0, 3, 6, 10],
+  dim7: [0, 3, 6, 9],
+  mMaj7: [0, 3, 7, 11],
 }
 
 export const CHROMATIC_SCALE = [

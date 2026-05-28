@@ -1,37 +1,70 @@
 import React from 'react'
+import {
+  ChordMode,
+  SeventhVoiceLeadingState,
+  VoiceLeadingState,
+} from '../../common/types'
+
+type AnyVoiceLeadingState = VoiceLeadingState | SeventhVoiceLeadingState
 
 interface VoiceLeadingControlsProps {
-  onVoiceLeadingChange: (voices: {
-    bass: boolean
-    middle: boolean
-    high: boolean
-  }) => void
+  onVoiceLeadingChange: (voices: AnyVoiceLeadingState) => void
   isEnabled: boolean
+  chordMode?: ChordMode
 }
+
+const TRIAD_VOICES: Array<{ key: keyof VoiceLeadingState; label: string }> = [
+  { key: 'bass', label: 'Bass' },
+  { key: 'middle', label: 'Middle' },
+  { key: 'high', label: 'High' },
+]
+
+const SEVENTH_VOICES: Array<{
+  key: keyof SeventhVoiceLeadingState
+  label: string
+}> = [
+  { key: 'bass', label: 'Bass' },
+  { key: 'tenor', label: 'Tenor' },
+  { key: 'alto', label: 'Alto' },
+  { key: 'soprano', label: 'Soprano' },
+]
 
 export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
   onVoiceLeadingChange,
   isEnabled,
+  chordMode = 'triad',
 }) => {
-  const [selectedVoices, setSelectedVoices] = React.useState({
-    bass: true,
-    middle: true,
-    high: true,
-  })
+  const initial: AnyVoiceLeadingState =
+    chordMode === 'seventh'
+      ? { bass: true, tenor: true, alto: true, soprano: true }
+      : { bass: true, middle: true, high: true }
 
-  const handleVoiceToggle = (voice: 'bass' | 'middle' | 'high') => {
+  const [selectedVoices, setSelectedVoices] =
+    React.useState<AnyVoiceLeadingState>(initial)
+
+  React.useEffect(() => {
+    setSelectedVoices(initial)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chordMode])
+
+  const voices =
+    chordMode === 'seventh'
+      ? SEVENTH_VOICES
+      : (TRIAD_VOICES as Array<{ key: string; label: string }>)
+
+  const handleVoiceToggle = (voice: string) => {
     if (!isEnabled) return
-
     const newVoices = {
       ...selectedVoices,
-      [voice]: !selectedVoices[voice],
-    }
-
+      [voice]: !(selectedVoices as unknown as Record<string, boolean>)[voice],
+    } as AnyVoiceLeadingState
     if (Object.values(newVoices).some(v => v)) {
       setSelectedVoices(newVoices)
       onVoiceLeadingChange(newVoices)
     }
   }
+
+  const gridCols = voices.length === 4 ? 'grid-cols-4' : 'grid-cols-3'
 
   return (
     <details className="w-full group">
@@ -44,69 +77,32 @@ export const VoiceLeadingControls: React.FC<VoiceLeadingControlsProps> = ({
         <p className="text-sm text-[#846C5B]">
           Select which voices to consider when generating voice leading.
         </p>
-        <div className="grid grid-cols-3 w-full gap-2">
-          {/* Bass Voice */}
-          <button
-            onClick={() => handleVoiceToggle('bass')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-              ${
-                !isEnabled
-                  ? selectedVoices.bass
-                    ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
-                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
-                  : selectedVoices.bass
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
-                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
-              }
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
-              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
-            disabled={!isEnabled}
-            title="Optimize Bass Voice"
-          >
-            Bass
-          </button>
-
-          {/* Middle Voice */}
-          <button
-            onClick={() => handleVoiceToggle('middle')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-              ${
-                !isEnabled
-                  ? selectedVoices.middle
-                    ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
-                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
-                  : selectedVoices.middle
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
-                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
-              }
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
-              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
-            disabled={!isEnabled}
-            title="Optimize Middle Voice"
-          >
-            Middle
-          </button>
-
-          {/* High Voice */}
-          <button
-            onClick={() => handleVoiceToggle('high')}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-              ${
-                !isEnabled
-                  ? selectedVoices.high
-                    ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
-                    : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
-                  : selectedVoices.high
-                    ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
-                    : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
-              }
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
-              ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
-            disabled={!isEnabled}
-            title="Optimize High Voice"
-          >
-            High
-          </button>
+        <div className={`grid ${gridCols} w-full gap-2`}>
+          {voices.map(({ key, label }) => {
+            const isSelected = (selectedVoices as unknown as Record<string, boolean>)[key]
+            return (
+              <button
+                key={key}
+                onClick={() => handleVoiceToggle(key)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors
+                  ${
+                    !isEnabled
+                      ? isSelected
+                        ? 'bg-[#E3B448]/30 text-[#2C1810]/50'
+                        : 'bg-[#F5E6D3]/50 text-[#846C5B]/50'
+                      : isSelected
+                        ? 'bg-[#E3B448] text-[#846C5B] hover:bg-[#E3B448] focus:bg-[#E3B448]'
+                        : 'bg-[#F5E6D3] text-[#846C5B] hover:bg-[#E3B448]/10 focus:bg-[#E3B448]/10'
+                  }
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E3B448]/50
+                  ${!isEnabled ? 'cursor-not-allowed pointer-events-none' : ''}`}
+                disabled={!isEnabled}
+                title={`Optimize ${label} Voice`}
+              >
+                {label}
+              </button>
+            )
+          })}
         </div>
       </div>
     </details>

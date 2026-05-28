@@ -1,6 +1,7 @@
 import {
   CHROMATIC_SCALE,
   SCALE_INTERVALS,
+  SEVENTH_CHORD_INTERVALS,
   ENHARMONIC_MAP,
   Inversion,
   NOTE_TO_MIDI_BASE,
@@ -108,7 +109,7 @@ function generatePermutations(notes: string[]): string[] {
   return result
 }
 
-export function findAllTriadsInRange(
+export function findAllVoicingsInRange(
   notes: string[],
   midiRange: [number, number]
 ): number[][] {
@@ -118,35 +119,112 @@ export function findAllTriadsInRange(
   const validMidis: number[][] = []
   const octaves = [-2, -1, 0, 1, 2]
 
-  for (const o1 of octaves) {
-    for (const o2 of octaves) {
-      for (const o3 of octaves) {
-        const midiNotes = [
-          baseMidis[0] + o1 * 12,
-          baseMidis[1] + o2 * 12,
-          baseMidis[2] + o3 * 12,
-        ]
-
-        const inRange = midiNotes.every(
-          midi => midiRange[0] <= midi && midi <= midiRange[1]
-        )
-
-        // Check if notes are in ascending order
-        const isAscending = midiNotes.every(
-          (midi, i) => i === 0 || midi > midiNotes[i - 1]
-        )
-
-        // Check that no two neighboring notes are more than an octave apart
-        const withinOctave = midiNotes.every(
-          (midi, i) => i === 0 || Math.abs(midi - midiNotes[i - 1]) <= 12
-        )
-
-        if (inRange && isAscending && withinOctave) {
-          validMidis.push(midiNotes)
-        }
-      }
+  const recurse = (acc: number[]) => {
+    const i = acc.length
+    if (i === baseMidis.length) {
+      validMidis.push(acc)
+      return
+    }
+    for (const o of octaves) {
+      const midi = baseMidis[i] + o * 12
+      if (midi < midiRange[0] || midi > midiRange[1]) continue
+      if (i > 0 && midi <= acc[i - 1]) continue // ascending
+      if (i > 0 && midi - acc[i - 1] > 12) continue // within an octave of previous
+      recurse([...acc, midi])
     }
   }
 
+  recurse([])
   return validMidis
+}
+
+export function findAllTriadsInRange(
+  notes: string[],
+  midiRange: [number, number]
+): number[][] {
+  return findAllVoicingsInRange(notes, midiRange)
+}
+
+function parseSeventhChord(chord: string): {
+  originalRoot: string
+  standardizedRoot: string
+  chordType: string
+} {
+  const match = chord.match(/^([A-G][#b]?)(.*)$/)
+  if (!match) {
+    console.error('Invalid chord format:', chord)
+    return { originalRoot: 'C', standardizedRoot: 'C', chordType: 'maj7' }
+  }
+
+  const originalRoot = match[1]
+  const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
+  const suffix = match[2] || ''
+
+  let chordType: string
+  if (suffix.includes('m7b5') || suffix.includes('ø')) {
+    chordType = 'm7b5'
+  } else if (suffix.includes('dim7') || suffix.includes('°7')) {
+    chordType = 'dim7'
+  } else if (suffix.includes('dim') || suffix.includes('°')) {
+    chordType = 'm7b5' // half-dim is the most common interpretation of a bare "dim" in a 7th-chord context
+  } else if (suffix.includes('mMaj7') || suffix.includes('mM7')) {
+    chordType = 'mMaj7'
+  } else if (suffix.includes('maj7') || suffix.includes('M7')) {
+    chordType = 'maj7'
+  } else if (suffix.startsWith('m')) {
+    chordType = 'm7'
+  } else if (suffix.includes('7')) {
+    chordType = '7'
+  } else if (suffix.includes('aug') || suffix.includes('+')) {
+    chordType = '7' // closest 4-note approximation; aug7 not yet modeled
+  } else {
+    chordType = 'maj7' // bare major chord -> major 7th in seventh mode
+  }
+
+  return { originalRoot, standardizedRoot, chordType }
+}
+
+// Cyclic rotations of the canonical tertian stack [1, 3, 5, 7] —
+// these are the four close-position inversions: root, 1st, 2nd, 3rd.
+function rotations<T>(arr: T[]): T[][] {
+  return arr.map((_, i) => [...arr.slice(i), ...arr.slice(0, i)])
+}
+
+// Drop-2: take a close-position voicing (low-to-high in pitch class) and
+// move the second-from-top voice down an octave, so it becomes the new bass.
+// For a 4-note voicing [a, b, c, d], drop-2 yields [c, a, b, d].
+function dropTwo(closeVoicing: string[]): string[] {
+  if (closeVoicing.length !== 4) return closeVoicing
+  const [a, b, c, d] = closeVoicing
+  return [c, a, b, d]
+}
+
+export function generateSeventhChords(
+  chord: string,
+  voicingType: 'all' | 'close' | 'open' = 'all'
+): Inversion[] {
+  const { originalRoot, standardizedRoot, chordType } = parseSeventhChord(chord)
+
+  const rootIndex = CHROMATIC_SCALE.indexOf(standardizedRoot)
+  const intervals =
+    SEVENTH_CHORD_INTERVALS[chordType] || SEVENTH_CHORD_INTERVALS['maj7']
+
+  const tertianStack = intervals.map(
+    semis => CHROMATIC_SCALE[(rootIndex + semis) % CHROMATIC_SCALE.length]
+  )
+
+  const closeVoicings = rotations(tertianStack)
+
+  let voicings: string[][]
+  if (voicingType === 'close') {
+    voicings = closeVoicings
+  } else if (voicingType === 'open') {
+    voicings = closeVoicings.map(dropTwo)
+  } else {
+    voicings = [...closeVoicings, ...closeVoicings.map(dropTwo)]
+  }
+
+  return voicings
+    .map(v => v.join(' '))
+    .map(v => v.replace(new RegExp(standardizedRoot, 'g'), originalRoot))
 }

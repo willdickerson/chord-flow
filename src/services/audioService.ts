@@ -1,7 +1,16 @@
 import * as Tone from 'tone'
-import { Inversion, Triad, VoiceLeadingState } from '../common/types'
+import {
+  ChordMode,
+  Inversion,
+  SeventhVoiceLeadingState,
+  Triad,
+  VoiceLeadingState,
+} from '../common/types'
 import { generateOptimalVoiceLeadingSequence } from '../common/utils/graphUtils'
-import { generateTriads } from '../common/utils/chordUtils'
+import {
+  generateSeventhChords,
+  generateTriads,
+} from '../common/utils/chordUtils'
 import { CHORD_CHARTS } from '../features/charts/charts'
 import {
   AUDIO_DEFAULTS,
@@ -20,6 +29,20 @@ const defaultChordNames = CHORD_CHARTS.find(
 const defaultTriads = Object.fromEntries(
   defaultChordNames!.map(chord => [chord, generateTriads(chord, 'open')])
 )
+
+const buildVoicings = (
+  chordNames: string[],
+  mode: ChordMode,
+  triadType: TriadType
+): { [key: string]: Inversion[] } =>
+  Object.fromEntries(
+    chordNames.map(chord => [
+      chord,
+      mode === 'seventh'
+        ? generateSeventhChords(chord, 'all')
+        : generateTriads(chord, triadType),
+    ])
+  )
 
 export class AudioService {
   private instruments: Record<
@@ -45,6 +68,7 @@ export class AudioService {
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
   private triadType: TriadType = AUDIO_DEFAULTS.TRIAD_TYPE
+  private chordMode: ChordMode = 'triad'
   private arpeggioType: ArpeggioType = AUDIO_DEFAULTS.ARPEGGIO_TYPE
   private isMobile = window.innerWidth <= 768
 
@@ -130,9 +154,7 @@ export class AudioService {
 
   setCurrentChordNames(chordNames: string[]): void {
     this.currentChordNames = chordNames
-    this.currentTriads = Object.fromEntries(
-      chordNames.map(chord => [chord, generateTriads(chord, this.triadType)])
-    )
+    this.currentTriads = buildVoicings(chordNames, this.chordMode, this.triadType)
   }
 
   getInitialChordDuration(): number {
@@ -544,25 +566,52 @@ export class AudioService {
   }
 
   generateOptimalSequence(
-    voiceLeadingState: VoiceLeadingState = DEFAULT_VOICE_LEADING_STATE
+    voiceLeadingState:
+      | VoiceLeadingState
+      | SeventhVoiceLeadingState = DEFAULT_VOICE_LEADING_STATE
   ): Triad[] {
     const midiRange: [number, number] = this.isMobile
       ? SEQUENCE_RANGES.MOBILE
       : SEQUENCE_RANGES.DESKTOP
 
+    const selections =
+      'tenor' in voiceLeadingState
+        ? [
+            voiceLeadingState.bass,
+            voiceLeadingState.tenor,
+            voiceLeadingState.alto,
+            voiceLeadingState.soprano,
+          ]
+        : [voiceLeadingState.bass, voiceLeadingState.middle, voiceLeadingState.high]
+
     return generateOptimalVoiceLeadingSequence(
       this.currentChordNames,
       midiRange,
       this.currentTriads,
-      voiceLeadingState
+      selections
     )
   }
 
   setTriadType(type: TriadType): void {
     this.triadType = type
-    this.currentTriads = Object.fromEntries(
-      this.currentChordNames.map(chord => [chord, generateTriads(chord, type)])
+    this.currentTriads = buildVoicings(
+      this.currentChordNames,
+      this.chordMode,
+      type
     )
+  }
+
+  setChordMode(mode: ChordMode): void {
+    this.chordMode = mode
+    this.currentTriads = buildVoicings(
+      this.currentChordNames,
+      mode,
+      this.triadType
+    )
+  }
+
+  getChordMode(): ChordMode {
+    return this.chordMode
   }
 
   getTriadType(): TriadType {

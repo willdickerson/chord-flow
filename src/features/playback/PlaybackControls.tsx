@@ -14,6 +14,7 @@ import { usePlaybackState } from './usePlaybackState'
 import { ChordChartInput } from '../charts/ChordChartInput'
 import { VoiceLeadingControls } from './VoiceLeadingControls'
 import { TriadControls } from './TriadControls'
+import { ChordModeControls } from './ChordModeControls'
 import { ArpeggioControls } from './ArpeggioControls'
 import { audioService } from '../../services/audioService'
 import * as Tone from 'tone'
@@ -54,6 +55,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
     handleRestart,
     handlePositionSelect,
     handleVoiceLeadingChange,
+    handleChordModeChange,
+    chordMode,
     updateChordSequence,
   } = usePlaybackState(onNotesChange)
 
@@ -358,8 +361,19 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
           {/* Voice Leading Controls */}
           <div className="flex flex-col gap-3">
+            <ChordModeControls
+              mode={chordMode}
+              onModeChange={mode => {
+                if (isPlaying) {
+                  handleStop()
+                }
+                handleChordModeChange(mode)
+              }}
+              isEnabled={!isPlaying}
+            />
             <VoiceLeadingControls
               isEnabled={!isPlaying}
+              chordMode={chordMode}
               onVoiceLeadingChange={voices => {
                 if (isPlaying) {
                   handleStop()
@@ -367,20 +381,22 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 handleVoiceLeadingChange(voices)
               }}
             />
-            <TriadControls
-              onTriadTypeChange={type => {
-                if (isPlaying) {
-                  handleStop()
-                }
-                audioService.setTriadType(type)
-                handleVoiceLeadingChange({
-                  bass: true,
-                  middle: true,
-                  high: true,
-                })
-              }}
-              isEnabled={!isPlaying}
-            />
+            {chordMode === 'triad' && (
+              <TriadControls
+                onTriadTypeChange={type => {
+                  if (isPlaying) {
+                    handleStop()
+                  }
+                  audioService.setTriadType(type)
+                  handleVoiceLeadingChange({
+                    bass: true,
+                    middle: true,
+                    high: true,
+                  })
+                }}
+                isEnabled={!isPlaying}
+              />
+            )}
             <ArpeggioControls
               onArpeggioTypeChange={type => {
                 audioService.setArpeggioType(type)

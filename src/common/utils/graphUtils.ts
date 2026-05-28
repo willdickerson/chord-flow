@@ -239,21 +239,27 @@ export function calculateVoiceLeadingCostWithWeights(
   nextNotes: number[],
   voiceWeights: { bass: boolean; middle: boolean; high: boolean }
 ): number {
+  return calculateVoiceLeadingCostWithWeightsN(currentNotes, nextNotes, [
+    voiceWeights.bass,
+    voiceWeights.middle,
+    voiceWeights.high,
+  ])
+}
+
+export function calculateVoiceLeadingCostWithWeightsN(
+  currentNotes: number[],
+  nextNotes: number[],
+  voiceSelections: boolean[]
+): number {
+  const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.001)
+  const n = Math.min(currentNotes.length, nextNotes.length, voiceSelections.length)
+
   let totalCost = 0
   let activeVoices = 0
-
-  const getWeight = (isSelected: boolean) => (isSelected ? 1.0 : 0.001)
-
-  if (voiceWeights.bass) activeVoices++
-  if (voiceWeights.middle) activeVoices++
-  if (voiceWeights.high) activeVoices++
-
-  totalCost +=
-    Math.abs(currentNotes[0] - nextNotes[0]) * getWeight(voiceWeights.bass)
-  totalCost +=
-    Math.abs(currentNotes[1] - nextNotes[1]) * getWeight(voiceWeights.middle)
-  totalCost +=
-    Math.abs(currentNotes[2] - nextNotes[2]) * getWeight(voiceWeights.high)
+  for (let i = 0; i < n; i++) {
+    if (voiceSelections[i]) activeVoices++
+    totalCost += Math.abs(currentNotes[i] - nextNotes[i]) * getWeight(voiceSelections[i])
+  }
 
   return activeVoices > 0 ? totalCost / activeVoices : totalCost
 }
@@ -262,14 +268,20 @@ export function generateOptimalVoiceLeadingSequence(
   chords: ChordName[],
   midiRange: [number, number],
   triads: { [key: string]: Inversion[] },
-  voiceWeights: { bass: boolean; middle: boolean; high: boolean }
+  voiceWeights:
+    | { bass: boolean; middle: boolean; high: boolean }
+    | boolean[]
 ): Triad[] {
   if (!chords.length) {
     return []
   }
 
+  const selections = Array.isArray(voiceWeights)
+    ? voiceWeights
+    : [voiceWeights.bass, voiceWeights.middle, voiceWeights.high]
+
   const costFunction = (currentNotes: number[], nextNotes: number[]) =>
-    calculateVoiceLeadingCostWithWeights(currentNotes, nextNotes, voiceWeights)
+    calculateVoiceLeadingCostWithWeightsN(currentNotes, nextNotes, selections)
 
   const graph = buildVoiceLeadingGraph(chords, midiRange, triads, costFunction)
 
