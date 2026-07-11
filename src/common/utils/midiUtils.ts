@@ -11,8 +11,9 @@ export function midiNoteToName(
   const octaveDiff = midiNote - middleC
   let octaveMarks = ''
   if (octaveDiff < 0) {
-    // Add commas for each octave below middle C
-    octaveMarks = ','.repeat(Math.floor(Math.abs(octaveDiff) / 12) + 1)
+    // Add commas for each octave below middle C (ceil so an exact octave
+    // below gets one comma, not two)
+    octaveMarks = ','.repeat(Math.ceil(Math.abs(octaveDiff) / 12))
   } else if (octaveDiff >= 12) {
     const octaveCount = Math.floor(octaveDiff / 12)
     octaveMarks = "'".repeat(octaveCount)
@@ -193,13 +194,16 @@ export const downloadMidiFile = (
 
   // Set time signature
   if (isArpeggiating) {
+    // One beat per arpeggiated note, so a measure spans one chord
+    // (3 beats for triads, 4 for seventh chords)
+    const notesPerChord = sequence.chords[0]?.midiNotes.length || 3
     trackEvents.push([
       0, // delta time
       0xff,
       0x58,
       0x04, // time signature meta event
-      0x03, // numerator (3)
-      0x02, // denominator (2^2 = 4, so 3/4 time)
+      notesPerChord, // numerator
+      0x02, // denominator (2^2 = 4, so notesPerChord/4 time)
       0x18, // clocks per metronome click (24 MIDI clocks per quarter note)
       0x08, // number of 32nd notes per 24 MIDI clocks (8)
     ])
