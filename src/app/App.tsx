@@ -19,13 +19,12 @@ function ChartRoute() {
   const [activeNotes, setActiveNotes] = useState<number[]>([])
   const [isEditing, setIsEditing] = useState(false)
   const [activeDisplay, setActiveDisplay] = useState<DisplayOption>('keyboard')
-  const [currentChords, setCurrentChords] = useState<string[]>([])
   const [initialChartData] = useState(() => {
     if (encodedData) {
       try {
         const data = decodeChartData(encodedData)
+        // Must happen before child mount effects generate the first sequence.
         audioService.setCurrentChordNames(data.chords)
-        setCurrentChords(data.chords)
         return data
       } catch (error) {
         console.error('Failed to decode chart data:', error)
@@ -33,6 +32,9 @@ function ChartRoute() {
     }
     return null
   })
+  const [currentChords, setCurrentChords] = useState<string[]>(
+    () => initialChartData?.chords ?? []
+  )
 
   return (
     <div className="flex-1">

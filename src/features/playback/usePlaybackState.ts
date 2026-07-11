@@ -33,26 +33,32 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
     useState<AnyVoiceLeadingState>(DEFAULT_TRIAD_VOICES)
   const displayedNotesRef = useRef<number[]>([])
 
-  const generateSequence = useCallback(async () => {
-    try {
-      setIsGenerating(true)
-      setError(null)
+  const generateSequence = useCallback(
+    // setVoiceLeadingState hasn't flushed when callers regenerate right after
+    // changing voices, so the new state must be passed in explicitly.
+    async (voicesOverride?: AnyVoiceLeadingState) => {
+      try {
+        setIsGenerating(true)
+        setError(null)
 
-      const newSequence =
-        audioService.generateOptimalSequence(voiceLeadingState)
-      setSequence(newSequence)
-      setCurrentPosition(0)
-      displayedNotesRef.current = []
-      onNotesChange([])
-      return newSequence
-    } catch (err) {
-      console.error('Error generating sequence:', err)
-      setError('Failed to generate sequence')
-      return null
-    } finally {
-      setIsGenerating(false)
-    }
-  }, [voiceLeadingState, onNotesChange])
+        const newSequence = audioService.generateOptimalSequence(
+          voicesOverride ?? voiceLeadingState
+        )
+        setSequence(newSequence)
+        setCurrentPosition(0)
+        displayedNotesRef.current = []
+        onNotesChange([])
+        return newSequence
+      } catch (err) {
+        console.error('Error generating sequence:', err)
+        setError('Failed to generate sequence')
+        return null
+      } finally {
+        setIsGenerating(false)
+      }
+    },
+    [voiceLeadingState, onNotesChange]
+  )
 
   const updateChordSequence = useCallback(
     (chordNames: string[]) => {
@@ -76,31 +82,29 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
       await audioService.initialize()
 
       if (!isPlaying) {
-        if (!sequence || sequence.length === 0) {
-          const newSequence = await generateSequence()
-          if (!newSequence) {
+        let currentSequence = sequence
+        if (!currentSequence || currentSequence.length === 0) {
+          currentSequence = await generateSequence()
+          if (!currentSequence) {
             console.error('Failed to generate sequence')
             setError('Failed to generate sequence')
             return
           }
-          setSequence(newSequence)
         }
 
         setIsPlaying(true)
-
-        const currentSequence = sequence || (await generateSequence())
-        if (!currentSequence) return
 
         audioService.startPlayback(
           currentSequence,
           currentPosition,
           () => {
+            // Only reached on natural completion (stopPlayback never calls
+            // onComplete), so rewind for the next play-through.
             setIsPlaying(false)
-            if (!audioService.shouldStop) {
-              setCurrentPosition(0)
-              displayedNotesRef.current = []
-              onNotesChange([])
-            }
+            setCurrentPosition(0)
+            audioService.setPosition(0)
+            displayedNotesRef.current = []
+            onNotesChange([])
           },
           notes => {
             displayedNotesRef.current = notes
@@ -160,7 +164,7 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
         setIsPlaying(false)
       }
       setCurrentPosition(0)
-      generateSequence()
+      generateSequence(voices)
     },
     [isPlaying, generateSequence]
   )
@@ -177,7 +181,7 @@ export const usePlaybackState = (onNotesChange: (notes: number[]) => void) => {
         setIsPlaying(false)
       }
       setCurrentPosition(0)
-      generateSequence()
+      generateSequence(defaults)
     },
     [isPlaying, generateSequence]
   )

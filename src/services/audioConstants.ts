@@ -6,7 +6,7 @@ export const SEQUENCE_RANGES = {
 } as const
 
 export const AUDIO_DEFAULTS = {
-  VOLUME: -12,
+  VOLUME: 100, // 0-100 slider scale, converted to dB via gainToDb(volume / 100)
   CHORD_DURATION: 500,
   IS_ARPEGGIATING: true,
   IS_LOOPING: false,

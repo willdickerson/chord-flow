@@ -67,6 +67,7 @@ export class AudioService {
   private currentMidiNotes: number[] = []
   private currentChordNames: string[] = defaultChordNames
   private currentTriads: { [key: string]: Inversion[] } = defaultTriads
+  private currentSequence: Triad[] = []
   private triadType: TriadType = AUDIO_DEFAULTS.TRIAD_TYPE
   private chordMode: ChordMode = 'triad'
   private arpeggioType: ArpeggioType = AUDIO_DEFAULTS.ARPEGGIO_TYPE
@@ -134,14 +135,27 @@ export class AudioService {
     return this.volume
   }
 
+  // The guitar samples are much louder than the others, so they get a fixed
+  // dB offset that has to survive user volume changes.
+  private static readonly INSTRUMENT_DB_OFFSETS: Record<InstrumentType, number> =
+    {
+      synth: 0,
+      piano: 0,
+      guitar: -12,
+    }
+
+  private applyVolume(type: InstrumentType): void {
+    const instrument = this.instruments[type]
+    if (instrument) {
+      instrument.volume.value =
+        Tone.gainToDb(this.volume / 100) +
+        AudioService.INSTRUMENT_DB_OFFSETS[type]
+    }
+  }
+
   setVolume(value: number): void {
     this.volume = value
-    const normalizedVolume = value / 100
-    Object.values(this.instruments).forEach(instrument => {
-      if (instrument) {
-        instrument.volume.value = Tone.gainToDb(normalizedVolume)
-      }
-    })
+    INSTRUMENT_TYPES.forEach(type => this.applyVolume(type))
   }
 
   getCurrentPosition(): number {
@@ -155,6 +169,7 @@ export class AudioService {
   setCurrentChordNames(chordNames: string[]): void {
     this.currentChordNames = chordNames
     this.currentTriads = buildVoicings(chordNames, this.chordMode, this.triadType)
+    this.currentSequence = []
   }
 
   getInitialChordDuration(): number {
@@ -189,9 +204,7 @@ export class AudioService {
         .set({ volume: -8 })
         .toDestination()
 
-      if (this.instruments.synth) {
-        this.instruments.synth.volume.value = Tone.gainToDb(this.volume / 100)
-      }
+      this.applyVolume('synth')
 
       this.isInitialized = true
     } catch (err) {
@@ -239,11 +252,7 @@ export class AudioService {
           release: 1.5,
           baseUrl: 'https://tonejs.github.io/audio/salamander/',
           onload: () => {
-            if (this.instruments.piano) {
-              this.instruments.piano.volume.value = Tone.gainToDb(
-                this.volume / 100
-              )
-            }
+            this.applyVolume('piano')
             resolve()
           },
         }).toDestination()
@@ -275,11 +284,7 @@ export class AudioService {
           baseUrl:
             'https://raw.githubusercontent.com/nbrosowsky/tonejs-instruments/master/samples/guitar-nylon/',
           onload: () => {
-            if (this.instruments.guitar) {
-              this.instruments.guitar.volume.value = Tone.gainToDb(
-                (this.volume - 75) / 100
-              )
-            }
+            this.applyVolume('guitar')
             resolve()
           },
         }).connect(reverb)
@@ -470,9 +475,8 @@ export class AudioService {
       try {
         await new Promise(resolve => {
           const timeout = setTimeout(() => {
-            if (!this._shouldStop) {
-              resolve('completed')
-            }
+            clearInterval(checkInterval)
+            resolve('completed')
           }, duration)
           const checkInterval = setInterval(() => {
             if (this._shouldStop) {
@@ -584,12 +588,20 @@ export class AudioService {
           ]
         : [voiceLeadingState.bass, voiceLeadingState.middle, voiceLeadingState.high]
 
-    return generateOptimalVoiceLeadingSequence(
+    this.currentSequence = generateOptimalVoiceLeadingSequence(
       this.currentChordNames,
       midiRange,
       this.currentTriads,
       selections
     )
+    return this.currentSequence
+  }
+
+  // Last sequence produced by generateOptimalSequence. Lets display components
+  // read the sequence that's actually playing instead of re-running the
+  // optimizer (which is expensive and ignores the user's voice selections).
+  getCurrentSequence(): Triad[] {
+    return this.currentSequence
   }
 
   setTriadType(type: TriadType): void {
@@ -599,6 +611,7 @@ export class AudioService {
       this.chordMode,
       type
     )
+    this.currentSequence = []
   }
 
   setChordMode(mode: ChordMode): void {
@@ -608,6 +621,7 @@ export class AudioService {
       mode,
       this.triadType
     )
+    this.currentSequence = []
   }
 
   getChordMode(): ChordMode {

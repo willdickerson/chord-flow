@@ -29,6 +29,8 @@ export function parseChord(chord: string): {
     chordType = 'dim'
   } else if (chordType.includes('aug') || chordType.includes('+')) {
     chordType = 'aug'
+  } else if (chordType.toLowerCase().includes('mmaj')) {
+    chordType = 'm' // minor-major 7th chord -> minor triad
   } else if (chordType.includes('maj7') || chordType.includes('maj')) {
     chordType = 'M' // major 7th chord -> major triad
   } else if (chordType.startsWith('m')) {
@@ -160,6 +162,8 @@ function parseSeventhChord(chord: string): {
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
   const suffix = match[2] || ''
 
+  const lower = suffix.toLowerCase()
+
   let chordType: string
   if (suffix.includes('m7b5') || suffix.includes('ø')) {
     chordType = 'm7b5'
@@ -167,16 +171,20 @@ function parseSeventhChord(chord: string): {
     chordType = 'dim7'
   } else if (suffix.includes('dim') || suffix.includes('°')) {
     chordType = 'm7b5' // half-dim is the most common interpretation of a bare "dim" in a 7th-chord context
-  } else if (suffix.includes('mMaj7') || suffix.includes('mM7')) {
+  } else if (lower.includes('mmaj7') || suffix.includes('mM7')) {
     chordType = 'mMaj7'
-  } else if (suffix.includes('maj7') || suffix.includes('M7')) {
+  } else if (lower.includes('maj7') || suffix.includes('M7')) {
     chordType = 'maj7'
-  } else if (suffix.startsWith('m')) {
-    chordType = 'm7'
-  } else if (suffix.includes('7')) {
-    chordType = '7'
+  } else if (lower.includes('maj')) {
+    chordType = 'maj7' // maj9, maj13, etc. all carry a major 7th
   } else if (suffix.includes('aug') || suffix.includes('+')) {
-    chordType = '7' // closest 4-note approximation; aug7 not yet modeled
+    chordType = '7' // closest 4-note approximation; aug7 not yet modeled (checked before the minor test so "maug" isn't read as minor)
+  } else if (suffix.startsWith('m')) {
+    chordType = 'm7' // m6, m9, m11, etc. -> minor 7th
+  } else if (lower.includes('add') || suffix.includes('6')) {
+    chordType = 'maj7' // add9 / 6 / 69 chords have no b7 — major quality
+  } else if (/7|9|11|13/.test(suffix)) {
+    chordType = '7' // dominant extensions/alterations: 9, 13, 7b9, 7alt, ...
   } else {
     chordType = 'maj7' // bare major chord -> major 7th in seventh mode
   }
