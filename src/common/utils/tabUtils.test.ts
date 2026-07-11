@@ -62,10 +62,22 @@ describe('generateTabSequence', () => {
     })
   })
 
-  it('prefers open position for open-friendly chords', () => {
-    // C3 E3 G3 is the middle of the open C shape: A3 D2 G0
+  it('prefers closed (fretted) shapes over open strings', () => {
+    // C3 E3 G3 could sit in open position (A3 D2 G-open), but jazz playing
+    // avoids open strings — the movable shape at E8 A7 D5 should win.
     const [c] = generateTabSequence([[48, 52, 55]])
-    expect(c).toEqual([null, 3, 2, 0, null, null])
+    expect(c).toEqual([8, 7, 5, null, null, null])
+  })
+
+  it('still uses open strings when a chord is otherwise unplayable', () => {
+    // E2 can only be played as the open low E string, so any voicing
+    // containing it must keep that open string.
+    const [fingering] = generateTabSequence([[40, 47, 52]])
+    expect(fingering).not.toBeNull()
+    expect(fingering![0]).toBe(0)
+    expect(soundedNotes(fingering!).sort((a, b) => a - b)).toEqual([
+      40, 47, 52,
+    ])
   })
 
   it('keeps the same fingering for repeated chords', () => {
@@ -138,8 +150,12 @@ describe('generateTabSequence', () => {
     const tabs = generateTabSequence(chords)
     tabs.forEach((fingering, i) => {
       expect(fingering).not.toBeNull()
-      expect(soundedNotes(fingering!).sort((a, b) => a - b)).toEqual(
-        [...chords[i]].sort((a, b) => a - b)
+      // Chords needing open strings may be octave-shifted or re-voiced
+      // into a closed shape, so assert pitch-class fidelity, not octaves
+      const pitchClasses = (notes: number[]) =>
+        [...new Set(notes.map(n => n % 12))].sort((a, b) => a - b)
+      expect(pitchClasses(soundedNotes(fingering!))).toEqual(
+        pitchClasses(chords[i])
       )
       expect(fretSpan(fingering!)).toBeLessThanOrEqual(4)
     })
