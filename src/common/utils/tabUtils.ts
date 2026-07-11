@@ -47,10 +47,21 @@ function shapeCost(strings: number[], frets: number[]): number {
   const innerGaps =
     Math.max(...strings) - Math.min(...strings) + 1 - strings.length
 
-  // Average fret pulls gently toward open position
+  // Open strings are avoided in jazz playing: they break movable shapes
+  // and can't be muted or shifted. Penalized, not banned — if a chord is
+  // only playable with an open string, it still renders.
+  const openStrings = frets.filter(f => f === 0).length
+
+  // Weak tie-break toward the lower half of the neck
   const avgFret = frets.reduce((a, b) => a + b, 0) / frets.length
 
-  return span * 2 + (span >= 4 ? 4 : 0) + innerGaps * 0.75 + avgFret * 0.25
+  return (
+    span * 1.5 +
+    (span >= 4 ? 4 : 0) +
+    innerGaps * 0.75 +
+    openStrings * 4 +
+    avgFret * 0.1
+  )
 }
 
 // Cost of moving the fretting hand between consecutive chords.
@@ -146,40 +157,34 @@ function revoicedPitchSets(midiNotes: number[]): number[][] {
   return [...sets.values()]
 }
 
-// Candidate fingerings for one chord, in tiers of decreasing faithfulness.
+// Candidate fingerings for one chord. All faithfulness tiers compete in a
+// single pool — the exact voicing costs nothing extra, an octave shift or a
+// re-voicing carries a penalty — so a closed re-voiced shape can still beat
+// an exact voicing that is only playable with open strings or an awkward
+// stretch.
 function candidatesForChord(midiNotes: number[]): Candidate[] {
   const octaveUp = midiNotes.map(n => n + 12)
   const inRange = (notes: number[]) =>
     notes.every(n => n >= LOWEST_NOTE && n <= HIGHEST_NOTE)
 
-  const tiers: Array<() => Candidate[]> = [
-    () => findCandidates(midiNotes, 4),
-    () =>
-      inRange(octaveUp)
-        ? withPenalty(findCandidates(octaveUp, 4), OCTAVE_SHIFT_PENALTY)
-        : [],
-    () =>
-      withPenalty(
-        revoicedPitchSets(midiNotes).flatMap(set => findCandidates(set, 4)),
-        REVOICE_PENALTY
+  const poolAtSpan = (maxSpan: number): Candidate[] => [
+    ...findCandidates(midiNotes, maxSpan),
+    ...(inRange(octaveUp)
+      ? withPenalty(findCandidates(octaveUp, maxSpan), OCTAVE_SHIFT_PENALTY)
+      : []),
+    ...withPenalty(
+      revoicedPitchSets(midiNotes).flatMap(set =>
+        findCandidates(set, maxSpan)
       ),
-    // Last resort: allow an uncomfortable stretch before giving up
-    () => findCandidates(midiNotes, 5),
-    () =>
-      withPenalty(
-        revoicedPitchSets(midiNotes).flatMap(set => findCandidates(set, 5)),
-        REVOICE_PENALTY
-      ),
+      REVOICE_PENALTY
+    ),
   ]
 
-  for (const tier of tiers) {
-    const found = tier()
-    if (found.length) {
-      // Keep the DP small: only the most playable shapes matter
-      return found.sort((a, b) => a.cost - b.cost).slice(0, 24)
-    }
-  }
-  return []
+  // Allow an uncomfortable 5-fret stretch only when nothing else exists
+  const pool = poolAtSpan(4)
+  const found = pool.length ? pool : poolAtSpan(5)
+  // Keep the DP small: only the most playable shapes matter
+  return found.sort((a, b) => a.cost - b.cost).slice(0, 24)
 }
 
 // Assign a fingering to every chord in the sequence, minimizing total
