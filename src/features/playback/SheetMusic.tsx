@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ABCJS from 'abcjs'
 import { midiNoteToName } from '../../common/utils/midiUtils'
-import { usePlaybackState } from './usePlaybackState'
 import { Triad } from '../../common/types'
 import { audioService } from '../../services/audioService'
 
@@ -19,8 +18,6 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
   const containerRef = useRef<HTMLDivElement>(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
   const previousChordsRef = useRef<string[]>([])
-
-  const { sequence, currentPosition } = usePlaybackState(() => {})
 
   useEffect(() => {
     const safeCurrentChords = currentChords ?? []
@@ -122,7 +119,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
       clearTimeout(timeoutId)
       window.removeEventListener('resize', centerStaff)
     }
-  }, [sequence, currentPosition, isMobile])
+  }, [activeNotes, currentChords, isMobile])
 
   useEffect(() => {
     if (!divRef.current) {
@@ -131,7 +128,7 @@ export const SheetMusic: React.FC<SheetMusicProps> = ({
 
     let abcNotation: string
 
-    const currentSequence = audioService.generateOptimalSequence()
+    const currentSequence = audioService.getCurrentSequence()
     const position = audioService.getCurrentPosition()
 
     if (!currentSequence || currentSequence.length === 0) {
