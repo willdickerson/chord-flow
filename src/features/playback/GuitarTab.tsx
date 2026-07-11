@@ -13,8 +13,9 @@ interface GuitarTabProps {
 
 // Layout constants (SVG user units)
 const WIDTH = 400
-const HEIGHT = 96
-const TOP = 14
+const HEIGHT = 108
+const LABEL_Y = 11
+const TOP = 26
 const LINE_GAP = 13
 const LEFT = 30
 const RIGHT = 388
@@ -44,6 +45,12 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
     rowStartIndex,
     rowStartIndex + CHORDS_PER_ROW
   )
+  const rowChordNames = sequence
+    .slice(rowStartIndex, rowStartIndex + CHORDS_PER_ROW)
+    .map(
+      (triad, column) =>
+        triad.chordName || currentChords?.[rowStartIndex + column] || ''
+    )
   const highlightIndex =
     activeNotes.length > 0 ? position - rowStartIndex : -1
 
@@ -171,6 +178,23 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
                 {name}
               </text>
             ))}
+
+            {/* chord names */}
+            {rowChordNames.map((name, column) =>
+              name ? (
+                <text
+                  key={`label-${column}`}
+                  x={columnX(column)}
+                  y={LABEL_Y}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontWeight={column === highlightIndex ? 700 : 600}
+                  fill={column === highlightIndex ? HIGHLIGHT : INK}
+                >
+                  {name}
+                </text>
+              ) : null
+            )}
 
             {rowFingerings.map((fingering, column) =>
               renderChord(fingering, column)
