@@ -24,7 +24,7 @@ const handPosition = (fingering: TabFingering): number => {
 }
 
 describe('generateTabSequence', () => {
-  it('reproduces every pitch on a distinct string within the fret range', () => {
+  it('preserves each voicing structure, at pitch or an octave up', () => {
     const chords = [
       [48, 52, 55], // C major triad
       [45, 52, 57], // A minor voicing
@@ -36,7 +36,13 @@ describe('generateTabSequence', () => {
     tabs.forEach((fingering, i) => {
       expect(fingering).not.toBeNull()
       const sounded = soundedNotes(fingering!).sort((a, b) => a - b)
-      expect(sounded).toEqual([...chords[i]].sort((a, b) => a - b))
+      const played = [...chords[i]].sort((a, b) => a - b)
+      // Tab renders in written guitar register (an octave above played
+      // pitch) when it fits; either way the voicing structure is intact
+      const matchesPlayed =
+        JSON.stringify(sounded) === JSON.stringify(played) ||
+        JSON.stringify(sounded) === JSON.stringify(played.map(n => n + 12))
+      expect(matchesPlayed).toBe(true)
       fingering!.forEach(fret => {
         if (fret !== null) {
           expect(fret).toBeGreaterThanOrEqual(0)
@@ -64,20 +70,36 @@ describe('generateTabSequence', () => {
 
   it('prefers closed (fretted) shapes over open strings', () => {
     // C3 E3 G3 could sit in open position (A3 D2 G-open), but jazz playing
-    // avoids open strings — the movable shape at E8 A7 D5 should win.
+    // avoids open strings — a fretted movable shape should win.
     const [c] = generateTabSequence([[48, 52, 55]])
-    expect(c).toEqual([8, 7, 5, null, null, null])
+    expect(frettedFrets(c!).length).toBe(3) // no open strings
+    expect(c!.includes(0)).toBe(false)
   })
 
   it('still uses open strings when a chord is otherwise unplayable', () => {
-    // E2 can only be played as the open low E string, so any voicing
-    // containing it must keep that open string.
-    const [fingering] = generateTabSequence([[40, 47, 52]])
+    // E2 only exists as the open low E string, and the high G#4 keeps the
+    // chord from shifting up an octave — the open string must stay.
+    const [fingering] = generateTabSequence([[40, 47, 68]])
     expect(fingering).not.toBeNull()
     expect(fingering![0]).toBe(0)
     expect(soundedNotes(fingering!).sort((a, b) => a - b)).toEqual([
-      40, 47, 52,
+      40, 47, 68,
     ])
+  })
+
+  it('renders the played voicing structure an octave up (guitar register)', () => {
+    // The opening of Giant Steps as the app voices it: true open triads in
+    // a low keyboard register. On guitar these render an octave up with the
+    // exact voicing structure intact — never collapsed into closed shapes.
+    const tabs = generateTabSequence([
+      [42, 51, 59], // Bmaj7 triad: F#2 D#3 B3
+      [42, 50, 57], // D7 triad: F#2 D3 A3
+      [43, 50, 59], // Gmaj7 triad: G2 D3 B3
+    ])
+    expect(tabs[0]).toEqual([null, null, 4, null, 4, 7])
+    expect(tabs[2]).toEqual([null, null, 5, 7, null, 7])
+    // The middle chord keeps the same register (structure +12, elementwise)
+    expect(soundedNotes(tabs[1]!).sort((a, b) => a - b)).toEqual([54, 62, 69])
   })
 
   it('keeps the same fingering for repeated chords', () => {
