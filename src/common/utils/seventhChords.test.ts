@@ -63,6 +63,44 @@ describe('seventh chord generation', () => {
     const root = generateSeventhChords('C', 'close')[0].split(' ')
     expect(root.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
   })
+
+  it('treats extended dominants (9, 13) as dominant 7ths, not maj7', () => {
+    // D9 carries a flat 7 (C natural), not C#
+    const d9 = generateSeventhChords('D9', 'close')[0].split(' ')
+    expect(d9.sort().join(',')).toBe(['A', 'C', 'D', 'Gb'].sort().join(','))
+
+    const g13 = generateSeventhChords('G13', 'close')[0].split(' ')
+    expect(g13.sort().join(',')).toBe(['B', 'D', 'F', 'G'].sort().join(','))
+  })
+
+  it('treats maj9 / maj13 as major 7th quality', () => {
+    const cmaj9 = generateSeventhChords('Cmaj9', 'close')[0].split(' ')
+    expect(cmaj9.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
+  })
+
+  it('treats 6 and add9 chords as major quality (no flat 7)', () => {
+    const c6 = generateSeventhChords('C6', 'close')[0].split(' ')
+    expect(c6.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
+
+    const cadd9 = generateSeventhChords('Cadd9', 'close')[0].split(' ')
+    expect(cadd9.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
+  })
+
+  it('treats m6 / m9 as minor 7th quality', () => {
+    const fm6 = generateSeventhChords('Fm6', 'close')[0].split(' ')
+    expect(fm6.sort().join(',')).toBe(['Ab', 'C', 'Eb', 'F'].sort().join(','))
+  })
+
+  it('does not read augmented chords as minor', () => {
+    // "Dmaug" appears in the bundled charts; the "m" belongs to "maug", not minor
+    const dmaug = generateSeventhChords('Dmaug', 'close')[0].split(' ')
+    expect(dmaug.sort().join(',')).toBe(['A', 'C', 'D', 'Gb'].sort().join(','))
+  })
+
+  it('parses minor-major 7th chords regardless of case', () => {
+    const cmmaj7 = generateSeventhChords('Cmmaj7', 'close')[0].split(' ')
+    expect(cmmaj7.sort().join(',')).toBe(['B', 'C', 'Eb', 'G'].sort().join(','))
+  })
 })
 
 describe('findAllVoicingsInRange (N-voice)', () => {
