@@ -8,6 +8,7 @@ import { decodeChartData } from '../common/utils/urlUtils'
 import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
 import { SheetMusic } from '../features/playback/SheetMusic'
+import { GuitarTab } from '../features/playback/GuitarTab'
 import {
   DisplayControls,
   DisplayOption,
@@ -66,6 +67,21 @@ function ChartRoute() {
         >
           <div className="flex justify-center">
             <SheetMusic
+              activeNotes={activeNotes}
+              currentChords={currentChords}
+            />
+          </div>
+        </div>
+
+        <div
+          className={`absolute w-full transition-opacity duration-200 ${
+            activeDisplay === 'tablature' && !isEditing
+              ? 'opacity-100'
+              : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="flex justify-center">
+            <GuitarTab
               activeNotes={activeNotes}
               currentChords={currentChords}
             />
