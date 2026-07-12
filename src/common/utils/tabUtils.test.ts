@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import {
   generateTabSequence,
+  isGuitarPlayable,
   STANDARD_TUNING,
   TabFingering,
 } from './tabUtils'
+import {
+  generateSeventhChords,
+  generateTriads,
+} from './chordUtils'
+import { generateOptimalVoiceLeadingSequence } from './graphUtils'
 
 const soundedNotes = (fingering: TabFingering): number[] =>
   fingering.flatMap((fret, string) =>
@@ -185,5 +191,75 @@ describe('generateTabSequence', () => {
 
   it('returns an empty array for an empty sequence', () => {
     expect(generateTabSequence([])).toEqual([])
+  })
+})
+
+describe('isGuitarPlayable', () => {
+  it('accepts voicings with a closed shape at pitch or an octave up', () => {
+    expect(isGuitarPlayable([48, 52, 55])).toBe(true) // C major triad
+    expect(isGuitarPlayable([42, 51, 59])).toBe(true) // open Bmaj7 triad
+    expect(isGuitarPlayable([42, 47, 51, 58])).toBe(true) // drop-2 style Bmaj7
+  })
+
+  it('rejects close-position clusters that need more strings than exist', () => {
+    // A#2 B2 D#3 F#3 — the keyboard cluster the generator used to pick
+    expect(isGuitarPlayable([46, 47, 51, 54])).toBe(false)
+  })
+
+  it('rejects voicings only fingerable with open strings ringing', () => {
+    // D3 F#3 G3 B3 is "playable" only as frets 10/9 against two open
+    // strings — not a real shape
+    expect(isGuitarPlayable([50, 54, 55, 59])).toBe(false)
+  })
+})
+
+describe('guitar-constrained generation stays in sync with the tab', () => {
+  const chords = ['Bmaj7', 'D7', 'Gmaj7', 'Bb7', 'Ebmaj7', 'Am7', 'D7', 'Gmaj7']
+
+  const modes = [
+    {
+      name: 'open triads',
+      voicings: Object.fromEntries(
+        chords.map(c => [c, generateTriads(c, 'open')])
+      ),
+      weights: [true, true, true],
+    },
+    {
+      name: 'seventh chords',
+      voicings: Object.fromEntries(
+        chords.map(c => [c, generateSeventhChords(c, 'all')])
+      ),
+      weights: [true, true, true, true],
+    },
+  ]
+
+  modes.forEach(({ name, voicings, weights }) => {
+    it(`every generated ${name} voicing renders faithfully in the tab`, () => {
+      const seq = generateOptimalVoiceLeadingSequence(
+        chords,
+        [40, 76],
+        voicings,
+        weights,
+        isGuitarPlayable
+      )
+      expect(seq.length).toBe(chords.length)
+
+      const tabs = generateTabSequence(seq.map(t => t.midiNotes))
+      seq.forEach((triad, i) => {
+        const fingering = tabs[i]
+        expect(fingering).not.toBeNull()
+        const sounded = soundedNotes(fingering!).sort((a, b) => a - b)
+        // The tab plays the generated voicing exactly, at pitch or in the
+        // written guitar register an octave up — never re-voiced
+        const faithful =
+          JSON.stringify(sounded) === JSON.stringify(triad.midiNotes) ||
+          JSON.stringify(sounded) ===
+            JSON.stringify(triad.midiNotes.map(n => n + 12))
+        expect(faithful).toBe(true)
+        // and as a closed shape within a normal hand span
+        expect(fingering!.includes(0)).toBe(false)
+        expect(fretSpan(fingering!)).toBeLessThanOrEqual(4)
+      })
+    })
   })
 })

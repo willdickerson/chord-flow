@@ -109,8 +109,10 @@ function ChartRoute() {
           </>
         )}
 
-        {/* Invisible div to maintain height */}
-        <div className="invisible">
+        {/* Invisible div to maintain height. The min-height covers the
+            tallest overlay pane (the 120px guitar cards plus their bottom
+            margin), which can exceed the keyboard's height. */}
+        <div className="invisible" style={{ minHeight: '128px' }}>
           <PianoKeyboard activeNotes={[]} />
         </div>
       </div>

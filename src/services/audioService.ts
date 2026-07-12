@@ -7,6 +7,7 @@ import {
   VoiceLeadingState,
 } from '../common/types'
 import { generateOptimalVoiceLeadingSequence } from '../common/utils/graphUtils'
+import { isGuitarPlayable } from '../common/utils/tabUtils'
 import {
   generateSeventhChords,
   generateTriads,
@@ -588,11 +589,14 @@ export class AudioService {
           ]
         : [voiceLeadingState.bass, voiceLeadingState.middle, voiceLeadingState.high]
 
+    // Only voice-lead through guitar-playable voicings so the keyboard,
+    // notation, tab, and fretboard views all describe the same chords.
     this.currentSequence = generateOptimalVoiceLeadingSequence(
       this.currentChordNames,
       midiRange,
       this.currentTriads,
-      selections
+      selections,
+      isGuitarPlayable
     )
     return this.currentSequence
   }

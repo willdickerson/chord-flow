@@ -198,31 +198,60 @@ function revoicedPitchSets(midiNotes: number[]): number[][] {
   return [...sets.values()]
 }
 
-// Candidate fingerings for one chord. All faithfulness tiers compete in a
-// single pool — the exact voicing costs nothing extra, an octave shift or a
-// re-voicing carries a penalty — so a closed re-voiced shape can still beat
-// an exact voicing that is only playable with open strings or an awkward
-// stretch.
+const inGuitarRange = (notes: number[]): boolean =>
+  notes.every(n => n >= LOWEST_NOTE && n <= HIGHEST_NOTE)
+
+// Whether a voicing can be played as-is on the fretboard — in the written
+// guitar register (an octave up) or at pitch — within a normal hand span,
+// as a closed (fully fretted, movable) shape. Requiring a closed shape
+// rules out technically-fingerable degenerates like a barre at the 10th
+// fret ringing against open strings. The voice-leading generator uses this
+// to only pick voicings the tab can render without altering them.
+export function isGuitarPlayable(midiNotes: number[]): boolean {
+  const hasClosedShape = (notes: number[]): boolean =>
+    findCandidates(notes, 4).some(c => c.frets.every(f => f > 0))
+
+  if (hasClosedShape(midiNotes)) return true
+  const octaveUp = midiNotes.map(n => n + 12)
+  return inGuitarRange(octaveUp) && hasClosedShape(octaveUp)
+}
+
+// Candidate fingerings for one chord. Pitch-faithful shapes (the exact
+// voicing, or the exact voicing in the written guitar register an octave
+// up) always win over re-voicings: re-voiced pitch sets are only
+// considered when no faithful shape is playable at all, so a chord that
+// passes isGuitarPlayable is guaranteed to render with its own notes.
 function candidatesForChord(midiNotes: number[]): Candidate[] {
   const octaveUp = midiNotes.map(n => n + 12)
-  const inRange = (notes: number[]) =>
-    notes.every(n => n >= LOWEST_NOTE && n <= HIGHEST_NOTE)
   const originalAvg = average(midiNotes)
 
-  const poolAtSpan = (maxSpan: number): Candidate[] => [
+  const faithfulAtSpan = (maxSpan: number): Candidate[] => [
     // The written-pitch register (an octave up) is the guitar default
-    ...(inRange(octaveUp) ? tag(findCandidates(octaveUp, maxSpan), 0, 12) : []),
+    ...(inGuitarRange(octaveUp)
+      ? tag(findCandidates(octaveUp, maxSpan), 0, 12)
+      : []),
     ...tag(findCandidates(midiNotes, maxSpan), AT_PITCH_PENALTY, 0),
-    ...revoicedPitchSets(midiNotes).flatMap(set =>
-      tag(findCandidates(set, maxSpan), REVOICE_PENALTY, average(set) - originalAvg)
-    ),
   ]
+  const revoicedAtSpan = (maxSpan: number): Candidate[] =>
+    revoicedPitchSets(midiNotes).flatMap(set =>
+      tag(findCandidates(set, maxSpan), REVOICE_PENALTY, average(set) - originalAvg)
+    )
 
-  // Allow an uncomfortable 5-fret stretch only when nothing else exists
-  const pool = poolAtSpan(4)
-  const found = pool.length ? pool : poolAtSpan(5)
-  // Keep the DP small: only the most playable shapes matter
-  return found.sort((a, b) => a.cost - b.cost).slice(0, 24)
+  // Allow an uncomfortable 5-fret stretch before altering any pitches
+  const tiers = [
+    () => faithfulAtSpan(4),
+    () => faithfulAtSpan(5),
+    () => revoicedAtSpan(4),
+    () => revoicedAtSpan(5),
+  ]
+  for (const tier of tiers) {
+    const found = tier()
+    if (found.length) {
+      // Keep the DP small: only the most playable shapes matter
+      return found.sort((a, b) => a.cost - b.cost).slice(0, 24)
+    }
+  }
+  return []
 }
 
 // Assign a fingering to every chord in the sequence: Viterbi over per-chord
