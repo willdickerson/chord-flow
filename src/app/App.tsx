@@ -9,6 +9,7 @@ import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
 import { SheetMusic } from '../features/playback/SheetMusic'
 import { GuitarTab } from '../features/playback/GuitarTab'
+import { Fretboard } from '../features/playback/Fretboard'
 import {
   DisplayControls,
   DisplayOption,
@@ -82,6 +83,21 @@ function ChartRoute() {
         >
           <div className="flex justify-center">
             <GuitarTab
+              activeNotes={activeNotes}
+              currentChords={currentChords}
+            />
+          </div>
+        </div>
+
+        <div
+          className={`absolute w-full transition-opacity duration-200 ${
+            activeDisplay === 'fretboard' && !isEditing
+              ? 'opacity-100'
+              : 'opacity-0 pointer-events-none'
+          }`}
+        >
+          <div className="flex justify-center">
+            <Fretboard
               activeNotes={activeNotes}
               currentChords={currentChords}
             />

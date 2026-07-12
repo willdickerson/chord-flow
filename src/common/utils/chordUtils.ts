@@ -94,6 +94,37 @@ function sum(arr: number[]): number {
   return arr.reduce((a, b) => a + b, 0)
 }
 
+const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+const FLAT_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+
+// Spell a pitch in the context of a chord: flat-side roots get flat
+// spellings (Bb7 -> Ab, not G#), everything else gets sharps.
+export function noteNameForMidi(midi: number, chordRoot: string): string {
+  const useFlats = chordRoot.includes('b') || chordRoot === 'F'
+  return (useFlats ? FLAT_NAMES : SHARP_NAMES)[((midi % 12) + 12) % 12]
+}
+
+// Jazz-style degree name for each semitone offset from the root
+export const DEGREE_LABELS = [
+  'R', 'b9', '9', 'b3', '3', '11', 'b5', '5', '#5', '13', 'b7', '7',
+]
+
+export function getScaleDegreeLabel(midi: number, chord: string): string {
+  const { standardizedRoot } = parseChord(chord)
+  const rootMidi = NOTE_TO_MIDI_BASE[standardizedRoot]
+  return DEGREE_LABELS[(((midi - rootMidi) % 12) + 12) % 12]
+}
+
+// "F" with an A in the bass -> "F/A"; bass on the root stays plain "F"
+export function formatChordWithBass(chord: string, bassMidi: number): string {
+  const { originalRoot, standardizedRoot } = parseChord(chord)
+  const rootMidi = NOTE_TO_MIDI_BASE[standardizedRoot]
+  if ((((bassMidi - rootMidi) % 12) + 12) % 12 === 0) {
+    return chord
+  }
+  return `${chord}/${noteNameForMidi(bassMidi, originalRoot)}`
+}
+
 function generatePermutations(notes: string[]): string[] {
   const result: string[] = []
   const n = notes.length
