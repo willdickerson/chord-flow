@@ -5,6 +5,7 @@ import { PlaybackControls } from '../features/playback/PlaybackControls'
 import { InstrumentSelector } from '../features/playback/InstrumentSelector'
 import { useParams, useNavigate } from 'react-router-dom'
 import { decodeChartData } from '../common/utils/urlUtils'
+import { SHOW_GUITAR_VIEWS } from '../common/config'
 import { audioService } from '../services/audioService'
 import { InfoModal } from '../features/info/InfoModal'
 import { SheetMusic } from '../features/playback/SheetMusic'
@@ -74,35 +75,39 @@ function ChartRoute() {
           </div>
         </div>
 
-        <div
-          className={`absolute w-full transition-opacity duration-200 ${
-            activeDisplay === 'tablature' && !isEditing
-              ? 'opacity-100'
-              : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="flex justify-center">
-            <GuitarTab
-              activeNotes={activeNotes}
-              currentChords={currentChords}
-            />
-          </div>
-        </div>
+        {SHOW_GUITAR_VIEWS && (
+          <>
+            <div
+              className={`absolute w-full transition-opacity duration-200 ${
+                activeDisplay === 'tablature' && !isEditing
+                  ? 'opacity-100'
+                  : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <div className="flex justify-center">
+                <GuitarTab
+                  activeNotes={activeNotes}
+                  currentChords={currentChords}
+                />
+              </div>
+            </div>
 
-        <div
-          className={`absolute w-full transition-opacity duration-200 ${
-            activeDisplay === 'fretboard' && !isEditing
-              ? 'opacity-100'
-              : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="flex justify-center">
-            <Fretboard
-              activeNotes={activeNotes}
-              currentChords={currentChords}
-            />
-          </div>
-        </div>
+            <div
+              className={`absolute w-full transition-opacity duration-200 ${
+                activeDisplay === 'fretboard' && !isEditing
+                  ? 'opacity-100'
+                  : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <div className="flex justify-center">
+                <Fretboard
+                  activeNotes={activeNotes}
+                  currentChords={currentChords}
+                />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Invisible div to maintain height */}
         <div className="invisible">

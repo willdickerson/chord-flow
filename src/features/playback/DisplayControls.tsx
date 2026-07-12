@@ -1,4 +1,5 @@
 import React from 'react'
+import { SHOW_GUITAR_VIEWS } from '../../common/config'
 
 export type DisplayOption = 'keyboard' | 'notation' | 'tablature' | 'fretboard'
 
@@ -22,8 +23,12 @@ export const DisplayControls: React.FC<DisplayControlsProps> = ({
   }> = [
     { value: 'keyboard', label: 'Keyboard', disabledWhileEditing: false },
     { value: 'notation', label: 'Notation', disabledWhileEditing: true },
-    { value: 'tablature', label: 'Tab', disabledWhileEditing: true },
-    { value: 'fretboard', label: 'Fretboard', disabledWhileEditing: true },
+    ...(SHOW_GUITAR_VIEWS
+      ? ([
+          { value: 'tablature', label: 'Tab', disabledWhileEditing: true },
+          { value: 'fretboard', label: 'Fretboard', disabledWhileEditing: true },
+        ] as const)
+      : []),
   ]
 
   return (
