@@ -15,7 +15,8 @@ export function buildVoiceLeadingGraph(
   costFunction: (
     currentNotes: number[],
     nextNotes: number[]
-  ) => number = calculateVoiceLeadingCost
+  ) => number = calculateVoiceLeadingCost,
+  voicingFilter?: (midiNotes: number[]) => boolean
 ): VoiceLeadingGraph {
   if (!chords.length) {
     return { nodes: [], edges: [] }
@@ -27,38 +28,56 @@ export function buildVoiceLeadingGraph(
   const COST_THRESHOLD = 0.0001
   const SAME_CHORD_PENALTY = 0.001
 
+  // Candidate voicings per chord, restricted by the filter when one is
+  // given (e.g. to guitar-playable voicings). If the filter would leave a
+  // chord with nothing, fall back to the unfiltered set so a path always
+  // exists.
+  const voicingCache = new Map<
+    ChordName,
+    Array<{ inversion: Inversion; midiNotes: number[] }>
+  >()
+  const voicingsForChord = (chord: ChordName) => {
+    const cached = voicingCache.get(chord)
+    if (cached) return cached
+
+    const all: Array<{ inversion: Inversion; midiNotes: number[] }> = []
+    for (const inversion of triads[chord]) {
+      const notes = inversion.split(' ')
+      for (const midiNotes of findAllTriadsInRange(notes, midiRange)) {
+        all.push({ inversion, midiNotes })
+      }
+    }
+    const playable = voicingFilter
+      ? all.filter(v => voicingFilter(v.midiNotes))
+      : all
+    const result = playable.length ? playable : all
+
+    voicingCache.set(chord, result)
+    return result
+  }
+
   const lastChord = chords[chords.length - 1]
   const phantomNodes: GraphNode[] = []
 
-  for (const inversion of triads[lastChord]) {
-    const notes = inversion.split(' ')
-    const midiCombinations = findAllTriadsInRange(notes, midiRange)
-
-    for (const midiNotes of midiCombinations) {
-      phantomNodes.push({
-        position: -1, // Phantom position
-        chordName: lastChord,
-        inversion,
-        midiNotes,
-      })
-    }
+  for (const { inversion, midiNotes } of voicingsForChord(lastChord)) {
+    phantomNodes.push({
+      position: -1, // Phantom position
+      chordName: lastChord,
+      inversion,
+      midiNotes,
+    })
   }
 
   // Build nodes for each position
   for (let i = 0; i < chords.length; i++) {
     const chord = chords[i]
-    for (const inversion of triads[chord]) {
-      const notes = inversion.split(' ')
-      const midiCombinations = findAllTriadsInRange(notes, midiRange)
-
-      for (const midiNotes of midiCombinations) {
-        nodes.push({
-          position: i,
-          chordName: chord,
-          inversion,
-          midiNotes,
-        })
-      }
+    for (const { inversion, midiNotes } of voicingsForChord(chord)) {
+      nodes.push({
+        position: i,
+        chordName: chord,
+        inversion,
+        midiNotes,
+      })
     }
   }
 
@@ -270,7 +289,8 @@ export function generateOptimalVoiceLeadingSequence(
   triads: { [key: string]: Inversion[] },
   voiceWeights:
     | { bass: boolean; middle: boolean; high: boolean }
-    | boolean[]
+    | boolean[],
+  voicingFilter?: (midiNotes: number[]) => boolean
 ): Triad[] {
   if (!chords.length) {
     return []
@@ -283,7 +303,13 @@ export function generateOptimalVoiceLeadingSequence(
   const costFunction = (currentNotes: number[], nextNotes: number[]) =>
     calculateVoiceLeadingCostWithWeightsN(currentNotes, nextNotes, selections)
 
-  const graph = buildVoiceLeadingGraph(chords, midiRange, triads, costFunction)
+  const graph = buildVoiceLeadingGraph(
+    chords,
+    midiRange,
+    triads,
+    costFunction,
+    voicingFilter
+  )
 
   // Use phantom nodes as start nodes and actual end nodes
   const phantomNodes = graph.nodes.filter(node => node.position === -1)
