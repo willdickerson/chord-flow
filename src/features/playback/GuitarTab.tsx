@@ -2,9 +2,11 @@ import React, { useMemo } from 'react'
 import { audioService } from '../../services/audioService'
 import {
   generateTabSequence,
+  STANDARD_TUNING,
   STRING_NAMES,
   TabFingering,
 } from '../../common/utils/tabUtils'
+import { formatChordWithBass } from '../../common/utils/chordUtils'
 
 interface GuitarTabProps {
   activeNotes: number[]
@@ -13,10 +15,10 @@ interface GuitarTabProps {
 
 // Layout constants (SVG user units)
 const WIDTH = 400
-const HEIGHT = 108
-const LABEL_Y = 11
-const TOP = 26
-const LINE_GAP = 13
+const HEIGHT = 114
+const LABEL_Y = 12
+const TOP = 30
+const LINE_GAP = 15
 const LEFT = 30
 const RIGHT = 388
 const CHORDS_PER_ROW = 4
@@ -47,10 +49,17 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
   )
   const rowChordNames = sequence
     .slice(rowStartIndex, rowStartIndex + CHORDS_PER_ROW)
-    .map(
-      (triad, column) =>
+    .map((triad, column) => {
+      const name =
         triad.chordName || currentChords?.[rowStartIndex + column] || ''
-    )
+      if (!name) return ''
+      // Label inversions with their bass note (F with A in the bass -> F/A)
+      const fingering = rowFingerings[column]
+      const bassString = fingering?.findIndex(fret => fret !== null) ?? -1
+      if (bassString === -1) return name
+      const bassMidi = STANDARD_TUNING[bassString] + fingering![bassString]!
+      return formatChordWithBass(name, bassMidi)
+    })
   const highlightIndex =
     activeNotes.length > 0 ? position - rowStartIndex : -1
 
@@ -76,7 +85,7 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
           x={x}
           y={stringY(2) + 4}
           textAnchor="middle"
-          fontSize="10"
+          fontSize="12"
           fill={MUTED}
         >
           —
@@ -94,17 +103,17 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
             <g key={stringIndex}>
               {/* mask the string line behind the number */}
               <rect
-                x={x - label.length * 3.5}
-                y={y - 5}
-                width={label.length * 7}
-                height={10}
+                x={x - label.length * 4.25}
+                y={y - 6.5}
+                width={label.length * 8.5}
+                height={13}
                 fill={PAPER}
               />
               <text
                 x={x}
-                y={y + 3.5}
+                y={y + 4.5}
                 textAnchor="middle"
-                fontSize="10"
+                fontSize="13"
                 fontWeight={isActive ? 700 : 500}
                 fill={color}
               >
@@ -122,8 +131,8 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
       <div
         className="relative mx-auto mb-2"
         style={{
-          height: '100px',
-          maxWidth: '380px',
+          height: '120px',
+          maxWidth: '420px',
         }}
       >
         <div className="absolute inset-0 translate-x-[6px] translate-y-[6px] bg-[#2C1810] rounded-lg"></div>
@@ -169,10 +178,10 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
             {STRING_NAMES.map((name, stringIndex) => (
               <text
                 key={name + stringIndex}
-                x={LEFT - 10}
+                x={LEFT - 11}
                 y={stringY(stringIndex) + 3.5}
                 textAnchor="middle"
-                fontSize="9"
+                fontSize="10"
                 fill={MUTED}
               >
                 {name}
@@ -187,7 +196,7 @@ export const GuitarTab: React.FC<GuitarTabProps> = ({
                   x={columnX(column)}
                   y={LABEL_Y}
                   textAnchor="middle"
-                  fontSize="10"
+                  fontSize="11"
                   fontWeight={column === highlightIndex ? 700 : 600}
                   fill={column === highlightIndex ? HIGHLIGHT : INK}
                 >
