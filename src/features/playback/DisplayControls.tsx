@@ -1,6 +1,6 @@
 import React from 'react'
 
-export type DisplayOption = 'keyboard' | 'notation' | 'tablature'
+export type DisplayOption = 'keyboard' | 'notation' | 'tablature' | 'fretboard'
 
 interface DisplayControlsProps {
   activeDisplay: DisplayOption
@@ -23,6 +23,7 @@ export const DisplayControls: React.FC<DisplayControlsProps> = ({
     { value: 'keyboard', label: 'Keyboard', disabledWhileEditing: false },
     { value: 'notation', label: 'Notation', disabledWhileEditing: true },
     { value: 'tablature', label: 'Tab', disabledWhileEditing: true },
+    { value: 'fretboard', label: 'Fretboard', disabledWhileEditing: true },
   ]
 
   return (
