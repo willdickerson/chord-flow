@@ -216,6 +216,32 @@ describe('isGuitarPlayable', () => {
 describe('guitar-constrained generation stays in sync with the tab', () => {
   const chords = ['Bmaj7', 'D7', 'Gmaj7', 'Bb7', 'Ebmaj7', 'Am7', 'D7', 'Gmaj7']
 
+  it('extended qualities (6ths, 9ths, sus, 13ths) generate and render faithfully', () => {
+    const extended = ['C6', 'Am9', 'D9', 'G13', 'C69', 'Fmaj9', 'Bm7b5', 'E7sus']
+    const voicings = Object.fromEntries(
+      extended.map(c => [c, generateSeventhChords(c, 'all')])
+    )
+    const seq = generateOptimalVoiceLeadingSequence(
+      extended,
+      [40, 76],
+      voicings,
+      [true, true, true, true],
+      isGuitarPlayable
+    )
+    expect(seq.length).toBe(extended.length)
+
+    const tabs = generateTabSequence(seq.map(t => t.midiNotes))
+    seq.forEach((triad, i) => {
+      expect(tabs[i]).not.toBeNull()
+      const sounded = soundedNotes(tabs[i]!).sort((a, b) => a - b)
+      const faithful =
+        JSON.stringify(sounded) === JSON.stringify(triad.midiNotes) ||
+        JSON.stringify(sounded) ===
+          JSON.stringify(triad.midiNotes.map(n => n + 12))
+      expect(faithful).toBe(true)
+    })
+  })
+
   const modes = [
     {
       name: 'open triads',

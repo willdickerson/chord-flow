@@ -110,9 +110,17 @@ export const DEGREE_LABELS = [
 ]
 
 export function getScaleDegreeLabel(midi: number, chord: string): string {
-  const { standardizedRoot } = parseChord(chord)
+  const { standardizedRoot, chordType } = parseSeventhChord(chord)
   const rootMidi = NOTE_TO_MIDI_BASE[standardizedRoot]
-  return DEGREE_LABELS[(((midi - rootMidi) % 12) + 12) % 12]
+  const offset = (((midi - rootMidi) % 12) + 12) % 12
+
+  // Quality-aware names: the 9 semitones above the root of a sixth chord
+  // are its 6, not a 13; likewise b6 in mb6 and the suspended 4
+  if (offset === 9 && ['6', 'm6', '69', 'm69'].includes(chordType)) return '6'
+  if (offset === 8 && chordType === 'mb6') return 'b6'
+  if (offset === 5 && chordType === '7sus') return '4'
+
+  return DEGREE_LABELS[offset]
 }
 
 // "F" with an A in the bass -> "F/A"; bass on the root stays plain "F"
@@ -193,34 +201,65 @@ function parseSeventhChord(chord: string): {
   const standardizedRoot = ENHARMONIC_MAP[originalRoot] || originalRoot
   const suffix = match[2] || ''
 
+  return {
+    originalRoot,
+    standardizedRoot,
+    chordType: seventhChordType(suffix),
+  }
+}
+
+// Map a chord suffix to its 4-note quality. Genuine 4-note qualities are
+// kept as themselves; 5-note qualities reduce to their standard 4-note
+// form (9ths/13ths drop the 5th, 11ths become sus); altered extensions
+// collapse to their parent quality (7b13 -> 7, m11 -> m7, maj7#11 -> maj7).
+// Match order matters throughout: more specific suffixes first.
+function seventhChordType(suffix: string): string {
   const lower = suffix.toLowerCase()
 
-  let chordType: string
-  if (suffix.includes('m7b5') || suffix.includes('ø')) {
-    chordType = 'm7b5'
-  } else if (suffix.includes('dim7') || suffix.includes('°7')) {
-    chordType = 'dim7'
-  } else if (suffix.includes('dim') || suffix.includes('°')) {
-    chordType = 'm7b5' // half-dim is the most common interpretation of a bare "dim" in a 7th-chord context
-  } else if (lower.includes('mmaj7') || suffix.includes('mM7')) {
-    chordType = 'mMaj7'
-  } else if (lower.includes('maj7') || suffix.includes('M7')) {
-    chordType = 'maj7'
-  } else if (lower.includes('maj')) {
-    chordType = 'maj7' // maj9, maj13, etc. all carry a major 7th
-  } else if (suffix.includes('aug') || suffix.includes('+')) {
-    chordType = '7' // closest 4-note approximation; aug7 not yet modeled (checked before the minor test so "maug" isn't read as minor)
-  } else if (suffix.startsWith('m')) {
-    chordType = 'm7' // m6, m9, m11, etc. -> minor 7th
-  } else if (lower.includes('add') || suffix.includes('6')) {
-    chordType = 'maj7' // add9 / 6 / 69 chords have no b7 — major quality
-  } else if (/7|9|11|13/.test(suffix)) {
-    chordType = '7' // dominant extensions/alterations: 9, 13, 7b9, 7alt, ...
-  } else {
-    chordType = 'maj7' // bare major chord -> major 7th in seventh mode
+  // Diminished / half-diminished family
+  if (suffix.includes('m7b5') || suffix.includes('ø')) return 'm7b5'
+  if (suffix.includes('dim7') || suffix.includes('°7')) return 'dim7'
+  // half-dim is the most common reading of a bare "dim" in a 7th-chord context
+  if (suffix.includes('dim') || suffix.includes('°')) return 'm7b5'
+
+  // Major-seventh family (before the minor family: "maj" starts with "m")
+  if (lower.includes('mmaj7') || suffix.includes('mM7')) return 'mMaj7'
+  if (lower.includes('maj9')) return 'maj9'
+  if (lower.includes('maj7#5')) return 'maj7#5'
+  if (lower.includes('maj7') || suffix.includes('M7')) return 'maj7'
+  if (lower.includes('maj')) return 'maj7' // maj13 etc.
+
+  // Augmented family (before the minor family so "maug" isn't read as
+  // minor; before the dominant family so 7#5 / 9#5 keep the raised 5th)
+  if (suffix.includes('aug') || suffix.includes('+') || suffix.includes('#5'))
+    return 'aug7'
+
+  // Minor family
+  if (suffix.startsWith('m')) {
+    if (suffix.includes('b6')) return 'mb6'
+    if (suffix.includes('69')) return 'm69'
+    if (suffix.includes('6')) return 'm6'
+    if (suffix.includes('b9') || suffix.includes('#9')) return 'm7' // m7b9 -> m7
+    if (suffix.includes('9')) return 'm9'
+    return 'm7' // m7, m11, bare minor, ...
   }
 
-  return { originalRoot, standardizedRoot, chordType }
+  // Suspended family (before 9/13: 9sus and 13sus are sus sounds)
+  if (suffix.includes('sus')) return '7sus'
+
+  // Dominant / major-sixth family
+  if (suffix.includes('b5')) return '7b5' // 7b5, 9b5, 7b5b9
+  if (suffix.includes('69')) return '69'
+  if (suffix.includes('add9')) return 'add9'
+  if (suffix.includes('b13')) return '7' // 7b13 -> 7
+  if (suffix.includes('13')) return '13' // 13, 13b9, 13#11
+  if (suffix.includes('b9') || suffix.includes('#9')) return '7' // 7b9, 7#9
+  if (suffix.includes('9')) return '9' // 9, 9#11
+  if (suffix.includes('#11')) return '7' // 7#11 -> 7
+  if (suffix.includes('11')) return '7sus' // bare 11th chords are sus sounds
+  if (suffix.includes('6')) return '6'
+  if (suffix.includes('7')) return '7' // 7, 7alt
+  return 'maj7' // bare major chord -> major 7th in seventh mode
 }
 
 // Cyclic rotations of the canonical tertian stack [1, 3, 5, 7] —

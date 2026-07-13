@@ -64,37 +64,59 @@ describe('seventh chord generation', () => {
     expect(root.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
   })
 
-  it('treats extended dominants (9, 13) as dominant 7ths, not maj7', () => {
-    // D9 carries a flat 7 (C natural), not C#
-    const d9 = generateSeventhChords('D9', 'close')[0].split(' ')
-    expect(d9.sort().join(',')).toBe(['A', 'C', 'D', 'Gb'].sort().join(','))
+  const tones = (chord: string): string =>
+    generateSeventhChords(chord, 'close')[0].split(' ').sort().join(',')
+  const expectTones = (chord: string, notes: string[]) =>
+    expect(tones(chord)).toBe([...notes].sort().join(','))
 
-    const g13 = generateSeventhChords('G13', 'close')[0].split(' ')
-    expect(g13.sort().join(',')).toBe(['B', 'D', 'F', 'G'].sort().join(','))
+  it('voices ninth chords as R-3-7-9 (dropping the 5th)', () => {
+    expectTones('D9', ['D', 'Gb', 'C', 'E']) // R 3 b7 9
+    expectTones('Cm9', ['C', 'Eb', 'Bb', 'D'])
+    expectTones('Cmaj9', ['C', 'E', 'B', 'D'])
   })
 
-  it('treats maj9 / maj13 as major 7th quality', () => {
-    const cmaj9 = generateSeventhChords('Cmaj9', 'close')[0].split(' ')
-    expect(cmaj9.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
+  it('voices 13th chords as R-3-b7-13', () => {
+    expectTones('G13', ['G', 'B', 'F', 'E'])
   })
 
-  it('treats 6 and add9 chords as major quality (no flat 7)', () => {
-    const c6 = generateSeventhChords('C6', 'close')[0].split(' ')
-    expect(c6.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
-
-    const cadd9 = generateSeventhChords('Cadd9', 'close')[0].split(' ')
-    expect(cadd9.sort().join(',')).toBe(['B', 'C', 'E', 'G'].sort().join(','))
+  it('voices sixth chords with a real 6th, not a major 7th', () => {
+    expectTones('C6', ['C', 'E', 'G', 'A'])
+    expectTones('Fm6', ['F', 'Ab', 'C', 'D'])
+    expectTones('C69', ['C', 'E', 'A', 'D']) // R 3 6 9
+    expectTones('Cm69', ['C', 'Eb', 'A', 'D'])
   })
 
-  it('treats m6 / m9 as minor 7th quality', () => {
-    const fm6 = generateSeventhChords('Fm6', 'close')[0].split(' ')
-    expect(fm6.sort().join(',')).toBe(['Ab', 'C', 'Eb', 'F'].sort().join(','))
+  it('voices add9 chords with the 9 and no 7th', () => {
+    expectTones('Cadd9', ['C', 'E', 'G', 'D'])
   })
 
-  it('does not read augmented chords as minor', () => {
-    // "Dmaug" appears in the bundled charts; the "m" belongs to "maug", not minor
-    const dmaug = generateSeventhChords('Dmaug', 'close')[0].split(' ')
-    expect(dmaug.sort().join(',')).toBe(['A', 'C', 'D', 'Gb'].sort().join(','))
+  it('voices sus chords as R-4-5-b7', () => {
+    expectTones('C7sus', ['C', 'F', 'G', 'Bb'])
+    expectTones('C9sus', ['C', 'F', 'G', 'Bb'])
+    expectTones('C11', ['C', 'F', 'G', 'Bb'])
+  })
+
+  it('voices augmented and altered-fifth qualities', () => {
+    expectTones('C7#5', ['C', 'E', 'Ab', 'Bb'])
+    expectTones('Caug', ['C', 'E', 'Ab', 'Bb'])
+    expectTones('Cmaj7#5', ['C', 'E', 'Ab', 'B'])
+    expectTones('C7b5', ['C', 'E', 'Gb', 'Bb'])
+    expectTones('Cmb6', ['C', 'Eb', 'G', 'Ab'])
+    // "Dmaug" appears in the bundled charts; the "m" belongs to "maug"
+    expectTones('Dmaug', ['D', 'Gb', 'Bb', 'C'])
+  })
+
+  it('collapses altered extensions to their parent quality', () => {
+    expectTones('G7b13', ['G', 'B', 'D', 'F']) // the user-facing rule: G7b13 -> G7
+    expectTones('C7b9', ['C', 'E', 'G', 'Bb'])
+    expectTones('C7#11', ['C', 'E', 'G', 'Bb'])
+    expectTones('Cm11', ['C', 'Eb', 'G', 'Bb']) // m11 -> m7
+    expectTones('Cm7b9', ['C', 'Eb', 'G', 'Bb'])
+    expectTones('C9#11', ['C', 'E', 'Bb', 'D']) // keeps the 9
+    expectTones('C13b9', ['C', 'E', 'Bb', 'A']) // keeps the 13
+    expectTones('C9b5', ['C', 'E', 'Gb', 'Bb']) // keeps the b5
+    expectTones('Cmaj7#11', ['C', 'E', 'G', 'B'])
+    expectTones('C13sus', ['C', 'F', 'G', 'Bb']) // sus sounds stay sus
   })
 
   it('parses minor-major 7th chords regardless of case', () => {
