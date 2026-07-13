@@ -52,6 +52,20 @@ describe('getScaleDegreeLabel', () => {
     expect(getScaleDegreeLabel(65, 'F')).toBe('R')
     expect(getScaleDegreeLabel(69, 'F')).toBe('3')
   })
+
+  it('names degrees by chord quality', () => {
+    // A above C: the 6 of a sixth chord, the 13 of a dominant 13th
+    expect(getScaleDegreeLabel(69, 'C6')).toBe('6')
+    expect(getScaleDegreeLabel(69, 'Cm6')).toBe('6')
+    expect(getScaleDegreeLabel(69, 'C13')).toBe('13')
+    // F above C: the suspended 4 of a sus chord, otherwise an 11
+    expect(getScaleDegreeLabel(65, 'C7sus')).toBe('4')
+    // Ab above C: b6 in mb6, #5 in augmented qualities
+    expect(getScaleDegreeLabel(68, 'Cmb6')).toBe('b6')
+    expect(getScaleDegreeLabel(68, 'C7#5')).toBe('#5')
+    // D above C: the 9
+    expect(getScaleDegreeLabel(62, 'C9')).toBe('9')
+  })
 })
 
 describe('noteNameForMidi', () => {
