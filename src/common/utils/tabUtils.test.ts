@@ -220,6 +220,16 @@ describe('isGuitarPlayable', () => {
     // grip (e.g. Gmaj7 drop-2 at 9-11-8-10) and stays playable
     expect(isGuitarPlayable([47, 54, 55, 62])).toBe(true)
   })
+
+  it('keeps the consecutive close-maj7 staircase (spans only 3 frets)', () => {
+    // Ebmaj7 close root position (Eb4 G4 Bb4 D5) is the classic
+    // x-x-13-12-11-10 diagonal: four distinct frets but consecutive,
+    // so the span is 3 and fingers 4-3-2-1 fall onto it naturally.
+    const ebmaj7 = [63, 67, 70, 74]
+    expect(isGuitarPlayable(ebmaj7)).toBe(true)
+    const [fingering] = generateTabSequence([ebmaj7])
+    expect(fingering).toEqual([null, null, 13, 12, 11, 10])
+  })
 })
 
 describe('guitar-constrained generation stays in sync with the tab', () => {
