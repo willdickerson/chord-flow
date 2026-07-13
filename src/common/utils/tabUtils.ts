@@ -113,7 +113,13 @@ function findCandidates(midiNotes: number[], maxSpan: number): Candidate[] {
       const span = fretted.length
         ? Math.max(...fretted) - Math.min(...fretted)
         : 0
-      if (span <= maxSpan) {
+      // A four-finger "staircase" — four distinct frets spread over four
+      // or more — is impractically awkward (the close-position dominant
+      // grip x5421x). Four distinct frets within a 3-fret span is a
+      // normal jazz shape and stays legal.
+      const staircase =
+        new Set(fretted).size >= 4 && span >= 4
+      if (span <= maxSpan && !staircase) {
         candidates.push({
           strings: [...acc],
           frets,

@@ -211,6 +211,15 @@ describe('isGuitarPlayable', () => {
     // strings — not a real shape
     expect(isGuitarPlayable([50, 54, 55, 59])).toBe(false)
   })
+
+  it('rejects four-finger staircase grips (four distinct frets over a 4-fret span)', () => {
+    // Close root-position D7 (D3 F#3 A3 C4) only fits as x5421x —
+    // four fingers on four different frets, impractically awkward
+    expect(isGuitarPlayable([50, 54, 57, 60])).toBe(false)
+    // But four distinct frets within a 3-fret span is a normal jazz
+    // grip (e.g. Gmaj7 drop-2 at 9-11-8-10) and stays playable
+    expect(isGuitarPlayable([47, 54, 55, 62])).toBe(true)
+  })
 })
 
 describe('guitar-constrained generation stays in sync with the tab', () => {

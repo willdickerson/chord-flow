@@ -283,6 +283,72 @@ export function calculateVoiceLeadingCostWithWeightsN(
   return activeVoices > 0 ? totalCost / activeVoices : totalCost
 }
 
+// Several bars of a static chord would otherwise settle into an A-B-A-B
+// alternation (pairwise-optimal, but dull). For runs of the same chord
+// three bars or longer, re-pick the interior voicings as a walk through
+// voicings that haven't been used yet in the run: each step moves to the
+// nearest unused voicing, and the final step also weighs the transition
+// into the next chord so the run still exits cleanly. The run's entry
+// voicing (chosen by the global optimization) is kept.
+function diversifyStaticRuns(
+  path: Triad[],
+  nodes: GraphNode[],
+  costFunction: (currentNotes: number[], nextNotes: number[]) => number
+): void {
+  const key = (midiNotes: number[]) => midiNotes.join(',')
+
+  let start = 0
+  while (start < path.length) {
+    let end = start
+    while (
+      end + 1 < path.length &&
+      path[end + 1].chordName === path[start].chordName
+    ) {
+      end++
+    }
+
+    if (end - start + 1 >= 3) {
+      const used = new Set([key(path[start].midiNotes)])
+
+      for (let i = start + 1; i <= end; i++) {
+        const candidates = nodes.filter(node => node.position === i)
+        const fresh = candidates.filter(c => !used.has(key(c.midiNotes)))
+        // If the chord has fewer voicings than the run has bars, allow
+        // reuse — but never repeat the immediately preceding voicing
+        const pool = fresh.length
+          ? fresh
+          : candidates.filter(
+              c => key(c.midiNotes) !== key(path[i - 1].midiNotes)
+            )
+        const options = pool.length ? pool : candidates
+
+        const exit = i === end && i + 1 < path.length ? path[i + 1] : null
+        let best = options[0]
+        let bestCost = Infinity
+        for (const candidate of options) {
+          let cost = costFunction(path[i - 1].midiNotes, candidate.midiNotes)
+          if (exit) {
+            cost += costFunction(candidate.midiNotes, exit.midiNotes)
+          }
+          if (cost < bestCost) {
+            bestCost = cost
+            best = candidate
+          }
+        }
+
+        path[i] = {
+          chordName: best.chordName,
+          inversion: best.inversion,
+          midiNotes: best.midiNotes,
+        }
+        used.add(key(best.midiNotes))
+      }
+    }
+
+    start = end + 1
+  }
+}
+
 export function generateOptimalVoiceLeadingSequence(
   chords: ChordName[],
   midiRange: [number, number],
@@ -318,5 +384,10 @@ export function generateOptimalVoiceLeadingSequence(
   )
 
   const path = findOptimalVoiceLeading(graph, phantomNodes, endNodes)
-  return path.length ? path : []
+  if (!path.length) {
+    return []
+  }
+
+  diversifyStaticRuns(path, graph.nodes, costFunction)
+  return path
 }

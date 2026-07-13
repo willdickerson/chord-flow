@@ -222,6 +222,46 @@ describe('end-to-end 4-voice optimization', () => {
     expect(totalMovement).toBeLessThan(30)
   })
 
+  it('cycles through distinct voicings over a static chord', () => {
+    const staticChords = ['Gm6', 'Gm6', 'Gm6', 'Gm6']
+    const staticVoicings = Object.fromEntries(
+      staticChords.map(c => [c, generateSeventhChords(c, 'all')])
+    )
+    const seq = generateOptimalVoiceLeadingSequence(
+      staticChords,
+      MIDI_RANGE,
+      staticVoicings,
+      [true, true, true, true]
+    )
+    expect(seq.length).toBe(4)
+    const distinct = new Set(seq.map(t => t.midiNotes.join(',')))
+    expect(distinct.size).toBe(4)
+  })
+
+  it('keeps a static run leading cleanly into the following chord', () => {
+    const runChords = ['Gm6', 'Gm6', 'Gm6', 'Gm6', 'C9']
+    const runVoicings = Object.fromEntries(
+      runChords.map(c => [c, generateSeventhChords(c, 'all')])
+    )
+    const seq = generateOptimalVoiceLeadingSequence(
+      runChords,
+      MIDI_RANGE,
+      runVoicings,
+      [true, true, true, true]
+    )
+    expect(seq.length).toBe(5)
+    const gm6s = seq.slice(0, 4)
+    expect(new Set(gm6s.map(t => t.midiNotes.join(','))).size).toBe(4)
+    // The last Gm6 still hands off to C9 without a huge leap
+    const last = seq[3].midiNotes
+    const next = seq[4].midiNotes
+    let movement = 0
+    for (let v = 0; v < Math.min(last.length, next.length); v++) {
+      movement += Math.abs(next[v] - last[v])
+    }
+    expect(movement).toBeLessThan(24)
+  })
+
   it('respects voice selection: pinning bass produces less bass movement', () => {
     const balanced = generateOptimalVoiceLeadingSequence(
       chords,
